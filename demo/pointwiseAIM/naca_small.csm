@@ -98,6 +98,7 @@ hollow 0
 
 select face
 	attribute capsGroup $OML
+	attribute capsMesh $wing
 
 patbeg foo ifzero(cfdOn-1,1,0)
    union
@@ -162,3 +163,6 @@ patbeg foo ifzero(cfdOn,1,0)
    select face 2
        attribute capsLoad $bottomWing
 patend
+
+dump wing.egads
+#restore wing
