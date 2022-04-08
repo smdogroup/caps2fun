@@ -14,7 +14,7 @@ set conParams(TurnAngleHard)                   70.000000; # Hard edge turning an
 # Domain level
 set domParams(Algorithm)                    "AdvancingFront"; # Isotropic (Delaunay, AdvancingFront or AdvancingFrontOrtho)
 set domParams(FullLayers)                       0; # Domain full layers (0 for multi-normals, >= 1 for single normal)
-set domParams(MaxLayers)                        30; # Domain maximum layers
+set domParams(MaxLayers)                        10; # Domain maximum layers
 set domParams(GrowthRate)                      1.300000; # Domain growth rate for 2D T-Rex extrusion
 set domParams(IsoType)                      "Triangle"; # Domain iso cell type (Triangle or TriangleQuad)
 set domParams(TRexType)                     "Triangle"; # Domain T-Rex cell type (Triangle or TriangleQuad)

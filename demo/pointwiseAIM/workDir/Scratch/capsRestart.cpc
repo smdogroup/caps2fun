@@ -3,6 +3,7 @@
 # Constant, Design, and Output Parameters:
 CFGPMTR   nspar       1.00000
 CFGPMTR   nrib       1.00000
+CFGPMTR   cfdOn       0.00000
 DESPMTR   area      40.00000
 DESPMTR   aspect       6.00000
 DESPMTR   taper       0.50000
@@ -39,55 +40,75 @@ ROTATEZ   -ctwist   0   0
 TRANSLATE xtip   ytip   -sspan
 LOFT      0
 ATTRIBUTE OML   0
-STORE     OML   0   0
-SET       ctipEff ctip*cosd(ctwist)
-PATBEG    ispar   nspar
-   SET       frac ispar/(nspar+1)
-   SET       dx frac*(croot-ctipEff)-xtip
-   SET       hyp sqrt(sspan*sspan+dx*dx)
-   BOX       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
-   SET       localSweep atand(dx/sspan)
-   ROTATEY   localSweep   0   0
-   TRANSLATE frac*croot   0   0
-   SELECT    face
+PATBEG    foo   cfdOn
+   STORE     OML   0   0
+   SET       ctipEff ctip*cosd(ctwist)
+   PATBEG    ispar   nspar
+      SET       frac ispar/(nspar+1)
+      SET       dx frac*(croot-ctipEff)-xtip
+      SET       hyp sqrt(sspan*sspan+dx*dx)
+      BOX       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
+      SET       localSweep atand(dx/sspan)
+      ROTATEY   localSweep   0   0
+      TRANSLATE frac*croot   0   0
+      SELECT    face
 ATTRIBUTE capsGroup   !$spar
 ATTRIBUTE spar   ispar
-PATEND
-PATBEG    irib   nrib
-   SET       dxmax max(croot,xtip+ctipEff)+2*margin
-   SET       zcoord -(irib)*sspan/(nrib+1)
-   BOX       0   ybot   zcoord   dxmax   ytop-ybot   0
-   SELECT    face
-ATTRIBUTE capsGroup   !$rib
-   UNION     0   0   0
-   PATBEG    foo   ifzero(irib-1,nspar-1,0)
-      UNION     0   0   0
    PATEND
+   PATBEG    irib   nrib
+      SET       dxmax max(croot,xtip+ctipEff)+2*margin
+      SET       zcoord -(irib)*sspan/(nrib+1)
+      BOX       0   ybot   zcoord   dxmax   ytop-ybot   0
+      SELECT    face
+ATTRIBUTE capsGroup   !$rib
+      UNION     0   0   0
+      PATBEG    foo   ifzero(irib-1,nspar-1,0)
+         UNION     0   0   0
+      PATEND
+   PATEND
+   RESTORE   OML   0
+   INTERSECT none   1   0
+   RESTORE   OML   0
 PATEND
-RESTORE   OML   0
-INTERSECT none   1   0
-RESTORE   OML   0
 HOLLOW    0   0   0
 SELECT    face
 ATTRIBUTE capsGroup   $OML
-UNION     0   0   0
+PATBEG    foo   ifzero(cfdOn-1,1,0)
+   UNION     0   0   0
+PATEND
 SELECT    body
 ATTRIBUTE capsAIM   $egadsTessAIM;tacsAIM;pointwiseAIM
 ATTRIBUTE capsMeshLength   1.0
-PATBEG    find   2
-   SELECT    face   !rootFaces[1,find]
+PATBEG    foo   cfdOn
+               PATBEG    find   2
+      SELECT    face   !rootFaces[1,find]
 ATTRIBUTE capsConstraint   $wingRoot
-PATEND
-PATBEG    eind   5
-   SELECT    edge   !rootEdges[1,eind]
+   PATEND
+   PATBEG    eind   5
+      SELECT    edge   !rootEdges[1,eind]
 ATTRIBUTE capsConstraint   $wingRoot
-PATEND
-PATBEG    nind   4
-   SELECT    node   !rootNodes[1,nind]
+   PATEND
+   PATBEG    nind   4
+      SELECT    node   !rootNodes[1,nind]
 ATTRIBUTE capsConstraint   $wingRoot
+   PATEND
+   PATBEG    find   4
+      SELECT    face   !bottomFaces[1,find]
+ATTRIBUTE capsLoad   $bottomWing
+   PATEND
 PATEND
-PATBEG    find   4
-   SELECT    face   !bottomFaces[1,find]
+PATBEG    foo   ifzero(cfdOn,1,0)
+               SELECT    face   5
+ATTRIBUTE capsConstraint   $wingRoot
+   SELECT    edge   3
+ATTRIBUTE capsConstraint   $wingRoot
+   SELECT    edge   7
+ATTRIBUTE capsConstraint   $wingRoot
+   SELECT    node   3
+ATTRIBUTE capsConstraint   $wingRoot
+   SELECT    node   4
+ATTRIBUTE capsConstraint   $wingRoot
+   SELECT    face   2
 ATTRIBUTE capsLoad   $bottomWing
 PATEND
 

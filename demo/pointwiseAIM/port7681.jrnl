@@ -1,1 +1,4 @@
-getFilenames|
+open|naca_small.csm|
+build|0|
+getCsmFile|naca_small.csm|
+getCsmFile|naca_small.csm|
