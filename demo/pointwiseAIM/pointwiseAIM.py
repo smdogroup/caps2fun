@@ -12,7 +12,7 @@ def run_pointwise(pointwise):
     os.chdir(pointwise.analysisDir)
 
     CAPS_GLYPH = os.environ["CAPS_GLYPH"]
-    for i in range(60):
+    for i in range(1):
         os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
 
         if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
@@ -42,8 +42,8 @@ pointwise.input.Connector_Source_Spacing = True
 
 #Domain level
 pointwise.input.Domain_Algorithm = "AdvancingFront"
-pointwise.input.Domain_Max_Layers = 15
-pointwise.input.Domain_TRex_ARLimit = 40.0
+pointwise.input.Domain_Max_Layers = 30
+pointwise.input.Domain_TRex_ARLimit = 50.0
 pointwise.input.Domain_Decay = 0.8
 
 #Block level
