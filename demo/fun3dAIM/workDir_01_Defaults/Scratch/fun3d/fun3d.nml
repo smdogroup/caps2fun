@@ -1,0 +1,5 @@
+&boundary_output_variables
+    mach = .true.
+    cp = .true.
+    average_velocity = .true.
+/

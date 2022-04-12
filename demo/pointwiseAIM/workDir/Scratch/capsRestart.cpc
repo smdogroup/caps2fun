@@ -73,6 +73,7 @@ PATEND
 HOLLOW    0   0   0
 SELECT    face
 ATTRIBUTE capsGroup   $OML
+ATTRIBUTE capsMesh   $wing
 PATBEG    foo   ifzero(cfdOn-1,1,0)
    UNION     0   0   0
 PATEND
@@ -111,5 +112,6 @@ ATTRIBUTE capsConstraint   $wingRoot
    SELECT    face   2
 ATTRIBUTE capsLoad   $bottomWing
 PATEND
+DUMP      wing.egads   0   0   0
 
 END

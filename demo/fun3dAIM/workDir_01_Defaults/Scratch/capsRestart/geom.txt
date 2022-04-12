@@ -1,0 +1,18 @@
+17 0
+nspar
+nrib
+cfdOn
+area
+aspect
+taper
+ctwist
+lesweep
+dihedral
+tc0
+tcf
+camb0
+cambf
+rootFaces
+rootEdges
+bottomFaces
+rootNodes

@@ -691,7 +691,7 @@ _cfgpmtr_bottomFaces
 2 18 4
 _cfgpmtr_rootNodes
  6.000000000000e+00  9.000000000000e+00  7.000000000000e+00  1.500000000000e+01 
-  0  1  5  5  9  6  5
+  0  1  5  5  9  6  4
 1 5 1
 _body
 8
@@ -704,9 +704,6 @@ capsAIM
 2 14 1
 capsMeshLength
  1.000000000000e+00
-2 8 3
-_tParams
- 2.485573880679e-01  7.456721642037e-02  2.000000000000e+01 
     2 0 8
 1 5 2
 _body
@@ -754,12 +751,12 @@ _faceID
 3 9 3
 capsGroup
 #OML
-3 8 10
-capsLoad
-#bottomWing
 3 8 4
 capsMesh
 #wing
+3 8 10
+capsLoad
+#bottomWing
     2 2 8
 1 5 2
 _body
@@ -832,12 +829,12 @@ _faceID
 3 9 3
 capsGroup
 #OML
-3 14 8
-capsConstraint
-#wingRoot
 3 8 4
 capsMesh
 #wing
+3 14 8
+capsConstraint
+#wingRoot
     4 0 4
 1 9 4
 __trace__

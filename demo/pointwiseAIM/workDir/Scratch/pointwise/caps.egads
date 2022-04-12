@@ -653,7 +653,7 @@ capsAIM
 2 14 1
 capsMeshLength
  1.000000000000e+00
-    2 0 8
+    2 0 9
 1 5 2
 _body
 7 3 
@@ -675,10 +675,13 @@ _faceID
 3 9 3
 capsGroup
 #OML
+3 8 4
+capsMesh
+#wing
 3 7 3
 PW:Name
 #OML
-    2 1 9
+    2 1 10
 1 5 2
 _body
 7 4 
@@ -700,13 +703,16 @@ _faceID
 3 9 3
 capsGroup
 #OML
+3 8 4
+capsMesh
+#wing
 3 8 10
 capsLoad
 #bottomWing
 3 7 3
 PW:Name
 #OML
-    2 2 8
+    2 2 9
 1 5 2
 _body
 7 5 
@@ -728,10 +734,13 @@ _faceID
 3 9 3
 capsGroup
 #OML
+3 8 4
+capsMesh
+#wing
 3 7 3
 PW:Name
 #OML
-    2 3 8
+    2 3 9
 1 5 2
 _body
 7 1 
@@ -753,10 +762,13 @@ _faceID
 3 9 3
 capsGroup
 #OML
+3 8 4
+capsMesh
+#wing
 3 7 3
 PW:Name
 #OML
-    2 4 9
+    2 4 10
 1 5 2
 _body
 7 2 
@@ -778,6 +790,9 @@ _faceID
 3 9 3
 capsGroup
 #OML
+3 8 4
+capsMesh
+#wing
 3 14 8
 capsConstraint
 #wingRoot
