@@ -6,33 +6,38 @@ import os
 
 
 def run_pointwise(pointwise):
-    # Run AIM pre-analysis
+    #run AIM pre-analysis
     pointwise.preAnalysis()
 
-    ####### Run pointwise #################
-    currentDirectory = os.getcwd() # Get current working directory
-    os.chdir(pointwise.analysisDir)    # Move into test directory
+    #move to test directory
+    currentDir = os.getcwd()
+    os.chdir(pointwise.analysisDir)
 
     CAPS_GLYPH = os.environ["CAPS_GLYPH"]
-    os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
+    for i in range(1):
+        os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
 
-    os.chdir(currentDirectory)     # Move back to top directory
-    #######################################
+        #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
+    
+    os.chdir(currentDir)
 
-    # Run AIM post-analysis
+    #run AIM postanalysis
     pointwise.postAnalysis()
 
 #------------------------------------------------------------------------------#
 # Load CSM file
 #os.system("serveCSM naca_small.csm")
 
-filename = os.path.join("cfd.egads")
+#filename = os.path.join("cfd.egads")
 caps = pyCAPS.Problem(problemName = "myCAPS",
-                    capsFile = filename,
+                    capsFile = "naca_small.csm",
                     outLevel = 1)
+
 # Create pointwise aim
 pointwise = caps.analysis.create(aim = "pointwiseAIM",
                                     name = "pointwise")
+
+#pointwise.geometry.cfgpmtr["cfdOn"].value = 1
 
 # Dump VTK files for visualization
 pointwise.input.Proj_Name   = "TransportWing"
@@ -70,6 +75,6 @@ pointwise.input.Mesh_Sizing = {"OML": viscousWall,
 run_pointwise(pointwise)
 
 # View the surface tessellation
-#pointwise.geometry.view()
+pointwise.geometry.view()
 #os.system("pointwise ")
 

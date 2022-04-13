@@ -16,8 +16,8 @@ despmtr  ctwist  5.0  deg
 despmtr  lesweep  30.0 deg
 despmtr  dihedral 5.0  deg
 despmtr tc0 0.1
-despmtr tcf 0.05
-despmtr camb0 0.1
+despmtr tcf 0.1
+despmtr camb0 0.0
 despmtr cambf 0.0
 
 #internal parameters
@@ -36,7 +36,7 @@ set  ytop 0.2*croot+ytip+margin
 udprim  naca thickness tc0 Camber camb0
 scale  croot
 udprim  naca thickness tcf Camber cambf
-scale		ctip
+scale   ctip
 rotatez		-ctwist	0		0
 translate	xtip	ytip	-sspan
 loft		0
@@ -87,11 +87,13 @@ patbeg foo ifzero(cfdOn,1,0)
    #trim ribs and spars to OML
    #import OML.egads
    restore OML
-   intersect
 
-   #import OML.egads
-   restore OML
-   hollow 0
+   patbeg foo ifzero(cfdOn,1,0)
+         intersect
+      #import OML.egads
+      restore OML
+      hollow 0
+   patend
    
 patend
 
@@ -167,17 +169,17 @@ patbeg foo cfdOn
    cfgpmtr bottomFaces "9"
    
    #capsConstraint and capsLoad
-   select face 5
+   select face 10
    	  attribute capsConstraint $wingRoot
-   select edge 3
+   select edge 15
    	  attribute capsConstraint $wingRoot
-   select edge 7
+   select edge 20
       attribute capsConstraint $wingRoot
-   select node 3
+   select node 11
    	  attribute capsConstraint $wingRoot
-   select node 4
+   select node 12
       attribute capsConstraint $wingRoot
-   select face 2
+   select face 9
        attribute capsLoad $bottomWing
 patend
 

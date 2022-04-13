@@ -1,6 +1,9 @@
 ##-----------------import stuff--------------------------##
 import os
 import pyCAPS
+from mpi4py import MPI
+from tacs.pytacs import pyTACS
+from tacs import functions
 
 ##-------------------------------------------------------##
 filename = os.path.join("wing.egads")
@@ -115,7 +118,7 @@ def makeThicknessDVR(DVname):
     "linearCoeff" : 1.0}
     return DVR
 
-#make initial DV and DVRdict
+#make initial DV and DVR dict
 DVdict = {}
 DVRdict = {}
 
@@ -138,7 +141,43 @@ tacsAim.input.Design_Variable_Relation = DVRdict
 #first run the preanalysis to prepare to run tacs through pytacs
 tacsAim.preAnalysis()
 
+#setup MPI COMM for pytacs
+comm = MPI.COMM_WORLD
+
 #data file
 datFile = os.path.join(tacsAim.analysisDir, tacsAim.input.Proj_Name + '.dat')
 
-#
+#initialize pytacs with that data file
+FEASolver = pyTACS(datFile)
+    
+# Set up TACS Assemblerrom tacs
+FEASolver.initialize()
+
+#choose the functions to evaluate
+evalFuncs = ['wing_mass', 'ks_vmfailure']
+
+#read the bdf & dat file into pytacs FEAsolver
+#SPs represents "StructuralProblems"
+SPs = FEASolver.createTACSProbsFromBDF()
+
+# Read in forces from BDF and create tacs struct problems
+for caseID in SPs:
+    SPs[caseID].addFunction('wing_mass', functions.StructuralMass)
+    SPs[caseID].addFunction('ks_vmfailure', functions.KSFailure, safetyFactor=1.5, ksWeight=1000.0)
+    #SPs[caseID].addFunction('compliance', functions.Compliance)
+# Solve each structural problem and write solutions
+func = {}; sens = {}
+for caseID in SPs:
+    SPs[caseID].solve()
+    print("finished pytacs solve")
+    SPs[caseID].evalFunctions(func,evalFuncs=evalFuncs)
+    #print("finished pytacs funcs")
+    SPs[caseID].evalFunctionsSens(sens,evalFuncs=evalFuncs)
+    #print("finished pytacs sens")
+    SPs[caseID].writeSolution(outputDir=tacsAim.analysisDir)
+    #print("finished pytacs file")
+
+curDir = os.getcwd()
+os.chdir(tacsAim.analysisDir)
+os.system("f5tovtk *.f5")
+os.chdir(curDir)
