@@ -5,17 +5,16 @@ from tacs.pytacs import pyTACS
 from tacs import functions
 
 ##--------set design parameters------##
-taper = 0.1
+taper = 1.0
 
 ##--------struct mesh----------------##
 
 #start CAPS problem, clears stuct folder
 #need naca_OML.csm default to cfdOn=0 for struct
 caps = pyCAPS.Problem(problemName = "struct",
-                    capsFile = "naca_OML.csm",
+                    capsFile = "naca_OML_struct.csm",
                     outLevel = 1)
-caps.geometry.despmtr["taper"] = taper
-wing = caps.geometry
+caps.geometry.despmtr["taper"].value = taper
 
 #initialize egads Aim
 egadsAim = caps.analysis.create(aim="egadsTessAIM")
@@ -184,8 +183,6 @@ builtStruct = True
 
 ##-----------------Fluid Mesh-------------------------##
 #save cfd egads version for fluid mesh to read next
-wing.cfgpmtr["cfdOn"].value = 1
-wing.save("cfd.egads")
 
 def run_pointwise(pointwise):
     #run AIM pre-analysis
@@ -208,12 +205,15 @@ def run_pointwise(pointwise):
 
 #-------------------Start fluid capsProblem------------------------------------------#
 
-filename = os.path.join("cfd.egads")
 caps2 = pyCAPS.Problem(problemName = "fluid",
-                    capsFile = filename,
+                    capsFile = "naca_OML_fluid.csm",
                     outLevel = 1)
 
-caps2.geometry.despmtr["taper"] = taper
+#update despmtr
+caps2.geometry.despmtr["taper"].value = taper
+
+#no need to change here since it reads from egads
+#caps2.geometry.despmtr["taper"] = taper
 
 # Create pointwise aim
 pointwise = caps2.analysis.create(aim = "pointwiseAIM",

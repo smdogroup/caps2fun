@@ -3,7 +3,6 @@
 # Constant, Design, and Output Parameters:
 CFGPMTR   nspar       1.00000
 CFGPMTR   nrib       1.00000
-CFGPMTR   cfdOn       0.00000
 DESPMTR   area      15.00000
 DESPMTR   aspect       6.00000
 DESPMTR   taper       0.50000
@@ -40,98 +39,57 @@ ROTATEZ   -ctwist   0   0
 TRANSLATE xtip   ytip   -sspan
 LOFT      0
 ATTRIBUTE OML   0
-PATBEG    foo   ifzero(cfdOn,1,0)
-   STORE     OML   0   0
-   SET       ctipEff ctip*cosd(ctwist)
-   PATBEG    ispar   nspar
-      SET       frac ispar/(nspar+1)
-      SET       dx frac*(croot-ctipEff)-xtip
-      SET       hyp sqrt(sspan*sspan+dx*dx)
-      BOX       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
-      SET       localSweep atand(dx/sspan)
-      ROTATEY   localSweep   0   0
-      TRANSLATE frac*croot   0   0
-      SELECT    face
+STORE     OML   0   0
+SET       ctipEff ctip*cosd(ctwist)
+PATBEG    ispar   nspar
+   SET       frac ispar/(nspar+1)
+   SET       dx frac*(croot-ctipEff)-xtip
+   SET       hyp sqrt(sspan*sspan+dx*dx)
+   BOX       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
+   SET       localSweep atand(dx/sspan)
+   ROTATEY   localSweep   0   0
+   TRANSLATE frac*croot   0   0
+   SELECT    face
 ATTRIBUTE capsGroup   !$spar
 ATTRIBUTE spar   ispar
-   PATEND
-   PATBEG    irib   nrib
-      SET       dxmax max(croot,xtip+ctipEff)+2*margin
-      SET       zcoord -(irib)*sspan/(nrib+1)
-      BOX       0   ybot   zcoord   dxmax   ytop-ybot   0
-      SELECT    face
+PATEND
+PATBEG    irib   nrib
+   SET       dxmax max(croot,xtip+ctipEff)+2*margin
+   SET       zcoord -(irib)*sspan/(nrib+1)
+   BOX       0   ybot   zcoord   dxmax   ytop-ybot   0
+   SELECT    face
 ATTRIBUTE capsGroup   !$rib
+   UNION     0   0   0
+   PATBEG    foo   ifzero(irib-1,nspar-1,0)
       UNION     0   0   0
-      PATBEG    foo   ifzero(irib-1,nspar-1,0)
-         UNION     0   0   0
-      PATEND
-   PATEND
-   RESTORE   OML   0
-   PATBEG    foo   ifzero(cfdOn,1,0)
-      INTERSECT none   1   0
-      RESTORE   OML   0
-      HOLLOW    0   0   0
    PATEND
 PATEND
+RESTORE   OML   0
+INTERSECT none   1   0
+RESTORE   OML   0
+HOLLOW    0   0   0
 SELECT    face
 ATTRIBUTE capsGroup   $OML
 ATTRIBUTE capsMesh   $OML
-PATBEG    foo   ifzero(cfdOn,1,0)
-   UNION     0   0   0
-PATEND
-PATBEG    foo   cfdOn
-   STORE     OML   0   0
-   SET       ff 20*cmean
-   SET       df 2*ff
-   BOX       -ff   -ff   -ff   df   df   df
-   SELECT    face
-ATTRIBUTE capsGroup   $Farfield
-ATTRIBUTE capsMesh   $Farfield
-   STORE     box   0   0
-   RESTORE   box   0
-   RESTORE   OML   0
-   SUBTRACT  none   1   0
-PATEND
+UNION     0   0   0
 SELECT    body
 ATTRIBUTE capsAIM   $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM
 ATTRIBUTE capsMeshLength   1.0
-PATBEG    foo   ifzero(cfdOn,1,0)
-               PATBEG    find   2
-      SELECT    face   !rootFaces[1,find]
+PATBEG    find   2
+   SELECT    face   !rootFaces[1,find]
 ATTRIBUTE capsConstraint   $wingRoot
-   PATEND
-   PATBEG    eind   5
-      SELECT    edge   !rootEdges[1,eind]
+PATEND
+PATBEG    eind   5
+   SELECT    edge   !rootEdges[1,eind]
 ATTRIBUTE capsConstraint   $wingRoot
-   PATEND
-   PATBEG    nind   4
-      SELECT    node   !rootNodes[1,nind]
+PATEND
+PATBEG    nind   4
+   SELECT    node   !rootNodes[1,nind]
 ATTRIBUTE capsConstraint   $wingRoot
-   PATEND
-   PATBEG    find   4
-      SELECT    face   !bottomFaces[1,find]
+PATEND
+PATBEG    find   4
+   SELECT    face   !bottomFaces[1,find]
 ATTRIBUTE capsLoad   $bottomWing
-   PATEND
-PATEND
-PATBEG    foo   cfdOn
-               SELECT    face   10
-ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    edge   15
-ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    edge   20
-ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    node   11
-ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    node   12
-ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    face   9
-ATTRIBUTE capsLoad   $bottomWing
-PATEND
-PATBEG    foo   cfdOn
-   DUMP      cfd.egads   0   0   0
-PATEND
-PATBEG    foo   ifzero(cfdOn,1,0)
-   DUMP      wing.egads   0   0   0
 PATEND
 
 END

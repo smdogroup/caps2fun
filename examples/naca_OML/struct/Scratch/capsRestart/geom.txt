@@ -1,7 +1,6 @@
-17 0
+16 0
 nspar
 nrib
-cfdOn
 area
 aspect
 taper
