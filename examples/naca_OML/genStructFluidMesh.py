@@ -14,6 +14,7 @@ taper = 0.1
 caps = pyCAPS.Problem(problemName = "struct",
                     capsFile = "naca_OML.csm",
                     outLevel = 1)
+caps.geometry.despmtr["taper"] = taper
 wing = caps.geometry
 
 #initialize egads Aim
@@ -208,13 +209,16 @@ def run_pointwise(pointwise):
 #-------------------Start fluid capsProblem------------------------------------------#
 
 filename = os.path.join("cfd.egads")
-caps = pyCAPS.Problem(problemName = "fluid",
+caps2 = pyCAPS.Problem(problemName = "fluid",
                     capsFile = filename,
                     outLevel = 1)
 
+caps2.geometry.despmtr["taper"] = taper
+
 # Create pointwise aim
-pointwise = caps.analysis.create(aim = "pointwiseAIM",
+pointwise = caps2.analysis.create(aim = "pointwiseAIM",
                                     name = "pointwise")
+
 
 #pointwise.geometry.cfgpmtr["cfdOn"].value = 1
 
