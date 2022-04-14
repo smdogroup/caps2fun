@@ -3,7 +3,7 @@
 # Constant, Design, and Output Parameters:
 CFGPMTR   nspar       1.00000
 CFGPMTR   nrib       1.00000
-CFGPMTR   cfdOn       1.00000
+CFGPMTR   cfdOn       0.00000
 DESPMTR   area      40.00000
 DESPMTR   aspect       6.00000
 DESPMTR   taper       0.50000
@@ -67,9 +67,11 @@ ATTRIBUTE capsGroup   !$rib
       PATEND
    PATEND
    RESTORE   OML   0
-   INTERSECT none   1   0
-   RESTORE   OML   0
-   HOLLOW    0   0   0
+   PATBEG    foo   ifzero(cfdOn,1,0)
+      INTERSECT none   1   0
+      RESTORE   OML   0
+      HOLLOW    0   0   0
+   PATEND
 PATEND
 SELECT    face
 ATTRIBUTE capsGroup   $OML
@@ -110,17 +112,17 @@ ATTRIBUTE capsLoad   $bottomWing
    PATEND
 PATEND
 PATBEG    foo   cfdOn
-               SELECT    face   5
+               SELECT    face   10
 ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    edge   3
+   SELECT    edge   15
 ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    edge   7
+   SELECT    edge   20
 ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    node   3
+   SELECT    node   11
 ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    node   4
+   SELECT    node   12
 ATTRIBUTE capsConstraint   $wingRoot
-   SELECT    face   2
+   SELECT    face   9
 ATTRIBUTE capsLoad   $bottomWing
 PATEND
 PATBEG    foo   cfdOn

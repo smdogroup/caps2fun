@@ -6,7 +6,7 @@
 #configuration parameters
 cfgpmtr  nspar  1  -
 cfgpmtr  nrib  1  -
-cfgpmtr cfdOn 1 -
+cfgpmtr cfdOn 0 -
 
 #default design parameters
 despmtr  area  40  len^2
