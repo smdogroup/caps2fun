@@ -6,7 +6,7 @@ from tacs import functions
 
 ##--------set design parameters------##
 #taper = 0.5
-isHPC = False
+isHPC = True
 
 ##--------struct mesh----------------##
 
@@ -189,6 +189,9 @@ builtStruct = True
 
 
 ##-----------------Fluid Mesh-------------------------##
+#load pointwise if on HPC
+if (isHPC): os.system("module load pointwise/18.5R1")
+
 #save cfd egads version for fluid mesh to read next
 
 def run_pointwise(pointwise):
@@ -201,10 +204,7 @@ def run_pointwise(pointwise):
 
     CAPS_GLYPH = os.environ["CAPS_GLYPH"]
     for i in range(1):
-        if (isHPC):
-            os.system("vglrun pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")        
-        else:
-            os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
+         os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
 
         #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
     
@@ -259,8 +259,8 @@ pointwise.input.Block_TRexType = "TetPyramid"
 # Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
 viscousWall  = {"boundaryLayerSpacing" : 0.001}
 pointwise.input.Mesh_Sizing = {"OML": viscousWall,
-        "Farfield": {"bcType":"farfield"},
-        "Symmetry" : {"bcType" : "symmetry"}}
+        "Farfield": {"bcType":"Farfield"},
+        "Symmetry" : {"bcType" : "SymmetryY"}}
 
 # Execute pointwise
 run_pointwise(pointwise)
@@ -269,8 +269,7 @@ run_pointwise(pointwise)
 builtFluid = True
 
 #copy files from pointwise analysis dir to meshDir
-os.system("cp " + pointwise.analysisDir + "/*.ugrid ./mesh/")
-os.system("cp " + pointwise.analysisDir + "/*.mapbc ./mesh/") 
+os.system("cp " + pointwise.analysisDir + "/*.ugrid ./mesh/") 
 
 ##---------------Feedback------------##
 if (builtStruct): print("Built structural mesh!")
