@@ -1,2 +1,2 @@
 1
-50 1 pointwise
+12 4 egadsTess

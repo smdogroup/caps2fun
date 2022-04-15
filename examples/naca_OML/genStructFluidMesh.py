@@ -6,6 +6,7 @@ from tacs import functions
 
 ##--------set design parameters------##
 taper = 1.0
+isHPC = True
 
 ##--------struct mesh----------------##
 
@@ -194,7 +195,10 @@ def run_pointwise(pointwise):
 
     CAPS_GLYPH = os.environ["CAPS_GLYPH"]
     for i in range(1):
-        os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
+        if (isHPC):
+            os.system("vglrun pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")        
+        else:
+            os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
 
         #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
     
