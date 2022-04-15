@@ -1,3 +1,2 @@
-open|naca_OML_fluid.csm|
-build|0|
-fluid.csm|
+getFilenames|
+getCsmFile|naca_OML.csm|

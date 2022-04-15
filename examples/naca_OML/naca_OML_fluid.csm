@@ -64,6 +64,6 @@ subtract
 
 #capsAIM attribute
 select body
-	attribute capsAIM $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM
+	attribute capsAIM $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM
 	attribute capsMeshLength 1.0
 #restore wing

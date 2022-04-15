@@ -1,11 +1,7 @@
 #------------------------------------------------------------------------------#
 
-# Import pyCAPS module
 import pyCAPS
-
-# Import os module
 import os
-
 # f90nml is used to write fun3d inputs not available in the aim
 import f90nml
 
