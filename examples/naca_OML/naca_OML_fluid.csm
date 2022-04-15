@@ -11,7 +11,7 @@ cfgpmtr  nrib  1  -
 despmtr  area  15  len^2
 despmtr  aspect  6.0  -
 despmtr  taper  0.5  -
-despmtr  ctwist  5.0  deg
+despmtr  ctwist  0.0  deg
 despmtr  lesweep  30.0 deg
 despmtr  dihedral 5.0  deg
 despmtr tc0 0.1
@@ -51,7 +51,7 @@ store OML
 set ff 20*cmean
 set df 2*ff
 #farfield
-box -ff -ff -ff df df df
+box -ff -ff 0 df df -ff
 select face
    attribute capsGroup $Farfield
    attribute capsMesh $Farfield
@@ -61,7 +61,9 @@ restore box
 restore OML
 subtract
 
-
+select face 3
+	attribute capsGroup $Symmetry
+	attribute capsMesh $Symmetry
 #capsAIM attribute
 select body
 	attribute capsAIM $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM

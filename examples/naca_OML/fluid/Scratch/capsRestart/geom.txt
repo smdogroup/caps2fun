@@ -1,7 +1,6 @@
-17 0
+12 0
 nspar
 nrib
-cfdOn
 area
 aspect
 taper
@@ -12,7 +11,3 @@ tc0
 tcf
 camb0
 cambf
-rootFaces
-rootEdges
-bottomFaces
-rootNodes

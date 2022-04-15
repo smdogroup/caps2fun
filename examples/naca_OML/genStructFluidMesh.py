@@ -1,12 +1,12 @@
-import os
+import os, shutil
 import pyCAPS
 from mpi4py import MPI
 from tacs.pytacs import pyTACS
 from tacs import functions
 
 ##--------set design parameters------##
-taper = 1.0
-isHPC = True
+#taper = 0.5
+isHPC = False
 
 ##--------struct mesh----------------##
 
@@ -15,7 +15,7 @@ isHPC = True
 caps = pyCAPS.Problem(problemName = "struct",
                     capsFile = "naca_OML_struct.csm",
                     outLevel = 1)
-caps.geometry.despmtr["taper"].value = taper
+#caps.geometry.despmtr["taper"].value = taper
 
 #initialize egads Aim
 egadsAim = caps.analysis.create(aim="egadsTessAIM")
@@ -171,6 +171,10 @@ for caseID in SPs:
     SPs[caseID].addFunction('wing_mass', functions.StructuralMass)
     SPs[caseID].addFunction('ks_vmfailure', functions.KSFailure, safetyFactor=1.5, ksWeight=1000.0)
     #SPs[caseID].addFunction('compliance', functions.Compliance)
+
+curDir = os.getcwd()
+meshDir = os.path.join(curDir, "mesh")
+
 # Solve each structural problem and write solutions
 func = {}; sens = {}
 for caseID in SPs:
@@ -179,8 +183,10 @@ for caseID in SPs:
     SPs[caseID].evalFunctions(func,evalFuncs=evalFuncs)
     SPs[caseID].evalFunctionsSens(sens,evalFuncs=evalFuncs)
     SPs[caseID].writeSolution(outputDir=tacsAim.analysisDir)
+    SPs[caseID].writeSolution(outputDir=meshDir)
 
 builtStruct = True
+
 
 ##-----------------Fluid Mesh-------------------------##
 #save cfd egads version for fluid mesh to read next
@@ -214,10 +220,7 @@ caps2 = pyCAPS.Problem(problemName = "fluid",
                     outLevel = 1)
 
 #update despmtr
-caps2.geometry.despmtr["taper"].value = taper
-
-#no need to change here since it reads from egads
-#caps2.geometry.despmtr["taper"] = taper
+#caps2.geometry.despmtr["taper"].value = taper
 
 # Create pointwise aim
 pointwise = caps2.analysis.create(aim = "pointwiseAIM",
@@ -256,13 +259,18 @@ pointwise.input.Block_TRexType = "TetPyramid"
 # Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
 viscousWall  = {"boundaryLayerSpacing" : 0.001}
 pointwise.input.Mesh_Sizing = {"OML": viscousWall,
-        "Farfield": {"bcType":"farfield"}}
+        "Farfield": {"bcType":"farfield"},
+        "Symmetry" : {"bcType" : "symmetry"}}
 
 # Execute pointwise
 run_pointwise(pointwise)
 
 #ran fluid mesh boolean
 builtFluid = True
+
+#copy files from pointwise analysis dir to meshDir
+os.system("cp " + pointwise.analysisDir + "/*.ugrid ./mesh/")
+os.system("cp " + pointwise.analysisDir + "/*.mapbc ./mesh/") 
 
 ##---------------Feedback------------##
 if (builtStruct): print("Built structural mesh!")
