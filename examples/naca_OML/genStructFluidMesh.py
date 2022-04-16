@@ -190,7 +190,7 @@ builtStruct = True
 
 ##-----------------Fluid Mesh-------------------------##
 #load pointwise if on HPC
-if (isHPC): os.system("module load pointwise/18.5R1")
+#module load pointwise/18.5R1
 
 #save cfd egads version for fluid mesh to read next
 
