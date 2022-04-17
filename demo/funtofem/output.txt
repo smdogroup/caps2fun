@@ -1,0 +1,1953 @@
+FUN3D 13.6-c04c9a5 Flow started 04/15/2022 at 20:34:26 with 192 processes
+Contents of fun3d.nml file below------------------------
+ &project
+    project_rootname = "caps.GeomToMesh"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .true.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 100
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = -1
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to ='vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ loading design ...
+ Preparing to read binary AFLR3 grid: caps.GeomToMesh.lb8.ugrid
+ 
+  nnodes              725294
+  ntface,nqface       124112 0
+  ntet,npyr,nprz,nhex 4232729 0 0 0
+ 
+ Swapping y- and z-points and preserving right-handedness.
+ ...y(new) = -z(input)
+ ...z(new) = +y(input)
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.66412992E-11,  0.20072378E+02,  170.943140613
+cell statistics:  all,  0.66412992E-11,  0.20072378E+02,  170.943140613
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               20508052  Bytes
+     ... edgeCut       450945
+     ... Constructing partition node sets for level-0...               4232729 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to caps.GeomToMesh.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    360.14    360.14
+ Grid Motion Type 
+   rigid+deform
+ 
+  NOTE: kappa_umuscl set by grid: .00
+ 
+ Grid read complete
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  Repaired 71 nodes of symmetry plane 6662, max deviation: 0.355E-14
+  y-symmetry metrics modified/examined: 41708/41768
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Computing distance function:
+ Boundary 3 allowed to deform with y=constant constraint
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ Done.
+[0] Creating TACSAssembler with numOwnedNodes = 1268 numElements = 1318
+[0] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 5.40, nnz(ILU) = 63168
+Transfer scheme [0]: Creating scheme of type MELD...
+Transfer scheme [1]: Creating scheme of type MELDThermal...
+FUN3D 13.6-c04c9a5 Flow started 04/15/2022 at 20:34:36 with 192 processes
+Contents of fun3d.nml file below------------------------
+ &project
+    project_rootname = "caps.GeomToMesh"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .true.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 100
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = -1
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to ='vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ loading design ...
+ Preparing to read binary AFLR3 grid: caps.GeomToMesh.lb8.ugrid
+ 
+  nnodes              725294
+  ntface,nqface       124112 0
+  ntet,npyr,nprz,nhex 4232729 0 0 0
+ 
+ Swapping y- and z-points and preserving right-handedness.
+ ...y(new) = -z(input)
+ ...z(new) = +y(input)
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.66412992E-11,  0.20072378E+02,  170.943140613
+cell statistics:  all,  0.66412992E-11,  0.20072378E+02,  170.943140613
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               20508052  Bytes
+     ... edgeCut       450945
+     ... Constructing partition node sets for level-0...               4232729 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to caps.GeomToMesh.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    526.43    526.43
+  NOTE: kappa_umuscl set by grid: .00
+ 
+ Grid read complete
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  Repaired 71 nodes of symmetry plane 6662, max deviation: 0.355E-14
+  y-symmetry metrics modified/examined: 41708/41768
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Recomputing distance function:
+ Boundary 3 allowed to deform with y=constant constraint
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ 
+ Begin Mesh Movement, Time Step 1   (Current Step 1)
+ Solving linear elasticity equations for mesh deformation
+   Info: initial call to elasticity solver
+     Elasticity model: (1/distance)**1.0
+     Linear solver: gmres
+     Left preconditioner: point-multicolor  Preconditioner iterations: 5
+     Initial values for solution taken as zero
+     Convergence tolerances: tol_rel = 0.10000000E-09 tol_abs = 0.10000000E-13
+   Elasticity Convergence:
+     Search direction     1  residual =  0.11158208E-11   relative_residual =  0.10000000E+01
+     Search direction    10  residual =  0.98320662E-14   relative_residual =  0.88115097E-02
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10000000E-13
+ Iter            density_RMS  density_MAX   X-location   Y-location   Z-location
+    1  0.141427819902516E-04  0.81874E-03  0.20854E+01  0.23128E+01  0.27501E+00
+       Lift  0.804130668644925E+00         Drag  0.896251116269866E+00
+ 
+ Begin Mesh Movement, Time Step 2   (Current Step 2)
+ Solving linear elasticity equations for mesh deformation
+   Info: restarting elasticity solver
+     Initial values for solution taken as final values from previous step
+   Elasticity Convergence:
+     Search direction     1  residual =  0.49539487E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19149128E-08   relative_residual =  0.38654272E-05
+     Search direction    98  residual =  0.56209210E-13   relative_residual =  0.11346345E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.59539487E-13
+    2  0.856773486365727E-05  0.33433E-03  0.20854E+01  0.23128E+01  0.27501E+00
+       Lift  0.103128712687578E+01         Drag  0.145542110741495E+01
+ 
+ Begin Mesh Movement, Time Step 3   (Current Step 3)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16242713E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.61561490E-09   relative_residual =  0.37900989E-05
+     Search direction    97  residual =  0.23063348E-13   relative_residual =  0.14199196E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.26242713E-13
+    3  0.565420653647342E-05  0.16760E-03  0.19807E+01  0.21575E+01  0.26673E+00
+       Lift  0.997727486205640E+00         Drag  0.160247304479114E+01
+ 
+ Begin Mesh Movement, Time Step 4   (Current Step 4)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.63794765E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.24584658E-06   relative_residual =  0.38537108E-05
+     Search direction    99  residual =  0.55065179E-11   relative_residual =  0.86316141E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.63894765E-11
+    4  0.488382879982949E-05  0.12379E-03  0.20856E+01  0.23124E+01  0.27902E+00
+       Lift  0.944159022984317E+00         Drag  0.151124608683126E+01
+ 
+ Begin Mesh Movement, Time Step 5   (Current Step 5)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.68332372E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.26316855E-06   relative_residual =  0.38513012E-05
+     Search direction    99  residual =  0.58951754E-11   relative_residual =  0.86272073E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.68432372E-11
+    5  0.445538733518705E-05  0.99422E-04  0.20858E+01  0.23119E+01  0.28404E+00
+       Lift  0.937508331733668E+00         Drag  0.140045455210309E+01
+ 
+ Begin Mesh Movement, Time Step 6   (Current Step 6)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.26466325E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.10194885E-07   relative_residual =  0.38520215E-05
+     Search direction    99  residual =  0.23782243E-12   relative_residual =  0.89858501E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.27466325E-12
+    6  0.423135499519391E-05  0.82523E-04  0.20862E+01  0.23110E+01  0.29253E+00
+       Lift  0.946974748850375E+00         Drag  0.130623883919407E+01
+ 
+ Begin Mesh Movement, Time Step 7   (Current Step 7)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.13597869E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.40934249E-08   relative_residual =  0.30103429E-05
+     Search direction    98  residual =  0.12264996E-12   relative_residual =  0.90197927E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14597869E-12
+    7  0.416474116377345E-05  0.75831E-04  0.12906E+01  0.22639E+01  0.16933E+00
+       Lift  0.948965878530654E+00         Drag  0.120249137660486E+01
+ 
+ Begin Mesh Movement, Time Step 8   (Current Step 8)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.12895070E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.62795569E-10   relative_residual =  0.48697347E-05
+     Search direction    89  residual =  0.92654138E-14   relative_residual =  0.71852374E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11289507E-13
+    8  0.417903367220108E-05  0.78729E-04  0.12787E+01  0.22701E+01  0.17653E+00
+       Lift  0.941844834126083E+00         Drag  0.107977813213029E+01
+ 
+ Begin Mesh Movement, Time Step 9   (Current Step 9)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16566705E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.54288227E-10   relative_residual =  0.32769477E-05
+     Search direction    90  residual =  0.99835832E-14   relative_residual =  0.60262937E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11656671E-13
+    9  0.426776499987217E-05  0.77759E-04  0.13616E+01  0.22401E+01 -0.21601E-01
+       Lift  0.930138482457092E+00         Drag  0.943741387275381E+00
+ 
+ Begin Mesh Movement, Time Step 10   (Current Step 10)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.19792795E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.56948082E-10   relative_residual =  0.28772127E-05
+     Search direction    91  residual =  0.93537036E-14   relative_residual =  0.47258124E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11979279E-13
+   10  0.444661717930494E-05  0.10570E-03  0.15922E+01  0.30320E+01 -0.10614E+00
+       Lift  0.914395019644927E+00         Drag  0.801614962271147E+00
+ 
+ Begin Mesh Movement, Time Step 11   (Current Step 11)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.23106404E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.69615496E-10   relative_residual =  0.30128227E-05
+     Search direction    86  residual =  0.11086217E-13   relative_residual =  0.47978983E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12310640E-13
+   11  0.474669042965716E-05  0.13675E-03  0.97025E+00  0.21334E+01  0.63894E+00
+       Lift  0.892369286619553E+00         Drag  0.658824534415748E+00
+ 
+ Begin Mesh Movement, Time Step 12   (Current Step 12)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.27834901E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.93774830E-10   relative_residual =  0.33689659E-05
+     Search direction    93  residual =  0.10520551E-13   relative_residual =  0.37796257E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12783490E-13
+   12  0.516631927312357E-05  0.16508E-03  0.97025E+00  0.21334E+01  0.63894E+00
+       Lift  0.861459138870135E+00         Drag  0.520009053747526E+00
+ 
+ Begin Mesh Movement, Time Step 13   (Current Step 13)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.34012765E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.12321816E-09   relative_residual =  0.36227034E-05
+     Search direction    94  residual =  0.10950607E-13   relative_residual =  0.32195580E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.13401277E-13
+   13  0.563981542392667E-05  0.15057E-03  0.97025E+00  0.21334E+01  0.63894E+00
+       Lift  0.819633302598408E+00         Drag  0.389597558867731E+00
+ 
+ Begin Mesh Movement, Time Step 14   (Current Step 14)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.40877283E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.15261571E-09   relative_residual =  0.37335091E-05
+     Search direction    94  residual =  0.13541903E-13   relative_residual =  0.33128189E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14087728E-13
+   14  0.607817205736090E-05  0.16233E-03  0.32293E+00  0.20092E+01 -0.52011E+00
+       Lift  0.765970369770889E+00         Drag  0.271634320462005E+00
+ 
+ Begin Mesh Movement, Time Step 15   (Current Step 15)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.47332504E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.17851973E-09   relative_residual =  0.37716097E-05
+     Search direction    95  residual =  0.12152039E-13   relative_residual =  0.25673771E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14733250E-13
+   15  0.645635074314953E-05  0.18441E-03  0.33105E+00  0.34492E+01 -0.14952E+01
+       Lift  0.701668996338780E+00         Drag  0.169794669183192E+00
+ 
+ Begin Mesh Movement, Time Step 16   (Current Step 16)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.51911636E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19628476E-09   relative_residual =  0.37811321E-05
+     Search direction    95  residual =  0.13403504E-13   relative_residual =  0.25819845E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.15191164E-13
+   16  0.673035286830145E-05  0.20500E-03  0.33105E+00  0.34492E+01 -0.14952E+01
+       Lift  0.629323409103448E+00         Drag  0.874601816960692E-01
+ 
+ Begin Mesh Movement, Time Step 17   (Current Step 17)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.54093514E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.20461267E-09   relative_residual =  0.37825731E-05
+     Search direction    95  residual =  0.13994007E-13   relative_residual =  0.25870027E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.15409351E-13
+   17  0.701854735300725E-05  0.18011E-03  0.33105E+00  0.34492E+01 -0.14952E+01
+       Lift  0.555730507644925E+00         Drag  0.267861867100993E-01
+ 
+ Begin Mesh Movement, Time Step 18   (Current Step 18)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.52611555E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19882366E-09   relative_residual =  0.37790873E-05
+     Search direction    95  residual =  0.13600402E-13   relative_residual =  0.25850598E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.15261155E-13
+   18  0.730813109786630E-05  0.17919E-03  0.97025E+00  0.21334E+01  0.63894E+00
+       Lift  0.487075612275877E+00         Drag -0.119103355334220E-01
+ 
+ Begin Mesh Movement, Time Step 19   (Current Step 19)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.47952757E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.18110356E-09   relative_residual =  0.37767079E-05
+     Search direction    95  residual =  0.12357788E-13   relative_residual =  0.25770756E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14795276E-13
+   19  0.757316950128070E-05  0.17451E-03  0.10282E+01  0.21700E+01 -0.17170E+01
+       Lift  0.429294645840148E+00         Drag -0.309392325797552E-01
+ 
+ Begin Mesh Movement, Time Step 20   (Current Step 20)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.40741275E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.15383872E-09   relative_residual =  0.37759919E-05
+     Search direction    94  residual =  0.13507655E-13   relative_residual =  0.33154719E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14074128E-13
+   20  0.778993420616107E-05  0.20390E-03  0.12302E+01  0.30619E+01 -0.19454E+01
+       Lift  0.386695947381975E+00         Drag -0.355821960868486E-01
+ 
+ Begin Mesh Movement, Time Step 21   (Current Step 21)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.32052506E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.12111269E-09   relative_residual =  0.37785715E-05
+     Search direction    94  residual =  0.10523641E-13   relative_residual =  0.32832505E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.13205251E-13
+   21  0.799302163832921E-05  0.22048E-03  0.65902E+00  0.36212E+01 -0.10439E+01
+       Lift  0.361024485401880E+00         Drag -0.331091590519948E-01
+ 
+ Begin Mesh Movement, Time Step 22   (Current Step 22)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.22835139E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.86433148E-10   relative_residual =  0.37850939E-05
+     Search direction    92  residual =  0.12047622E-13   relative_residual =  0.52759137E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12283514E-13
+   22  0.826611276479627E-05  0.25335E-03  0.33104E+00  0.34492E+01 -0.14952E+01
+       Lift  0.352163049522899E+00         Drag -0.308118170437794E-01
+ 
+ Begin Mesh Movement, Time Step 23   (Current Step 23)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.13397232E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.50698483E-10   relative_residual =  0.37842504E-05
+     Search direction    90  residual =  0.11162035E-13   relative_residual =  0.83315976E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11339723E-13
+   23  0.863318944146232E-05  0.24291E-03  0.33104E+00  0.34492E+01 -0.14952E+01
+       Lift  0.358285502509813E+00         Drag -0.337853154652340E-01
+ 
+ Begin Mesh Movement, Time Step 24   (Current Step 24)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.19288451E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.72447306E-08   relative_residual =  0.37559939E-05
+     Search direction    99  residual =  0.16554017E-12   relative_residual =  0.85823464E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.20288451E-12
+   24  0.899155387517102E-05  0.25170E-03 -0.56204E+00  0.50035E+01 -0.27966E+01
+       Lift  0.377070278830719E+00         Drag -0.435831639957866E-01
+ 
+ Begin Mesh Movement, Time Step 25   (Current Step 25)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.28623734E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.10740430E-06   relative_residual =  0.37522814E-05
+     Search direction    99  residual =  0.24461191E-11   relative_residual =  0.85457722E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.28723734E-11
+   25  0.921461347335905E-05  0.25294E-03 -0.19253E+01  0.77833E+01 -0.56377E+01
+       Lift  0.405940967164288E+00         Drag -0.578924504409938E-01
+ 
+ Begin Mesh Movement, Time Step 26   (Current Step 26)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.13392800E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.50473809E-07   relative_residual =  0.37687270E-05
+     Search direction    99  residual =  0.11713054E-11   relative_residual =  0.87457839E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.13492800E-11
+   26  0.930683199885242E-05  0.27255E-03 -0.59569E+01  0.10212E+02 -0.22497E+01
+       Lift  0.440182902239440E+00         Drag -0.719564528700148E-01
+ 
+ Begin Mesh Movement, Time Step 27   (Current Step 27)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.18420606E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.69189000E-07   relative_residual =  0.37560653E-05
+     Search direction    99  residual =  0.15787946E-11   relative_residual =  0.85708068E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.18520606E-11
+   27  0.937861937589239E-05  0.31009E-03 -0.59569E+01  0.10212E+02 -0.22497E+01
+       Lift  0.476000345620239E+00         Drag -0.804186985315813E-01
+ 
+ Begin Mesh Movement, Time Step 28   (Current Step 28)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.10830843E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.45129207E-08   relative_residual =  0.41667310E-05
+     Search direction    98  residual =  0.11542950E-12   relative_residual =  0.10657481E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11830843E-12
+   28  0.945993370333094E-05  0.31011E-03 -0.68546E+01  0.15009E+02  0.12538E+02
+       Lift  0.510906699707927E+00         Drag -0.794592690649075E-01
+ 
+ Begin Mesh Movement, Time Step 29   (Current Step 29)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.30891100E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11603518E-09   relative_residual =  0.37562656E-05
+     Search direction    94  residual =  0.10252607E-13   relative_residual =  0.33189518E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.13089110E-13
+   29  0.945264541981393E-05  0.30018E-03 -0.68546E+01  0.15009E+02  0.12538E+02
+       Lift  0.542677891988936E+00         Drag -0.678938788395357E-01
+ 
+ Begin Mesh Movement, Time Step 30   (Current Step 30)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.29733776E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11232310E-09   relative_residual =  0.37776266E-05
+     Search direction    93  residual =  0.12734280E-13   relative_residual =  0.42827658E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12973378E-13
+   30  0.924612219841857E-05  0.29197E-03 -0.94273E+01  0.19053E+02  0.12779E+02
+       Lift  0.570227153934924E+00         Drag -0.473748089169011E-01
+ 
+ Begin Mesh Movement, Time Step 31   (Current Step 31)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.25545681E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.97255188E-10   relative_residual =  0.38071089E-05
+     Search direction    93  residual =  0.10937996E-13   relative_residual =  0.42817397E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12554568E-13
+   31  0.887915207645321E-05  0.26547E-03 -0.94273E+01  0.19053E+02  0.12779E+02
+       Lift  0.592868372809313E+00         Drag -0.215405717119327E-01
+ 
+ Begin Mesh Movement, Time Step 32   (Current Step 32)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.19536809E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.75111948E-10   relative_residual =  0.38446375E-05
+     Search direction    92  residual =  0.10380204E-13   relative_residual =  0.53131522E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11953681E-13
+   32  0.851905926692407E-05  0.22860E-03 -0.28042E+02  0.15680E+02 -0.15286E+02
+       Lift  0.609816369283791E+00         Drag  0.515692364152845E-02
+ 
+ Begin Mesh Movement, Time Step 33   (Current Step 33)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.12835514E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.49783595E-10   relative_residual =  0.38785822E-05
+     Search direction    90  residual =  0.10223273E-13   relative_residual =  0.79648333E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11283551E-13
+   33  0.826106620099886E-05  0.23262E-03 -0.31623E+02  0.57594E+01 -0.73978E+01
+       Lift  0.619901105679639E+00         Drag  0.287069454179203E-01
+ 
+ Begin Mesh Movement, Time Step 34   (Current Step 34)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.65132929E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.23197105E-10   relative_residual =  0.35615018E-05
+     Search direction    87  residual =  0.95984623E-14   relative_residual =  0.14736728E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10651329E-13
+   34  0.808336832443577E-05  0.26109E-03 -0.31623E+02  0.26789E+01  0.34570E+01
+       Lift  0.622145458740996E+00         Drag  0.463716654598733E-01
+ 
+ Begin Mesh Movement, Time Step 35   (Current Step 35)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.11460829E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.43799796E-08   relative_residual =  0.38216954E-05
+     Search direction    99  residual =  0.10312522E-12   relative_residual =  0.89980596E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12460829E-12
+   35  0.788113692285044E-05  0.27897E-03 -0.49972E+01  0.11000E+02 -0.94817E+01
+       Lift  0.616387999986091E+00         Drag  0.570900897551169E-01
+ 
+ Begin Mesh Movement, Time Step 36   (Current Step 36)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.64568777E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.24770228E-07   relative_residual =  0.38362549E-05
+     Search direction    99  residual =  0.57745771E-12   relative_residual =  0.89432965E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.65568777E-12
+   36  0.759235053505313E-05  0.28765E-03 -0.68546E+01  0.15009E+02  0.12538E+02
+       Lift  0.603933722961437E+00         Drag  0.611924455910580E-01
+ 
+ Begin Mesh Movement, Time Step 37   (Current Step 37)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.33481436E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.12695319E-07   relative_residual =  0.37917487E-05
+     Search direction    99  residual =  0.30466350E-12   relative_residual =  0.90994754E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.34481436E-12
+   37  0.720711498191563E-05  0.25015E-03 -0.94273E+01  0.19053E+02  0.12779E+02
+       Lift  0.587975674212351E+00         Drag  0.601809561846155E-01
+ 
+ Begin Mesh Movement, Time Step 38   (Current Step 38)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.47112333E-02   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.18097855E-07   relative_residual =  0.38414262E-05
+     Search direction    99  residual =  0.42065451E-12   relative_residual =  0.89287555E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.48112333E-12
+   38  0.674571935625202E-05  0.25022E-03 -0.94273E+01  0.19053E+02  0.12779E+02
+       Lift  0.572368693468414E+00         Drag  0.559755785355392E-01
+ 
+ Begin Mesh Movement, Time Step 39   (Current Step 39)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.32521177E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11601356E-08   relative_residual =  0.35673236E-05
+     Search direction    93  residual =  0.35393014E-13   relative_residual =  0.10883067E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.42521177E-13
+   39  0.625451587081181E-05  0.20828E-03 -0.94273E+01  0.19053E+02  0.12779E+02
+       Lift  0.560386031152060E+00         Drag  0.505261410200940E-01
+ 
+ Begin Mesh Movement, Time Step 40   (Current Step 40)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.86738114E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.33173217E-10   relative_residual =  0.38245260E-05
+     Search direction    89  residual =  0.98084143E-14   relative_residual =  0.11308079E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10867381E-13
+   40  0.575152303854808E-05  0.26613E-03 -0.28042E+02  0.15680E+02 -0.15286E+02
+       Lift  0.554425065425686E+00         Drag  0.454030800177442E-01
+ 
+ Begin Mesh Movement, Time Step 41   (Current Step 41)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.59265871E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.23070961E-10   relative_residual =  0.38927903E-05
+     Search direction    88  residual =  0.84231644E-14   relative_residual =  0.14212504E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10592659E-13
+   41  0.518929094660386E-05  0.24214E-03 -0.31623E+02  0.26789E+01  0.34570E+01
+       Lift  0.555193293501349E+00         Drag  0.416361122183659E-01
+ 
+ Begin Mesh Movement, Time Step 42   (Current Step 42)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.24603956E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.99415770E-11   relative_residual =  0.40406416E-05
+     Search direction    84  residual =  0.98639507E-14   relative_residual =  0.40090913E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10246040E-13
+   42  0.465298456346921E-05  0.20722E-03 -0.31623E+02  0.56911E+01 -0.11601E+01
+       Lift  0.562111053819650E+00         Drag  0.396169643989603E-01
+ 
+ Begin Mesh Movement, Time Step 43   (Current Step 43)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.10584358E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.41005760E-09   relative_residual =  0.38741849E-05
+     Search direction    97  residual =  0.15935641E-13   relative_residual =  0.15055840E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.20584358E-13
+   43  0.418896249894428E-05  0.19453E-03  0.27048E+02  0.18899E+01 -0.32973E+01
+       Lift  0.573681151238344E+00         Drag  0.392106925503822E-01
+ 
+ Begin Mesh Movement, Time Step 44   (Current Step 44)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.21377616E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.84204666E-09   relative_residual =  0.39389175E-05
+     Search direction    98  residual =  0.24614167E-13   relative_residual =  0.11513991E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.31377616E-13
+   44  0.382860539508111E-05  0.20815E-03  0.29427E+02  0.10691E+02 -0.32585E+00
+       Lift  0.588057023539835E+00         Drag  0.397835574329432E-01
+ 
+ Begin Mesh Movement, Time Step 45   (Current Step 45)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.51164653E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19300347E-09   relative_residual =  0.37722032E-05
+     Search direction    95  residual =  0.12085867E-13   relative_residual =  0.23621517E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.15116465E-13
+   45  0.353218770177267E-05  0.16902E-03  0.27215E+02  0.72652E+01  0.20608E+01
+       Lift  0.603249866824612E+00         Drag  0.403655561587831E-01
+ 
+ Begin Mesh Movement, Time Step 46   (Current Step 46)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.30700462E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11949439E-08   relative_residual =  0.38922669E-05
+     Search direction    98  residual =  0.35707075E-13   relative_residual =  0.11630794E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.40700462E-13
+   46  0.323681817040508E-05  0.13136E-03  0.27215E+02  0.72652E+01  0.20608E+01
+       Lift  0.617381716847448E+00         Drag  0.398534110114871E-01
+ 
+ Begin Mesh Movement, Time Step 47   (Current Step 47)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.33979767E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.16588549E-09   relative_residual =  0.48818903E-05
+     Search direction    93  residual =  0.11912282E-13   relative_residual =  0.35056985E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.13397977E-13
+   47  0.291333270475607E-05  0.10514E-03  0.24510E+02  0.13454E+02 -0.18489E+00
+       Lift  0.628637882627981E+00         Drag  0.373313498712979E-01
+ 
+ Begin Mesh Movement, Time Step 48   (Current Step 48)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.48165033E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19224214E-10   relative_residual =  0.39913217E-05
+     Search direction    86  residual =  0.10263764E-13   relative_residual =  0.21309575E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10481650E-13
+   48  0.254122510240686E-05  0.13601E-03  0.27112E+02  0.70785E+01  0.59063E+01
+       Lift  0.635587271945947E+00         Drag  0.323269671776837E-01
+ 
+ Begin Mesh Movement, Time Step 49   (Current Step 49)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16193715E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.80356920E-11   relative_residual =  0.49622290E-05
+     Search direction    82  residual =  0.10069908E-13   relative_residual =  0.62184050E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10161937E-13
+   49  0.217330700680856E-05  0.14262E-03 -0.31623E+02  0.26903E+01 -0.27190E+01
+       Lift  0.637299921278296E+00         Drag  0.250546699102862E-01
+ 
+ Begin Mesh Movement, Time Step 50   (Current Step 50)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.30304466E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.93986762E-11   relative_residual =  0.31014162E-05
+     Search direction    84  residual =  0.96734541E-14   relative_residual =  0.31920886E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10303045E-13
+   50  0.185956454205728E-05  0.12205E-03  0.27112E+02  0.70785E+01  0.59063E+01
+       Lift  0.633814612527581E+00         Drag  0.164214336312697E-01
+ 
+ Begin Mesh Movement, Time Step 51   (Current Step 51)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.91354851E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.52921035E-10   relative_residual =  0.57929091E-05
+     Search direction    89  residual =  0.93253268E-14   relative_residual =  0.10207807E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10913549E-13
+   51  0.166019979493998E-05  0.12138E-03  0.27112E+02  0.70785E+01  0.59063E+01
+       Lift  0.626091185281925E+00         Drag  0.789515130639106E-02
+ 
+ Begin Mesh Movement, Time Step 52   (Current Step 52)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.25448676E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.80643049E-10   relative_residual =  0.31688505E-05
+     Search direction    92  residual =  0.10973724E-13   relative_residual =  0.43121001E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12544868E-13
+   52  0.154786087933675E-05  0.12682E-03  0.27112E+02  0.70785E+01  0.59063E+01
+       Lift  0.615937542250871E+00         Drag  0.111954627673311E-02
+ 
+ Begin Mesh Movement, Time Step 53   (Current Step 53)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.20393469E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.80633149E-10   relative_residual =  0.39538712E-05
+     Search direction    92  residual =  0.10543088E-13   relative_residual =  0.51698356E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12039347E-13
+   53  0.149244563558279E-05  0.10115E-03  0.13856E+02  0.59466E+01  0.18348E+01
+       Lift  0.605467551919114E+00         Drag -0.245394944150754E-02
+ 
+ Begin Mesh Movement, Time Step 54   (Current Step 54)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.20612210E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.57928350E-10   relative_residual =  0.28103900E-05
+     Search direction    90  residual =  0.11529143E-13   relative_residual =  0.55933559E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12061221E-13
+   54  0.141354429310131E-05  0.99924E-04  0.13856E+02  0.59466E+01  0.18348E+01
+       Lift  0.596646328728418E+00         Drag -0.193355660403543E-02
+ 
+ Begin Mesh Movement, Time Step 55   (Current Step 55)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.30639049E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.12485400E-10   relative_residual =  0.40749961E-05
+     Search direction    84  residual =  0.87940229E-14   relative_residual =  0.28702011E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10306390E-13
+   55  0.128946244876974E-05  0.86852E-04  0.13014E+02  0.47352E+01 -0.11790E+01
+       Lift  0.590879190776764E+00         Drag  0.270151395264788E-02
+ 
+ Begin Mesh Movement, Time Step 56   (Current Step 56)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.28750547E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.10523556E-09   relative_residual =  0.36602979E-05
+     Search direction    93  residual =  0.11428428E-13   relative_residual =  0.39750300E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12875055E-13
+   56  0.115567159603510E-05  0.66186E-04  0.24892E+02  0.93769E+01  0.19935E+01
+       Lift  0.588588796812629E+00         Drag  0.107985776335006E-01
+ 
+ Begin Mesh Movement, Time Step 57   (Current Step 57)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.10157247E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.37346757E-09   relative_residual =  0.36768582E-05
+     Search direction    96  residual =  0.18351281E-13   relative_residual =  0.18067180E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.20157247E-13
+   57  0.101589519937295E-05  0.73767E-04  0.29427E+02  0.10691E+02 -0.32585E+00
+       Lift  0.589703549829229E+00         Drag  0.207944710675715E-01
+ 
+ Begin Mesh Movement, Time Step 58   (Current Step 58)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.89913115E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.29934789E-10   relative_residual =  0.33293017E-05
+     Search direction    89  residual =  0.96409036E-14   relative_residual =  0.10722466E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10899131E-13
+   58  0.884704162714177E-06  0.87948E-04  0.26475E+02  0.89569E+01 -0.13807E+01
+       Lift  0.593577327440335E+00         Drag  0.310987518835933E-01
+ 
+ Begin Mesh Movement, Time Step 59   (Current Step 59)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16958827E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.62819373E-09   relative_residual =  0.37042286E-05
+     Search direction    97  residual =  0.23704323E-13   relative_residual =  0.13977572E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.26958827E-13
+   59  0.810779752159985E-06  0.63131E-04  0.29497E+02  0.57689E+01 -0.56216E+01
+       Lift  0.599245134008628E+00         Drag  0.397176342579453E-01
+ 
+ Begin Mesh Movement, Time Step 60   (Current Step 60)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.18874371E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.65706727E-10   relative_residual =  0.34812671E-05
+     Search direction    92  residual =  0.10408443E-13   relative_residual =  0.55145908E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11887437E-13
+   60  0.749869867412190E-06  0.48076E-04  0.26475E+02  0.89569E+01 -0.13807E+01
+       Lift  0.605845730597898E+00         Drag  0.453817907347136E-01
+ 
+ Begin Mesh Movement, Time Step 61   (Current Step 61)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.49363049E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19049972E-10   relative_residual =  0.38591563E-05
+     Search direction    87  residual =  0.87693758E-14   relative_residual =  0.17765061E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10493630E-13
+   61  0.716036235838009E-06  0.76915E-04  0.24510E+02  0.13454E+02 -0.18489E+00
+       Lift  0.612373884440743E+00         Drag  0.470951179963763E-01
+ 
+ Begin Mesh Movement, Time Step 62   (Current Step 62)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.21847327E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.90064856E-11   relative_residual =  0.41224657E-05
+     Search direction    82  residual =  0.95847434E-14   relative_residual =  0.43871470E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10218473E-13
+   62  0.695452505109817E-06  0.65015E-04  0.16504E+02  0.82641E+01  0.54300E+00
+       Lift  0.618249307864257E+00         Drag  0.448215207918558E-01
+ 
+ Begin Mesh Movement, Time Step 63   (Current Step 63)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.12068826E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.61877567E-11   relative_residual =  0.51270576E-05
+     Search direction    76  residual =  0.88812417E-14   relative_residual =  0.73588281E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10120688E-13
+   63  0.665972346800601E-06  0.53950E-04  0.12854E+02  0.84981E+01  0.66057E+01
+       Lift  0.622797679597153E+00         Drag  0.392031226817836E-01
+ 
+ Begin Mesh Movement, Time Step 64   (Current Step 64)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.33106919E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.10570396E-10   relative_residual =  0.31928057E-05
+     Search direction    85  residual =  0.88235739E-14   relative_residual =  0.26651752E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10331069E-13
+   64  0.632514487172271E-06  0.51747E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.625851558488121E+00         Drag  0.313842274307272E-01
+ 
+ Begin Mesh Movement, Time Step 65   (Current Step 65)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.31811354E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.19429784E-10   relative_residual =  0.61078144E-05
+     Search direction    85  residual =  0.92290502E-14   relative_residual =  0.29011812E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10318114E-13
+   65  0.584191229658412E-06  0.63214E-04  0.25782E+02  0.70315E+01  0.69715E+01
+       Lift  0.627188139372974E+00         Drag  0.229976603650862E-01
+ 
+ Begin Mesh Movement, Time Step 66   (Current Step 66)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.80147180E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.30532662E-10   relative_residual =  0.38095741E-05
+     Search direction    87  residual =  0.97791798E-14   relative_residual =  0.12201527E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10801472E-13
+   66  0.532363636438334E-06  0.82183E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.626968402990448E+00         Drag  0.154310945613816E-01
+ 
+ Begin Mesh Movement, Time Step 67   (Current Step 67)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16997220E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.46370420E-10   relative_residual =  0.27281179E-05
+     Search direction    90  residual =  0.10036160E-13   relative_residual =  0.59045893E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11699722E-13
+   67  0.502120225485067E-06  0.80503E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.625357568014642E+00         Drag  0.100329668656789E-01
+ 
+ Begin Mesh Movement, Time Step 68   (Current Step 68)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.43766240E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11847171E-09   relative_residual =  0.27069201E-05
+     Search direction    92  residual =  0.14270152E-13   relative_residual =  0.32605388E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14376624E-13
+   68  0.478856617505586E-06  0.82776E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.622681332633468E+00         Drag  0.743669437351322E-02
+ 
+ Begin Mesh Movement, Time Step 69   (Current Step 69)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.14453675E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.37973853E-09   relative_residual =  0.26272802E-05
+     Search direction    95  residual =  0.22429240E-13   relative_residual =  0.15518019E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.24453675E-13
+   69  0.473635370965021E-06  0.80362E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.619339313154374E+00         Drag  0.780470699684553E-02
+ 
+ Begin Mesh Movement, Time Step 70   (Current Step 70)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.48969234E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11985128E-09   relative_residual =  0.24474811E-05
+     Search direction    92  residual =  0.13474133E-13   relative_residual =  0.27515506E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14896923E-13
+   70  0.470320788672817E-06  0.85234E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.615768190850059E+00         Drag  0.107295474279532E-01
+ 
+ Begin Mesh Movement, Time Step 71   (Current Step 71)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.29205587E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.80786026E-09   relative_residual =  0.27661155E-05
+     Search direction    95  residual =  0.33658792E-13   relative_residual =  0.11524778E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.39205587E-13
+   71  0.467448142066714E-06  0.77926E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.612504880950118E+00         Drag  0.153564585378388E-01
+ 
+ Begin Mesh Movement, Time Step 72   (Current Step 72)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.38133750E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.14430436E-09   relative_residual =  0.37841639E-05
+     Search direction    94  residual =  0.12647640E-13   relative_residual =  0.33166527E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.13813375E-13
+   72  0.448194472383382E-06  0.84252E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.610044577396870E+00         Drag  0.207192542493283E-01
+ 
+ Begin Mesh Movement, Time Step 73   (Current Step 73)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.76335373E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.27012859E-10   relative_residual =  0.35387079E-05
+     Search direction    88  residual =  0.98594214E-14   relative_residual =  0.12915927E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10763354E-13
+   73  0.422444952388687E-06  0.90431E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.608874759180511E+00         Drag  0.257418814425981E-01
+ 
+ Begin Mesh Movement, Time Step 74   (Current Step 74)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.23817422E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.89550416E-11   relative_residual =  0.37598702E-05
+     Search direction    84  residual =  0.93778786E-14   relative_residual =  0.39374028E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10238174E-13
+   74  0.399155563700651E-06  0.77675E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.609292696593939E+00         Drag  0.296899496403903E-01
+ 
+ Begin Mesh Movement, Time Step 75   (Current Step 75)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16178210E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.62588424E-11   relative_residual =  0.38686866E-05
+     Search direction    82  residual =  0.96177297E-14   relative_residual =  0.59448664E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10161782E-13
+   75  0.390395344951490E-06  0.96130E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.611345399778338E+00         Drag  0.319533930063398E-01
+ 
+ Begin Mesh Movement, Time Step 76   (Current Step 76)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.75415910E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.33451180E-11   relative_residual =  0.44355602E-05
+     Search direction    76  residual =  0.88147832E-14   relative_residual =  0.11688228E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10075416E-13
+   76  0.378455317196072E-06  0.74407E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.614838180748793E+00         Drag  0.323752032438865E-01
+ 
+ Begin Mesh Movement, Time Step 77   (Current Step 77)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.49245986E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.30434405E-11   relative_residual =  0.61800784E-05
+     Search direction    76  residual =  0.96543907E-14   relative_residual =  0.19604421E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10049246E-13
+   77  0.366823303019418E-06  0.89333E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.619168268521227E+00         Drag  0.310759146497541E-01
+ 
+ Begin Mesh Movement, Time Step 78   (Current Step 78)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.92294660E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.26687742E-11   relative_residual =  0.28915803E-05
+     Search direction    77  residual =  0.87082467E-14   relative_residual =  0.94352660E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10092295E-13
+   78  0.348526138410685E-06  0.70861E-04  0.28288E+02  0.79364E+00 -0.46779E+00
+       Lift  0.623670622483769E+00         Drag  0.284256570169454E-01
+ 
+ Begin Mesh Movement, Time Step 79   (Current Step 79)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.11619137E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.45428151E-10   relative_residual =  0.39097699E-05
+     Search direction    90  residual =  0.98745760E-14   relative_residual =  0.84985455E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11161914E-13
+   79  0.339024287806139E-06  0.76382E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.627446189371258E+00         Drag  0.250262198516907E-01
+ 
+ Begin Mesh Movement, Time Step 80   (Current Step 80)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.81830067E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.32169702E-09   relative_residual =  0.39312813E-05
+     Search direction    96  residual =  0.15800532E-13   relative_residual =  0.19308956E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.18183007E-13
+   80  0.326071500882298E-06  0.65442E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.629838631080702E+00         Drag  0.214739096890998E-01
+ 
+ Begin Mesh Movement, Time Step 81   (Current Step 81)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.18882950E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.75520031E-09   relative_residual =  0.39993767E-05
+     Search direction    97  residual =  0.27984441E-13   relative_residual =  0.14819952E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.28882950E-13
+   81  0.308040772470239E-06  0.65158E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.630349269554789E+00         Drag  0.184208166263847E-01
+ 
+ Begin Mesh Movement, Time Step 82   (Current Step 82)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.18523809E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.72354218E-09   relative_residual =  0.39060118E-05
+     Search direction    97  residual =  0.27191975E-13   relative_residual =  0.14679472E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.28523809E-13
+   82  0.294347637297550E-06  0.65639E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.628960096320835E+00         Drag  0.163358237988636E-01
+ 
+ Begin Mesh Movement, Time Step 83   (Current Step 83)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.12236345E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.49818813E-09   relative_residual =  0.40713803E-05
+     Search direction    97  residual =  0.17981623E-13   relative_residual =  0.14695257E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.22236345E-13
+   83  0.292702908721643E-06  0.64054E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.626021529700026E+00         Drag  0.155301493182893E-01
+ 
+ Begin Mesh Movement, Time Step 84   (Current Step 84)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.93486556E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.57933326E-10   relative_residual =  0.61969687E-05
+     Search direction    89  residual =  0.96799230E-14   relative_residual =  0.10354348E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10934866E-13
+   84  0.287167074318915E-06  0.65700E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.622247137349267E+00         Drag  0.160435418223397E-01
+ 
+ Begin Mesh Movement, Time Step 85   (Current Step 85)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.16945118E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.56876597E-10   relative_residual =  0.33565182E-05
+     Search direction    91  residual =  0.95252427E-14   relative_residual =  0.56212312E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11694512E-13
+   85  0.279243598936297E-06  0.63193E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.618566693549434E+00         Drag  0.176844943563289E-01
+ 
+ Begin Mesh Movement, Time Step 86   (Current Step 86)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.19750530E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.74122390E-10   relative_residual =  0.37529318E-05
+     Search direction    92  residual =  0.98964435E-14   relative_residual =  0.50107231E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11975053E-13
+   86  0.274266706885008E-06  0.65504E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.615856492726030E+00         Drag  0.200636084841078E-01
+ 
+ Begin Mesh Movement, Time Step 87   (Current Step 87)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.18871899E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.74292472E-10   relative_residual =  0.39366717E-05
+     Search direction    92  residual =  0.95651896E-14   relative_residual =  0.50684828E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11887190E-13
+   87  0.265313062930643E-06  0.62857E-04  0.30185E+02  0.34413E+01 -0.53616E+00
+       Lift  0.614794817148943E+00         Drag  0.226349286311115E-01
+ 
+ Begin Mesh Movement, Time Step 88   (Current Step 88)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.15803160E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.66676875E-10   relative_residual =  0.42192116E-05
+     Search direction    88  residual =  0.10257385E-13   relative_residual =  0.64907176E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11580316E-13
+   88  0.263791509244418E-06  0.63946E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.615620590379816E+00         Drag  0.248743324714845E-01
+ 
+ Begin Mesh Movement, Time Step 89   (Current Step 89)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.10863785E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.52976115E-10   relative_residual =  0.48763957E-05
+     Search direction    90  residual =  0.95281449E-14   relative_residual =  0.87705573E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11086378E-13
+   89  0.267257458067756E-06  0.62819E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.618098587882491E+00         Drag  0.263157739860150E-01
+ 
+ Begin Mesh Movement, Time Step 90   (Current Step 90)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.56602186E-05   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.36010886E-10   relative_residual =  0.63621017E-05
+     Search direction    87  residual =  0.10052586E-13   relative_residual =  0.17760066E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10566022E-13
+   90  0.262136490205002E-06  0.62125E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.621615259695893E+00         Drag  0.267142767829559E-01
+ 
+ Begin Mesh Movement, Time Step 91   (Current Step 91)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.10508929E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.29960221E-10   relative_residual =  0.28509299E-05
+     Search direction    88  residual =  0.10765760E-13   relative_residual =  0.10244393E-08
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.11050893E-13
+   91  0.256154914369271E-06  0.63120E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.625237054790732E+00         Drag  0.260435812017143E-01
+ 
+ Begin Mesh Movement, Time Step 92   (Current Step 92)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.20860522E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.75196967E-10   relative_residual =  0.36047500E-05
+     Search direction    92  residual =  0.10200059E-13   relative_residual =  0.48896471E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12086052E-13
+   92  0.255105767228571E-06  0.61281E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.628124073729825E+00         Drag  0.245183335571265E-01
+ 
+ Begin Mesh Movement, Time Step 93   (Current Step 93)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.28027000E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.10594417E-09   relative_residual =  0.37800755E-05
+     Search direction    93  residual =  0.11421763E-13   relative_residual =  0.40752715E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12802700E-13
+   93  0.251765183987921E-06  0.62777E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.629578756419134E+00         Drag  0.225322598306929E-01
+ 
+ Begin Mesh Movement, Time Step 94   (Current Step 94)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.28664017E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11219891E-09   relative_residual =  0.39142774E-05
+     Search direction    93  residual =  0.11923804E-13   relative_residual =  0.41598512E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12866402E-13
+   94  0.243273906512491E-06  0.61658E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.629378210202753E+00         Drag  0.205397359066069E-01
+ 
+ Begin Mesh Movement, Time Step 95   (Current Step 95)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.24528340E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.75335100E-10   relative_residual =  0.30713493E-05
+     Search direction    92  residual =  0.10127948E-13   relative_residual =  0.41290803E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.12452834E-13
+   95  0.238196852778652E-06  0.62364E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.627703880430712E+00         Drag  0.190010046330321E-01
+ 
+ Begin Mesh Movement, Time Step 96   (Current Step 96)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.79025251E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.30037022E-11   relative_residual =  0.38009398E-05
+     Search direction    79  residual =  0.91659342E-14   relative_residual =  0.11598741E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10079025E-13
+   96  0.237137607673958E-06  0.62429E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.625125380111923E+00         Drag  0.182024683636833E-01
+ 
+ Begin Mesh Movement, Time Step 97   (Current Step 97)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.70449940E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.27264275E-11   relative_residual =  0.38700210E-05
+     Search direction    78  residual =  0.99985555E-14   relative_residual =  0.14192426E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10070450E-13
+   97  0.242481123270043E-06  0.62248E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.622412389776774E+00         Drag  0.182690462425532E-01
+ 
+ Begin Mesh Movement, Time Step 98   (Current Step 98)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.44854878E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.17819838E-11   relative_residual =  0.39727759E-05
+     Search direction    75  residual =  0.92599563E-14   relative_residual =  0.20644257E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10044855E-13
+   98  0.237258208598685E-06  0.63263E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.620290149073746E+00         Drag  0.190926095215939E-01
+ 
+ Begin Mesh Movement, Time Step 99   (Current Step 99)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.11358287E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.60409496E-12   relative_residual =  0.53185392E-05
+     Search direction    69  residual =  0.93219862E-14   relative_residual =  0.82072112E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10011358E-13
+   99  0.231816493770607E-06  0.62215E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.619280100966530E+00         Drag  0.204153395650971E-01
+ 
+ Begin Mesh Movement, Time Step 100   (Current Step 100)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.31487644E-06   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.10592054E-11   relative_residual =  0.33638764E-05
+     Search direction    72  residual =  0.99574391E-14   relative_residual =  0.31623322E-07
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10031488E-13
+  100  0.236222201199022E-06  0.63068E-04  0.31623E+02  0.21905E+01 -0.41408E-06
+       Lift  0.619539268077160E+00         Drag  0.218750882427315E-01
+ 
+ Writing boundary output: caps.GeomToMesh_tec_boundary.dat
+  Time step: 100, ntt: 100, Prior iterations: 0
+ Writing Legacy VTK volume file='caps.GeomToMesh_volume.vtk'
+ 
+ Writing caps.GeomToMesh.flow (version 12.2)
+  inserting current history iterations 100
+ Time for write: .1 s
+ 
+ Current value of function            1  0.000000000000000E+000
+ Done.
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
++--------------------------------------------------+
+|
+| TACS Init Times:
+|
+| TACS Module Time              :      0.000 sec
+| TACS Meshload Time            :      0.064 sec
+| TACS DV Processing Time       :      0.000 sec
+| TACS Finalize Initialization Time:      0.000 sec
+|
+| TACS Total Initialization Time:      0.064 sec
++--------------------------------------------------+
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+NOT CMPLX_MODE
+start
+Created Object
+Transfer scheme [0]: freeing MELD data...
+Transfer scheme [1]: freeing MELD data...

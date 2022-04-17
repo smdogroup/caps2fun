@@ -26,10 +26,12 @@ from __future__ import print_function
 from pyfuntofem.model  import *
 from pyfuntofem.driver import *
 from pyfuntofem.fun3d_interface import *
+from pyfuntofem.tacs_interface import TacsSteadyInterface
 
 #import from tacs
 from tacs.pytacs import pyTACS
 from tacs import functions
+from tacs import TACS, functions, constitutive, elements, pyTACS, problems
 
 #import normal classes
 import os
@@ -41,9 +43,74 @@ import pyCAPS
 
 
 
+#subclass for tacs steady interface
+class wedgeTACS(TacsSteadyInterface):
+    def __init__(self, comm, tacs_comm, model, n_tacs_procs):
+        super(wedgeTACS,self).__init__(comm, tacs_comm, model)
+
+        assembler = None
+        self.tacs_proc = False
+        if comm.Get_rank() < n_tacs_procs:
+            self.tacs_proc = True
+
+            # Instantiate FEASolver
+            structOptions = {
+                'printtiming':True,
+            }
+
+            bdfFile = os.path.join(os.path.dirname(__file__), 'nastran_CAPS.dat')
+            FEASolver = pyTACS(bdfFile, options=structOptions, comm=tacs_comm)
+
+            # Material properties
+            rho = 2780.0        # density kg/m^3
+            E = 73.1e9          # Young's modulus (Pa)
+            nu = 0.33           # Poisson's ratio
+            kcorr = 5.0/6.0     # shear correction factor
+            ys = 324.0e6        # yield stress
+            specific_heat = 920.096
+            cte = 24.0e-6
+            kappa = 230.0
+
+            t = 0.001
+
+            def elemCallBack(dvNum, compID, compDescript, elemDescripts, globalDVs, **kwargs):
+                prop = constitutive.MaterialProperties(rho=rho, specific_heat=specific_heat,
+                                                       E=E, nu=nu, ys=ys, cte=cte, kappa=kappa)
+                con = constitutive.IsoShellConstitutive(prop, t=t, tNum=dvNum)
+
+                elemList = []
+                transform = None
+                for elemDescript in elemDescripts:
+                    if elemDescript in ['CQUAD4', 'CQUADR']:
+                        elem = elements.Quad4ThermalShell(transform, con)
+                    else:
+                        print("Uh oh, '%s' not recognized" % (elemDescript))
+                    elemList.append(elem)
+
+                # Add scale for thickness dv
+                scale = [1.0]
+                return elemList, scale
+
+            # Set up elements and TACS assembler
+            FEASolver.initialize(elemCallBack)
+            assembler = FEASolver.assembler
+
+        self._initialize_variables(assembler, thermal_index=6)
+        self.initialize(model.scenarios[0],model.bodies)
+
+    def post_export_f5(self):
+        flag = (TACS.OUTPUT_CONNECTIVITY |
+                TACS.OUTPUT_NODES |
+                TACS.OUTPUT_DISPLACEMENTS |
+                TACS.OUTPUT_STRAINS |
+                TACS.OUTPUT_STRESSES |
+                TACS.OUTPUT_EXTRAS)
+        f5 = TACS.ToFH5(self.assembler, TACS.BEAM_OR_SHELL_ELEMENT, flag)
+        f5.writeToFile('TACSoutput.f5')
+
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, structCSM, fluidCSM, DVdict):
+    def __init__(self, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
 
         #design variables dictionary
         #"name" : dvname
@@ -51,6 +118,7 @@ class NacaOMLOptimization():
         #"capsGroup" : corr to thick, otherwise empty
         #"value" : initially zero
         self.DVdict = DVdict
+        self.analysis_type = analysisType
 
         #load pointwise
         #need to run module load pointwise/18.5R1 in terminal for it to work
@@ -94,7 +162,7 @@ class NacaOMLOptimization():
         #fluid mesh settings
         self.fluidMeshSettings()
 
-    def structureMeshSettings():
+    def structureMeshSettings(self):
         #Egads Aim section, for mesh
         self.egadsAim.input.Edge_Point_Min = 5
         self.egadsAim.input.Edge_Point_Max = 10
@@ -108,7 +176,7 @@ class NacaOMLOptimization():
         self.tacsAim.input.Mesh_File_Format = "Large"
 
         # Link the mesh
-        self.tacsAim.input["Mesh"].link(egadsAim.output["Surface_Mesh"])
+        self.tacsAim.input["Mesh"].link(self.egadsAim.output["Surface_Mesh"])
 
         # Set analysis type
         self.tacsAim.input.Analysis_Type = "Static"
@@ -178,8 +246,8 @@ class NacaOMLOptimization():
                 DVdict[dvname] = {}
 
         #input DVdict and DVRdict into tacsAim
-        tacsAim.input.Design_Variable = DVdict
-        tacsAim.input.Design_Variable_Relation = DVRdict
+        self.tacsAim.input.Design_Variable = DVdict
+        self.tacsAim.input.Design_Variable_Relation = DVRdict
 
     def fluidMeshSettings(self):
         # Dump VTK files for visualization
@@ -201,8 +269,8 @@ class NacaOMLOptimization():
 
         # Block level
         self.pointwiseAIM.input.Block_Boundary_Decay       = 0.8
-        self.pointwiseAIM.input.Block_DVdict.append(tempDict)Collision_Buffer     = 1.0
-        self.pointwiseAIM.pointwiseAIMntwise.input.Block_Max_Skew_Angle       = 160.0
+        self.pointwiseAIM.input.Block_Collision_Buffer     = 1.0
+        self.pointwiseAIM.input.Block_Max_Skew_Angle       = 160.0
         self.pointwiseAIM.input.Block_Edge_Max_Growth_Rate = 1.5
         self.pointwiseAIM.input.Block_Full_Layers          = 1
         self.pointwiseAIM.input.Block_Max_Layers           = 100
@@ -216,9 +284,72 @@ class NacaOMLOptimization():
                 "Symmetry" : {"bcType" : "SymmetryY"}}
 
     def initFun2Fem(self):
-        #initialize Fun2Fem with TACS model
-        #initialize Fun2Fem with fun3d
-        #use fun3d.nml and capsFile.mabc files
+        analysis_type='aerothermoelastic'
+
+        maximum_mass = 40.0 
+        num_tacs_dvs = 3
+
+        # Set up the communicators
+        n_tacs_procs = 1
+
+        comm = MPI.COMM_WORLD
+        self.comm = comm
+
+        world_rank = self.comm.Get_rank()
+        if world_rank < n_tacs_procs:
+            color = 55
+            key = world_rank
+        else:
+            color = MPI.UNDEFINED
+            key = world_rank
+        tacs_comm = self.comm.Split(color,key)
+
+        #==================================================================================================#
+        # Originally _build_model()
+
+        thickness = 0.001
+
+        # Build the model
+        self.model = FUNtoFEMmodel('NACA Wing Simulation')
+        wing = Body('wing', analysis_type=analysis_type, group=0,boundary=1)
+
+        for i in range(num_tacs_dvs):
+            wing.add_variable('structural',Variable('thickness '+ str(i),value=thickness,lower = 0.0001, upper = 0.01))
+
+        self.model.add_body(wing)
+
+        steady = Scenario('steady', group=0, steps=5)
+        function1 = Function('ksfailure',analysis_type='structural')
+        steady.add_function(function1)
+
+        function2 = Function('mass',analysis_type='structural',adjoint=False)
+        steady.add_function(function2)
+
+        function3 = Function('lift', analysis_type='aerodynamic')
+        steady.add_function(function3)
+
+        function4 = Function('drag', analysis_type='aerodynamic')
+        steady.add_function(function4)
+        
+        self.model.add_scenario(steady)
+
+        #==================================================================================================#
+
+        # instantiate TACS on the master
+        solvers = {}
+        solvers['flow'] = Fun3dInterface(comm,model,flow_dt=1.0)
+        solvers['structural'] = wedgeTACS(comm,tacs_comm,self.model,n_tacs_procs)
+
+        # L&D transfer options
+        transfer_options = {'analysis_type': analysis_type,
+                            'scheme': 'meld', 'thermal_scheme': 'meld'}
+
+        # instantiate the driver
+        self.driver = FUNtoFEMnlbgs(solvers,self.comm,tacs_comm,0,comm,0,transfer_options,model=self.model)
+        struct_tacs = solvers['structural'].assembler
+
+        obj_scale = 0.0106
+        con_scale = 3.35
 
     def forwardAnalysis(self, x):
         #set design variables from desvarDict
@@ -265,7 +396,7 @@ class NacaOMLOptimization():
 
         #update thickness design variables in caps aims
         thickCt = 0
-        
+        thickVec = []
         for DV in self.DVdict:
             dvname = DV["name"]
             value = DV["value"]
@@ -280,14 +411,16 @@ class NacaOMLOptimization():
                 DVdict[deskey] = self.makeThicknessDV(capsGroup,value)
                 propDict[capsGroup]["membraneThickness"] = v
 
+                #update funtofem thickness vec
+                thickVec.append(value)
+
         #update tacsAim dictionaries
         self.tacsAim.input.Property = propDict
         self.tacsAim.input.Design_Variable_Relation = DVRdict
         self.tacsAim.input.Design_Variable = DVdict
 
-        ##------todo-----##
         #section to update funtofem aero DV values for next fun3d run
-
+        self.model.set_variables(np.array(thickVec))
         
     def makeThicknessDV(self, capsGroup, thickness):
         #thick DV dictionary for Design_Variable Dict
@@ -337,22 +470,43 @@ class NacaOMLOptimization():
         #run AIM postanalysis, files in self.pointwiseAim.analysisDir
         self.pointwiseAim.postAnalysis()
 
-    def fun2femForward(self):
+    def fun2femForward(self):        
         #run funtofem forward analysis, including fun3d
-        self.functions = funtofemFunctions
+        self.driver.solve_forward()
+
+        #get function values from forward analysis
+        self.functions = self.model.get_functions()
 
     def fun2femAdjoint(self):
         #run funtofem adjoint analysis, with fun3d
+        self.driver.solve_adjoint()
 
+        #get the funtofem gradients
+        f2fgrads = self.model.get_function_gradients()
+        
         #update gradient for non shape DVs
+        ct = 0
         for funcKey in self.funcKeys:
             for DV in self.DVdict:
                 dvname = DV["name"]
-                if (not(DV["type"] == "shape")): self.gradient[func][dvname] = funtofemGrad[funcKey][dvname]
+                if (not(DV["type"] == "shape")): self.gradient[func][dvname] = f2fgrads[funcKey][ct]
+                ct += 1
         
+
         #get aero and struct mesh sensitivities for shape DVs
         self.aero_mesh_sens = self.funtofem.body.aero_shape_term
         self.struct_mesh_sens = self.funtofem.body.struct_shape_term
+
+    def objFunc(self, x):
+        functions = self.forwardAnalysis(x)
+        fail = 0
+
+        return functions, fail
+
+    def objGrad(self, x):
+        gradients = self.adjointAnalysis(x)
+        fail = 0
+        return gradients, fail
 
     def computeShapeDerivatives(self):
         #add struct_mesh_sens part to shape DV derivatives#struct shape derivatives
@@ -411,10 +565,10 @@ class NacaOMLOptimization():
         with open(structSensFile, "w") as f:
             
             #write (nfunctions) in first line
-            f.write("{}\n".for#update gradient for non shape DVs
-        for DV in self.DVdict:
-            dvname = DV["name"]
-            if (not(DV["type"] == "shape")): self.gradient[dvname] = funtofemGrad[dvname] mass, stress, etc.
+            f.write("{}\n".format(self.nfunc))
+            
+            funcInd = 0
+            #for each function mass, stress, etc.
             for key in self.funcKeys:
                 
                 #get the pytacs/tacs sensitivity w.r.t. mesh for that function
@@ -447,8 +601,8 @@ class NacaOMLOptimization():
 
 #setup the design variables
 #make shape DVs
-DVdict = {}
-for dvname in ["area","aspect","ctwist", "dihedral","lesweep", "taper"]
+DVdict = []
+for dvname in ["area","aspect","ctwist", "dihedral","lesweep", "taper"]:
     tempDict = {"name" : dvname,
                 "type" : "shape",
                 "value" : 0.0,
@@ -462,16 +616,36 @@ for dvname in ["thick1", "thick2", "thick3"]:
     tempDict = {"name" : dvname,
                 "type" : "thick",
                 "value" : 0.1,
-                "capsGroup" : capsGroups[thickCt]}
+                "capsGroup" : capsGroup[thickCt]}
     thickCt += 1
     DVdict.append(tempDict)
 
 #call the class and initialize it
-myOptimization = NacaOMLOptimization("naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict)
+nacaOpt = NacaOMLOptimization("naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "aerothermoelastic")
 
 #setup pyOptSparse
-#with the objective, constraint, gradients, etc
+sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objFunc)
 
-#optimize with pyOptSparse
+sparseProb.addVarGroup("x", 12, "c", lower=0.0001*np.ones(12), upper=0.01*np.ones(12), value=0.001)
 
-#print/store results for optimum
+#optProb.addConGroup("con", 1, lower=1, upper=1)
+optProb.addObj("obj")
+
+comm = MPI.COMM_WORLD
+# if comm.rank == 0:
+print(sparseProb)
+
+optOptions = {"IPRINT": -1}
+opt = SLSQP(options=optOptions)
+sol = opt(sparseProb, sens=nacaOpt.objGrad)
+
+if comm.rank == 0:
+    print(sol)
+    print(sol, file=nacaOpt.optHist)
+    print('\nsol.xStar:  ', sol.xStar)
+    print('\nsol.xStar:  ', sol.xStar, file=sparseProb.optHist)
+print(sol, file=sparseProb.optHistAll)
+print('\nsol.xStar:  ', sol.xStar, file=sparseProb.optHistAll)
+
+dp.optHist.close()
+dp.optHistAll.close()
