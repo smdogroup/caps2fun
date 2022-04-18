@@ -116,9 +116,10 @@ class wedgeTACS(TacsSteadyInterface):
 
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, comm, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
+    def __init__(self, comm, structCSM, fluidCSM, DVdict, debug, analysisType = "aerothermoelastic"):
 
         self.comm = comm
+        self.debug = debug
 
         #status file
         if (self.comm.Get_rank() == 0):
@@ -602,7 +603,7 @@ class NacaOMLOptimization():
     def buildFluidMesh(self):
         self.cwrite("Building fluid mesh... ")
 
-        if (self.comm.Get_rank() == 0):
+        if (self.comm.Get_rank() == 0 and not(self.debug)):
             #build fluid mesh by running pointwise and then linking with fun3d
             self.runPointwise()
             self.cwrite("ran pointwise, ")
@@ -802,8 +803,8 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "aerothermoelastic")
+debug = False
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, debug, "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)

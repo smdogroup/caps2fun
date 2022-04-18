@@ -19,4 +19,7 @@ thickDVs [rib,spar,OML]
 shapeDVs [area,aspect,camb0,cambf,ctwist,dihedral,lesweep,taper,tc0,tcf]
 	[40.   6.   0.   0.   5.   5.  30.   0.5  0.1  0.1]
 Building structure mesh... built structure mesh
-Building fluid mesh... 
+Building fluid mesh... ran pointwise, linked to fun3d, built fluid mesh
+Initializing funtofem... setup model, setup fun3d interface, setup tacs interface
+	 setup adjoint driver, initialized funtofem
+Running F2F forward analysis... 
