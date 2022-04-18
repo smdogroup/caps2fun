@@ -116,13 +116,16 @@ class wedgeTACS(TacsSteadyInterface):
 
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
+    def __init__(self, comm, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
+
+        self.comm = comm
 
         #status file
-        prevStatus = os.path.join(os.getcwd(), "prev_status.txt")
-        statusFile = os.path.join(os.getcwd(), "status.txt")
-        if (os.path.exists(statusFile)): os.remove(statusFile)
-        self.status =  open(statusFile, "w")
+        if (self.comm.Get_rank() == 0):
+            prevStatus = os.path.join(os.getcwd(), "prev_status.txt")
+            statusFile = os.path.join(os.getcwd(), "status.txt")
+            if (os.path.exists(statusFile)): os.remove(statusFile)
+            self.status =  open(statusFile, "w")
 
         self.cwrite("Aerothermoelastic Optimization with FuntoFem and ESP/CAPS\n")
         self.cwrite("\tDesign Problem: NACA Symmetric Wing\n")
@@ -135,6 +138,8 @@ class NacaOMLOptimization():
         #iteration counter for optimizer
         self.iteration = 1
 
+        self.curDir = os.getcwd()
+
         #design variables dictionary
         #"name" : dvname
         #"type" : "thick", "shape", "aero"
@@ -145,63 +150,65 @@ class NacaOMLOptimization():
         self.analysis_type = analysisType
 
         #load pointwise
+        #module load pointwise/18.5R1
         #need to run module load pointwise/18.5R1 in terminal for it to work
 
         #initialize AIMS
-        self.initializeAIMs(structCSM, fluidCSM)
+        if (self.comm.Get_rank() == 0): self.initializeAIMs(structCSM, fluidCSM)
 
     def cwrite(self, text):
-        #write to the status file
-        self.status.write(text)
+        if (self.comm.Get_rank() == 0):
+            #write to the status file
+            self.status.write(text)
         
-        #immediately update it to be visibile in the file
-        self.status.flush()
+            #immediately update it to be visibile in the file
+            self.status.flush()
 
     def initializeAIMs(self, structCSM, fluidCSM):
-        #initialize all 6 ESP/CAPS AIMs used for the fluid and structural analysis
+        if (self.comm.Get_rank() == 0):
+            #initialize all 6 ESP/CAPS AIMs used for the fluid and structural analysis
 
-        #initialize pyCAPS structural problem
-        self.capsStruct = pyCAPS.Problem(problemName = "struct",
-                    capsFile = structCSM,
-                    outLevel = 1)
-        self.cwrite("Initialized caps Struct AIM\n")
+            #initialize pyCAPS structural problem
+            self.capsStruct = pyCAPS.Problem(problemName = "struct",
+                        capsFile = structCSM,
+                        outLevel = 1)
+            self.cwrite("Initialized caps Struct AIM\n")
 
-        #initialize pyCAPS fluid problem
-        self.capsFluid = pyCAPS.Problem(problemName = "fluid",
-                    capsFile = fluidCSM,
-                    outLevel = 1)
-        self.cwrite("Initialized caps fluid AIM\n")
+            #initialize pyCAPS fluid problem
+            self.capsFluid = pyCAPS.Problem(problemName = "fluid",
+                        capsFile = fluidCSM,
+                        outLevel = 1)
+            self.cwrite("Initialized caps fluid AIM\n")
 
-        #initialize egads Aim
-        self.egadsAim = self.capsStruct.analysis.create(aim="egadsTessAIM")
-        self.cwrite("Initialized egads AIM\n")
+            #initialize egads Aim
+            self.egadsAim = self.capsStruct.analysis.create(aim="egadsTessAIM")
+            self.cwrite("Initialized egads AIM\n")
 
-        #initialize tacs Aim
-        self.tacsAim = self.capsStruct.analysis.create(aim = "tacsAIM", name = "tacs")
-        self.datFile = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+".dat")  
-        self.cwrite("Initialized tacs AIM\n")
+            #initialize tacs Aim
+            self.tacsAim = self.capsStruct.analysis.create(aim = "tacsAIM", name = "tacs")
+            self.cwrite("Initialized tacs AIM\n")
 
-        #initialize pointwise AIM
-        self.pointwiseAim = self.capsFluid.analysis.create(aim = "pointwiseAIM",
-                                    name = "pointwise")
-        self.cwrite("Initialized pointwise AIM\n")
+            #initialize pointwise AIM
+            self.pointwiseAim = self.capsFluid.analysis.create(aim = "pointwiseAIM",
+                                        name = "pointwise")
+            self.cwrite("Initialized pointwise AIM\n")
 
-        #initialize FUN3D AIM from Pointwise mesh
-        self.fun3dAim = self.capsFluid.analysis.create(aim = "fun3dAIM",
-                                name = "fun3d")
-        self.cwrite("Initialized fun3d AIM\n")
+            #initialize FUN3D AIM from Pointwise mesh
+            self.fun3dAim = self.capsFluid.analysis.create(aim = "fun3dAIM",
+                                    name = "fun3d")
+            self.cwrite("Initialized fun3d AIM\n")
 
-        #structural mesh settings
-        self.structureMeshSettings()
-        self.cwrite("Set Structure mesh settings\n")
+            #structural mesh settings
+            self.structureMeshSettings()
+            self.cwrite("Set Structure mesh settings\n")
 
-        #fluid mesh settings
-        self.fluidMeshSettings()
-        self.cwrite("Set Fluid mesh settings\n")
+            #fluid mesh settings
+            self.fluidMeshSettings()
+            self.cwrite("Set Fluid mesh settings\n")
 
-        #set fun3d settings
-        self.fun3dSettings()
-        self.cwrite("Set fun3d settings\n")
+            #set fun3d settings
+            self.fun3dSettings()
+            self.cwrite("Set fun3d settings\n")
 
     def structureMeshSettings(self):
         #Egads Aim section, for mesh
@@ -374,16 +381,14 @@ class NacaOMLOptimization():
         # Set up the communicators
         n_tacs_procs = 1
 
-        comm = MPI.COMM_WORLD
-
-        world_rank = comm.Get_rank()
+        world_rank = self.comm.Get_rank()
         if world_rank < n_tacs_procs:
             color = 55
             key = world_rank
         else:
             color = MPI.UNDEFINED
             key = world_rank
-        tacs_comm = comm.Split(color,key)
+        tacs_comm = self.comm.Split(color,key)
 
         #==================================================================================================#
         # Originally _build_model()
@@ -418,9 +423,10 @@ class NacaOMLOptimization():
 
         # instantiate TACS on the master
         solvers = {}
-        solvers['flow'] = Fun3dInterface(comm,self.model,flow_dt=1.0)
+        solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0)
         self.cwrite("setup fun3d interface, ")
-        solvers['structural'] = wedgeTACS(comm,tacs_comm,self.model,n_tacs_procs, self.datFile)
+        datFile = os.path.join(self.curDir,"steady","Flow","nastran_CAPS.dat")
+        solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,n_tacs_procs, datFile)
         self.cwrite("setup tacs interface\n")
 
         # L&D transfer options
@@ -428,7 +434,7 @@ class NacaOMLOptimization():
                             'scheme': 'meld', 'thermal_scheme': 'meld'}
 
         # instantiate the driver
-        self.driver = FUNtoFEMnlbgs(solvers,comm,tacs_comm,0,comm,0,transfer_options,model=self.model)
+        self.driver = FUNtoFEMnlbgs(solvers,self.comm,tacs_comm,0,self.comm,0,transfer_options,model=self.model)
         struct_tacs = solvers['structural'].assembler
         self.cwrite("\t setup adjoint driver, ")
 
@@ -497,8 +503,8 @@ class NacaOMLOptimization():
                 ct += 1
         
         #get aero and struct mesh sensitivities for shape DVs
-        self.aero_mesh_sens = self.wing.aero_shape_term
-        self.struct_mesh_sens = self.wing.struct_shape_term
+        self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
+        self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
 
         #compute shape derivatives from aero and struct mesh sensitivities
         self.computeShapeDerivatives()
@@ -532,36 +538,36 @@ class NacaOMLOptimization():
         
         #update shapeDVs in each caps problem
         #update thickness design variables in tacsAim
+        if (self.comm.Get_rank() == 0):
+            #grab the dictionaries in tacsAim
+            propDict = self.tacsAim.input.Property
+            DVRdict = self.tacsAim.input.Design_Variable_Relation
+            DVdict = self.tacsAim.input.Design_Variable
 
-        #grab the dictionaries in tacsAim
-        propDict = self.tacsAim.input.Property
-        DVRdict = self.tacsAim.input.Design_Variable_Relation
-        DVdict = self.tacsAim.input.Design_Variable
+            #update thickness design variables in caps aims
+            thickCt = 0
+            thickVec = []
+            for DV in self.DVdict:
+                dvname = DV["name"]
+                value = DV["value"]
+                if (DV["type"] == "shape"):
+                    #update both of the capsStruct and capsFluid geometries
+                    self.capsStruct.geometry.despmtr[dvname].value = value
+                    self.capsFluid.geometry.despmtr[dvname].value = value
+                elif (DV["type"] == "thick"):
+                    #update the thickness DV in its tacsAim dictionaries
+                    DVRdict[dvname] = self.makeThicknessDVR(dvname)
+                    capsGroup = DVdict[dvname]["groupName"]
+                    DVdict[dvname] = self.makeThicknessDV(capsGroup,value)
+                    propDict[capsGroup]["membraneThickness"] = value
 
-        #update thickness design variables in caps aims
-        thickCt = 0
-        thickVec = []
-        for DV in self.DVdict:
-            dvname = DV["name"]
-            value = DV["value"]
-            if (DV["type"] == "shape"):
-                #update both of the capsStruct and capsFluid geometries
-                self.capsStruct.geometry.despmtr[dvname].value = value
-                self.capsFluid.geometry.despmtr[dvname].value = value
-            elif (DV["type"] == "thick"):
-                #update the thickness DV in its tacsAim dictionaries
-                DVRdict[dvname] = self.makeThicknessDVR(dvname)
-                capsGroup = DVdict[dvname]["groupName"]
-                DVdict[dvname] = self.makeThicknessDV(capsGroup,value)
-                propDict[capsGroup]["membraneThickness"] = value
+                    #update funtofem thickness vec
+                    thickVec.append(value)
 
-                #update funtofem thickness vec
-                thickVec.append(value)
-
-        #update tacsAim dictionaries
-        self.tacsAim.input.Property = propDict
-        self.tacsAim.input.Design_Variable_Relation = DVRdict
-        self.tacsAim.input.Design_Variable = DVdict
+            #update tacsAim dictionaries
+            self.tacsAim.input.Property = propDict
+            self.tacsAim.input.Design_Variable_Relation = DVRdict
+            self.tacsAim.input.Design_Variable = DVdict
         
     def makeThicknessDV(self, capsGroup, thickness):
         #thick DV dictionary for Design_Variable Dict
@@ -584,26 +590,34 @@ class NacaOMLOptimization():
     def buildStructureMesh(self):
         self.cwrite("Building structure mesh... ")
         #build structure mesh by running tacsAim preanalysis
-        self.tacsAim.preAnalysis()
+        if (self.comm.Get_rank() == 0):
+            self.tacsAim.preAnalysis()
+
+            #move struct mesh files to flow directory 
+            for extension in [".bdf",".dat"]:
+                src = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+extension)
+                dest = os.path.join(self.curDir,"steady","Flow",self.tacsAim.input.Proj_Name+extension)
+                shutil.copy(src, dest)
 
     def buildFluidMesh(self):
         self.cwrite("Building fluid mesh... ")
 
-        #build fluid mesh by running pointwise and then linking with fun3d
-        self.runPointwise()
-        self.cwrite("ran pointwise, ")
+        if (self.comm.Get_rank() == 0):
+            #build fluid mesh by running pointwise and then linking with fun3d
+            self.runPointwise()
+            self.cwrite("ran pointwise, ")
 
 
-        #update fun3d with current mesh so it knows mesh sensitivity
-        self.fun3dAim.input["Mesh"].link(self.pointwiseAim.output["Volume_Mesh"])
-        self.fun3dAim.preAnalysis()
-        self.cwrite("linked to fun3d, ")
+            #update fun3d with current mesh so it knows mesh sensitivity
+            self.fun3dAim.input["Mesh"].link(self.pointwiseAim.output["Volume_Mesh"])
+            self.fun3dAim.preAnalysis()
+            self.cwrite("linked to fun3d, ")
 
-        #copy the mesh file to funtofem directory steady/flow/
-        filename = "caps.GeomToMesh.ugrid"
-        src = os.path.join(self.pointwiseAim.analysisDir, "caps.GeomToMesh.ugrid")
-        dest = os.path.join(self.curDir, "steady", "Flow", "caps.GeomToMesh.ugrid")
-        shutil.copy(src, dest)
+            #copy the mesh file to funtofem directory steady/flow/
+            filename = "caps.GeomToMesh.ugrid"
+            src = os.path.join(self.pointwiseAim.analysisDir, "caps.GeomToMesh.ugrid")
+            dest = os.path.join(self.curDir, "steady", "Flow", "caps.GeomToMesh.ugrid")
+            shutil.copy(src, dest)
 
     def runPointwise(self):
         #run AIM pre-analysis
@@ -660,11 +674,12 @@ class NacaOMLOptimization():
         return objGrad, fail
 
     def computeShapeDerivatives(self):
-        #add struct_mesh_sens part to shape DV derivatives#struct shape derivatives
-        self.applyStructMeshSens()
+        if (self.comm.Get_rank() == 0):
+            #add struct_mesh_sens part to shape DV derivatives#struct shape derivatives
+            self.applyStructMeshSens()
 
-        #add aero_mesh_sens part to shape DV derivatives
-        self.applyAeroMeshSens()
+            #add aero_mesh_sens part to shape DV derivatives
+            self.applyAeroMeshSens()
 
     def applyStructMeshSens(self):
         #print struct mesh sens to struct mesh sens file
@@ -690,8 +705,9 @@ class NacaOMLOptimization():
                 f.write("{}\n".format(self.structNodes))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
-                for nodeind in range(self.structNodes): # d(Func1)/d(xyz)
-                    bdfind = nodeind + 1
+                for structId in self.structIds: # d(Func1)/d(xyz)
+                    bdfind = structId
+                    #bdfind = nodeind + 1
                     f.write("{} {} {} {}\n".format(bdfind, sens[nodeind,0], sens[nodeind,1], sens[nodeind,2]))
 
                 funcInd += 1
@@ -737,8 +753,9 @@ class NacaOMLOptimization():
                 f.write("{}\n".format(self.aeroNodes))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
-                for nodeind in range(self.aeroNodes): # d(Func1)/d(xyz)
-                    bdfind = nodeind + 1
+                for aeroId in self.aeroIds: # d(Func1)/d(xyz)
+                    bdfind = aeroId
+                    #bdfind = nodeind + 1
                     f.write("{} {} {} {}\n".format(bdfind, sens[nodeind,0], sens[nodeind,1], sens[nodeind,2]))
 
                 funcInd += 1
@@ -784,7 +801,9 @@ for dvname in ["thick1", "thick2", "thick3"]:
     DVdict.append(tempDict)
 
 #call the class and initialize it
-nacaOpt = NacaOMLOptimization("naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "aerothermoelastic")
+comm = MPI.COMM_WORLD
+
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)
@@ -805,9 +824,8 @@ sparseProb.addVarGroup("struct", 3, "c", lower=lBnds2, upper=uBnds2, value=init2
 #optProb.addConGroup("con", 1, lower=1, upper=1)
 sparseProb.addObj("obj")
 
-comm = MPI.COMM_WORLD
 # if comm.rank == 0:
-print(sparseProb)
+#     print(sparseProb)
 
 optOptions = {"IPRINT": -1}
 opt = SLSQP(options=optOptions)
