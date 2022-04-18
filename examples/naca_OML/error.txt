@@ -1,0 +1,441 @@
+MPT ERROR: Rank 0(g:0) is aborting with error code -858993460.
+        Process ID: 132418, Host: r2i7n12, Program: /p/home/seanfire/miniconda3/bin/python3.9
+        MPT Version: HPE MPT 2.21  11/28/19 04:36:59
+
+MPT: --------stack traceback-------
+MPT: Attaching to program: /proc/132418/exe, process 132418
+MPT: [New LWP 132505]
+MPT: [New LWP 132504]
+MPT: [New LWP 132503]
+MPT: [New LWP 132502]
+MPT: [New LWP 132501]
+MPT: [New LWP 132500]
+MPT: [New LWP 132499]
+MPT: [New LWP 132498]
+MPT: [New LWP 132497]
+MPT: [New LWP 132496]
+MPT: [New LWP 132495]
+MPT: [New LWP 132494]
+MPT: [New LWP 132493]
+MPT: [New LWP 132492]
+MPT: [New LWP 132491]
+MPT: [New LWP 132490]
+MPT: [New LWP 132489]
+MPT: [New LWP 132488]
+MPT: [New LWP 132487]
+MPT: [New LWP 132486]
+MPT: [New LWP 132485]
+MPT: [New LWP 132484]
+MPT: [New LWP 132483]
+MPT: [New LWP 132481]
+MPT: [New LWP 132480]
+MPT: [New LWP 132479]
+MPT: [New LWP 132478]
+MPT: [New LWP 132477]
+MPT: [New LWP 132476]
+MPT: [New LWP 132475]
+MPT: [New LWP 132474]
+MPT: [New LWP 132473]
+MPT: [New LWP 132472]
+MPT: [New LWP 132471]
+MPT: [New LWP 132470]
+MPT: [New LWP 132469]
+MPT: [New LWP 132468]
+MPT: [New LWP 132467]
+MPT: [New LWP 132466]
+MPT: [New LWP 132465]
+MPT: [New LWP 132464]
+MPT: [New LWP 132463]
+MPT: [New LWP 132462]
+MPT: [New LWP 132461]
+MPT: [New LWP 132460]
+MPT: [New LWP 132459]
+MPT: [New LWP 132458]
+MPT: [New LWP 132457]
+MPT: [New LWP 132456]
+MPT: [New LWP 132455]
+MPT: [New LWP 132454]
+MPT: [New LWP 132453]
+MPT: [New LWP 132452]
+MPT: [New LWP 132451]
+MPT: [New LWP 132450]
+MPT: [New LWP 132449]
+MPT: [New LWP 132448]
+MPT: [New LWP 132447]
+MPT: [New LWP 132446]
+MPT: [New LWP 132445]
+MPT: [New LWP 132444]
+MPT: [New LWP 132443]
+MPT: [New LWP 132442]
+MPT: [New LWP 132441]
+MPT: [New LWP 132440]
+MPT: [New LWP 132439]
+MPT: [New LWP 132438]
+MPT: [New LWP 132437]
+MPT: [Thread debugging using libthread_db enabled]
+MPT: Using host libthread_db library "/lib64/libthread_db.so.1".
+MPT: (no debugging symbols found)...done.
+MPT: (no debugging symbols found)...done.
+MPT: (no debugging symbols found)...done.
+MPT: (no debugging symbols found)...done.
+MPT: (no debugging symbols found)...done.
+MPT: (no debugging symbols found)...done.
+MPT: 0x00002aaaab3e71d9 in waitpid () from /lib64/libpthread.so.0
+MPT: Missing separate debuginfos, use: debuginfo-install glibc-2.17-325.el7_9.x86_64 libbitmask-2.0-724.0790.210614T1930.r.rhel79hpe.x86_64 libcpuset-1.0-724.0790.210614T1930.r.rhel79hpe.x86_64
+MPT: (gdb) #0  0x00002aaaab3e71d9 in waitpid () from /lib64/libpthread.so.0
+MPT: #1  0x00002aaaaf52a2e6 in mpi_sgi_system (
+MPT: #2  MPI_SGI_stacktraceback (
+MPT:     header=header@entry=0x7fffffff45b0 "MPT ERROR: Rank 0(g:0) is aborting with error code -858993460.\n\tProcess ID: 132418, Host: r2i7n12, Program: /p/home/seanfire/miniconda3/bin/python3.9\n\tMPT Version: HPE MPT 2.21  11/28/19 04:36:59\n") at sig.c:340
+MPT: #3  0x00002aaaaf469509 in print_traceback (ecode=ecode@entry=-858993460)
+MPT:     at abort.c:246
+MPT: #4  0x00002aaaaf4697da in PMPI_Abort (comm=<optimized out>, 
+MPT:     errorcode=-858993460) at abort.c:68
+MPT: #5  0x00002aaaaf469ac1 in pmpi_abort__ ()
+MPT:    from /p/app/hpe/mpt-2.21/lib/libmpi.so
+MPT: #6  0x00002aaabdc14ff2 in lmpi::lmpi_conditional_stop (istop_flag=1, warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: 
+MPT: error_message=warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: warning: Range for type <error type> has invalid bounds 1..-3689348814741910324
+MPT: 
+MPT: '\000' <repeats 24 times>, 'A', '\000' <repeats 23 times>, '@t\365\v', '\000' <repeats 20 times>, '\200t\365\v', '\000' <repeats 12 times>, 'a\000\000\000\000\000\000\000\r\000\000\000\001\000\377\377', '\000' <repeats 16 times>, '\360\335\353\000\000\000\000\000`uK\v', '\000' <repeats 28 times>, '\200bv\v', '\000' <repeats 20 times>, '!\000\000\000\000\000\000\000\260O\377\377\377\177', '\000' <repeats 18 times>..., 
+MPT:     lmpi_in=<error reading variable: Cannot access memory at address 0x0>, 
+MPT:     .tmp.ERROR_MESSAGE.len_V$2c28=0) at ../../../fun3d/libcore/src/lmpi.F90:814
+MPT: #7  0x00002aaab8008984 in design_io_helpers::verify_design (design=..., 
+MPT:     nbound=2147483647, itime=0, eqn_set=0, boom_targ_active=.FALSE.)
+MPT:     at ../../fun3d/LibF90/design_io_helpers.f90:1030
+MPT: #8  0x00002aaab2e2f302 in design_wrapper::set_up_design (eqn_set=0, itime=0, 
+MPT:     nrotor=0, design=..., 
+MPT:     nbound=<error reading variable: Cannot access memory at address 0x0>)
+MPT:     at ../../../../fun3d/Python/extension/fun3d/design_wrapper.f90:212
+MPT: #9  0x00002aaabce376ed in design_interface::set_up_design (eqn_set=0, itime=0, 
+MPT:     nrotor=0, design=..., 
+MPT:     nbound=<error reading variable: Cannot access memory at address 0x0>)
+MPT:     at ../../fun3d/libdefs/design_interface.F90:94
+MPT: #10 0x00002aaab61a42db in flow::initialize_data2a ()
+MPT:     at ../../fun3d/FUN3D_90/flow.F90:443
+MPT: #11 0x00002aaab61a40c5 in flow::initialize_data2 (brun=3435973836)
+MPT:     at ../../fun3d/FUN3D_90/flow.F90:386
+MPT: #12 0x00002aaab2e1cdc2 in flow_wrapper::initialize_grid ()
+MPT:     at ../../../../fun3d/Python/extension/fun3d/flow_wrapper.f90:105
+MPT: #13 0x00002aaab2e1bca1 in f2pywrap_flow_wrapper_initialize_grid (
+MPT:     initialize_gridf2pywrap=0)
+MPT:     at /p/work1/seanfire/tmpbxp1xoyy/src.linux-x86_64-3.9/_flow-f2pywrappers2.f90:16
+MPT: #14 0x00002aaab2e18997 in f2py_rout__flow_flow_wrapper_initialize_grid (
+MPT:     capi_self=0x20b4b, capi_args=0x7fffffff3fa0, capi_keywds=0x0, 
+MPT:     f2py_func=0xffffffffffffffff)
+MPT:     at /p/work1/seanfire/tmpbxp1xoyy/src.linux-x86_64-3.9/_flowmodule.c:559
+MPT: #15 0x0000555555694e4f in _PyObject_MakeTpCall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:191
+MPT: #16 0x0000555555724e29 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x2aaad54b06a0, callable=<optimized out>, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:116
+MPT: #17 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #18 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #19 _PyEval_EvalFrameDefault ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3487
+MPT: #20 0x00005555556dab32 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #21 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #22 0x00005555556db697 in _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:396
+MPT: #23 0x0000555555652f00 in _PyObject_VectorcallTstate (kwnames=0x2aaab1c50b80, 
+MPT:     nargsf=<optimized out>, args=<optimized out>, callable=0x2aaab1c54e50, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #24 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #25 call_function (kwnames=0x2aaab1c50b80, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #26 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x2aaad54b0380, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3535
+MPT: #27 0x00005555556db8c3 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #28 function_code_fastcall (globals=<optimized out>, nargs=<optimized out>, 
+MPT:     args=<optimized out>, co=<optimized out>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:330
+MPT: #29 _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:367
+MPT: #30 0x00005555556531a4 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x555558551470, callable=0x2aaac8854b80, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #31 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #32 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #33 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x5555585512a0, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3504
+MPT: #34 0x00005555556dab32 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #35 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #36 0x00005555556db697 in _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:396
+MPT: #37 0x00005555556531a4 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x2aaae7f9b750, callable=0x2aaab1c54940, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #38 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #39 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #40 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x2aaae7f9b5b0, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3504
+MPT: #41 0x00005555556db8c3 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #42 function_code_fastcall (globals=<optimized out>, nargs=<optimized out>, 
+MPT:     args=<optimized out>, co=<optimized out>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:330
+MPT: #43 _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:367
+MPT: #44 0x00005555556531a4 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x2aaae7e6ad28, callable=0x2aaaaefc5d30, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #45 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #46 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #47 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x2aaae7e6ab80, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3504
+MPT: #48 0x00005555556dab32 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #49 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #50 0x00005555556db697 in _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:396
+MPT: #51 0x00005555556531a4 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x2aaacd59ff68, callable=0x2aaaaefc5c10, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #52 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #53 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #54 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x2aaacd59fdd0, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3504
+MPT: #55 0x00005555556db8c3 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #56 function_code_fastcall (globals=<optimized out>, nargs=<optimized out>, 
+MPT:     args=<optimized out>, co=<optimized out>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:330
+MPT: #57 _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:367
+MPT: #58 0x00005555556531a4 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x2aaad54a63b8, callable=0x2aaad452f940, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #59 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #60 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #61 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x2aaad54a6220, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3504
+MPT: #62 0x00005555557052e4 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #63 function_code_fastcall (globals=<optimized out>, nargs=<optimized out>, 
+MPT:     args=<optimized out>, co=<optimized out>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:330
+MPT: #64 _PyFunction_Vectorcall (kwnames=<optimized out>, nargsf=<optimized out>, 
+MPT:     stack=0x5555582966d8, func=0x2aaad452fdc0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:367
+MPT: #65 _PyObject_VectorcallTstate (kwnames=<optimized out>, 
+MPT:     nargsf=<optimized out>, args=0x5555582966d8, callable=0x2aaad452fdc0, 
+MPT:     tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #66 method_vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/classobject.c:53
+MPT: #67 0x00005555556531ca in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x5555582966e0, callable=0x2aaad4552ec0, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #68 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #69 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #70 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x555558296480, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3487
+MPT: #71 0x00005555556dab32 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #72 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #73 0x00005555556db697 in _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:396
+MPT: #74 0x0000555555705c6b in _PyObject_VectorcallTstate (kwnames=0x0, nargsf=3, 
+MPT:     args=0x7fffffff8990, callable=0x2aaacbc834c0, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #75 method_vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/classobject.c:83
+MPT: #76 0x0000555555694788 in PyVectorcall_Call (kwargs=0x2, tuple=0x2aaad4559d80, 
+MPT:     callable=0x2aaad4559500)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:231
+MPT: #77 _PyObject_Call ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:266
+MPT: #78 0x00005555557227e0 in PyObject_Call (kwargs=0x0, args=0x2aaad4559d80, 
+MPT:     callable=0x2aaad4559500)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:293
+MPT: #79 do_call_core (kwdict=0x0, callargs=0x2aaad4559d80, func=0x2aaad4559500, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5120
+MPT: #80 _PyEval_EvalFrameDefault ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3580
+MPT: #81 0x00005555556db8c3 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #82 function_code_fastcall (globals=<optimized out>, nargs=<optimized out>, 
+MPT:     args=<optimized out>, co=<optimized out>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:330
+MPT: #83 _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:367
+MPT: #84 0x00005555556531a4 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x2aaad54a5208, callable=0x2aaacbc83430, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:118
+MPT: #85 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #86 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #87 _PyEval_EvalFrameDefault (tstate=<optimized out>, f=0x2aaad54a5040, 
+MPT:     throwflag=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3504
+MPT: #88 0x00005555556dad2b in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #89 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #90 0x00005555556db697 in _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:396
+MPT: #91 0x0000555555694788 in PyVectorcall_Call (kwargs=<optimized out>, 
+MPT:     tuple=0x2aaad44d23a0, callable=0x2aaad45200d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:231
+MPT: #92 _PyObject_Call ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:266
+MPT: #93 0x00002aaacc382064 in cb_slfunc_in_slsqp__user__routines ()
+MPT:    from /p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/slsqp.cpython-39-x86_64-linux-gnu.so
+MPT: #94 0x00002aaacc3873ca in slsqp (m=0, meq=0, la=<optimized out>, 
+MPT:     n=<optimized out>, x=..., xl=..., xu=..., f=0, c=..., g=..., a=..., 
+MPT:     acc=9.9999999999999995e-07, iter=500, iprint=-1, iout=60, 
+MPT:     ifile=<error reading variable: Unhandled dwarf expression opcode 0x0>, 
+MPT:     mode=0, w=..., l_w=1924, jw=..., l_jw=28, nfunc=0, ngrad=0, 
+MPT:     slfunc=0x2aaacc381f80 <cb_slfunc_in_slsqp__user__routines>, 
+MPT:     slgrad=0x2aaacc382640 <cb_slgrad_in_slsqp__user__routines>, _ifile=9)
+MPT:     at pyoptsparse/pySLSQP/source/slsqp.f:241
+MPT: #95 0x00002aaacc3841eb in f2py_rout_slsqp_slsqp ()
+MPT:    from /p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/slsqp.cpython-39-x86_64-linux-gnu.so
+MPT: #96 0x0000555555694e4f in _PyObject_MakeTpCall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:191
+MPT: #97 0x0000555555724e29 in _PyObject_VectorcallTstate (kwnames=0x0, 
+MPT:     nargsf=<optimized out>, args=0x555558290908, callable=<optimized out>, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:116
+MPT: #98 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #99 call_function (kwnames=0x0, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #100 _PyEval_EvalFrameDefault ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3487
+MPT: #101 0x00005555556dad2b in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #102 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #103 0x00005555556db697 in _PyFunction_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:396
+MPT: #104 0x00005555556cb68e in _PyObject_FastCallDictTstate ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:129
+MPT: #105 0x00005555556cb9d5 in _PyObject_Call_Prepend (kwargs=0x2aaad45526c0, 
+MPT:     args=0x2aaacce22790, obj=<optimized out>, callable=0x2aaacbc93280, 
+MPT:     tstate=0x5555559136d0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:489
+MPT: #106 slot_tp_call ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/typeobject.c:6703
+MPT: #107 0x0000555555694e4f in _PyObject_MakeTpCall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Objects/call.c:191
+MPT: #108 0x00005555557218e5 in _PyObject_VectorcallTstate (kwnames=0x2aaaabac4730, 
+MPT:     nargsf=<optimized out>, args=<optimized out>, callable=<optimized out>, 
+MPT:     tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:116
+MPT: #109 PyObject_Vectorcall ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/cpython/abstract.h:127
+MPT: #110 call_function (kwnames=0x2aaaabac4730, oparg=<optimized out>, 
+MPT:     pp_stack=<synthetic pointer>, tstate=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:5072
+MPT: #111 _PyEval_EvalFrameDefault ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:3535
+MPT: #112 0x00005555556dab32 in _PyEval_EvalFrame ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Include/internal/pycore_ceval.h:40
+MPT: #113 _PyEval_EvalCode ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4327
+MPT: #114 0x000055555578addc in _PyEval_EvalCodeWithName (qualname=0x0, name=0x0, 
+MPT:     closure=0x0, kwdefs=0x0, defcount=0, defs=0x0, kwstep=2, kwcount=0, 
+MPT:     kwargs=<optimized out>, kwnames=<optimized out>, argcount=<optimized out>, 
+MPT:     args=<optimized out>, locals=<optimized out>, globals=<optimized out>, 
+MPT:     _co=<optimized out>)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4359
+MPT: #115 PyEval_EvalCodeEx ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:4375
+MPT: #116 0x00005555556dbb5b in PyEval_EvalCode (co=co@entry=0x2aaaabab8df0, 
+MPT:     globals=globals@entry=0x2aaaaac007c0, locals=locals@entry=0x2aaaaac007c0)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/ceval.c:826
+MPT: #117 0x000055555578ae8b in run_eval_code_obj ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/pythonrun.c:1219
+MPT: #118 0x00005555557bb215 in run_mod ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/pythonrun.c:1240
+MPT: #119 0x0000555555666677 in pyrun_file (fp=0x55555594d580, 
+MPT:     filename=0x2aaaaab4c5e0, start=257, globals=0x2aaaaac007c0, 
+MPT:     locals=0x2aaaaac007c0, closeit=1, flags=0x7fffffffa208)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/pythonrun.c:1138
+MPT: #120 0x00005555557bfcef in pyrun_simple_file (flags=0x7fffffffa208, closeit=1, 
+MPT:     filename=0x2aaaaab4c5e0, fp=0x55555594d580)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/pythonrun.c:449
+MPT: #121 PyRun_SimpleFileExFlags ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/pythonrun.c:482
+MPT: #122 0x00005555557bfe0b in PyRun_AnyFileExFlags ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Python/pythonrun.c:91
+MPT: #123 0x00005555557c03b8 in pymain_run_file (cf=0x7fffffffa208, 
+MPT:     config=0x555555910a70)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Modules/main.c:379
+MPT: #124 pymain_run_python (exitcode=0x7fffffffa200)
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Modules/main.c:604
+MPT: #125 Py_RunMain ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Modules/main.c:683
+MPT: #126 0x00005555557c054e in pymain_main ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Modules/main.c:1105
+MPT: #127 0x00005555557c05b9 in Py_BytesMain ()
+MPT:     at /home/builder/ktietz/cos6/ci_cos6/python-split_1622827272909/work/Modules/main.c:1129
+MPT: #128 0x00002aaaab616555 in __libc_start_main () from /lib64/libc.so.6
+MPT: #129 0x0000555555748a64 in _start ()
+MPT: (gdb) A debugging session is active.
+MPT: 
+MPT:    Inferior 1 [process 132418] will be detached.
+MPT: 
+MPT: Quit anyway? (y or n) [answered Y; input not from terminal]
+MPT: Detaching from program: /proc/132418/exe, process 132418
+MPT: [Inferior 1 (process 132418) detached]
+
+MPT: -----stack traceback ends-----
+MPT ERROR: MPI_COMM_WORLD rank 0 has terminated without calling MPI_Finalize()
+        aborting job

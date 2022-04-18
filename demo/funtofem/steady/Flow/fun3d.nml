@@ -21,6 +21,8 @@
  &inviscid_flux_method
   flux_construction = 'roe'
   flux_limiter = 'hminmod'
+  smooth_limiter_coeff    = 1.0
+  freeze_limiter_iteration = 3
 /
 
 &nonlinear_solver_parameters
@@ -29,7 +31,7 @@
 /
 
  &code_run_control
-    steps              = 100
+    steps              = 5
     stopping_tolerance = 1.0E-15
     restart_write_freq = 1000
     restart_read = "off"

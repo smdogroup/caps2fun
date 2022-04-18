@@ -69,9 +69,12 @@ class wedgeTACS(TacsSteadyInterface):
             cte = 24.0e-6
             kappa = 230.0
 
-            t = 0.001
+            tInput = 0.001*np.ones(3)
 
             def elemCallBack(dvNum, compID, compDescript, elemDescripts, globalDVs, **kwargs):
+                elemIndex = kwargs['propID'] - 1
+                t = tInput[elemIndex]
+
                 prop = constitutive.MaterialProperties(rho=rho, specific_heat=specific_heat,
                                                        E=E, nu=nu, ys=ys, cte=cte, kappa=kappa)
                 con = constitutive.IsoShellConstitutive(prop, t=t, tNum=dvNum)
@@ -169,7 +172,7 @@ struct_tacs = solvers['structural'].assembler
 obj_scale = 0.0106
 con_scale = 3.35
     
-
+#==================================================================================================#
 
 def objFunc(self, xdict):
 
@@ -251,10 +254,9 @@ def objGrad(self, xdict, funcs):
     return sens, fail
 
 
+#==================================================================================================#
 
-
-
-# dp = wedge_adjoint(analysis_type='aerothermoelastic') # 'aeroelastic') # 'aerothermoelastic') # 'aerothermal')
+# Quick test of forward and adjoint solve
 
 tInput = 0.001*np.ones(3)
 model.set_variables(tInput)
@@ -267,6 +269,9 @@ driver.solve_adjoint()
 grads = model.get_function_gradients()
 print(grads)
 
+#==================================================================================================#
+
+# dp = wedge_adjoint(analysis_type='aerothermoelastic') # 'aeroelastic') # 'aerothermoelastic') # 'aerothermal')
 
 
 # optProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", dp.objFunc)
