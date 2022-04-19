@@ -54,6 +54,7 @@ class wedgeTACS(TacsSteadyInterface):
         super(wedgeTACS,self).__init__(comm, tacs_comm, model)
 
         assembler = None
+        nodes = None
         self.tacs_proc = False
         if comm.Get_rank() < n_tacs_procs:
             self.tacs_proc = True
@@ -101,7 +102,15 @@ class wedgeTACS(TacsSteadyInterface):
             FEASolver.initialize(elemCallBack)
             assembler = FEASolver.assembler
 
-        self._initialize_variables(assembler, thermal_index=6)
+            #Tim's fix
+            #ownerRange = assembler.ownerRange
+            #nodes = np.arange(ownerRange[tacs_comm.rank], ownerRange[tacs_comm.rank+1], dtype=int))
+
+            origNodePositions = FEASolver.getOrigNodes()
+            nodes = np.arange(origNodePositions.shape[0]//3, dtype=int)
+
+
+        self._initialize_variables(assembler, struct_id=nodes, thermal_index=6)
         self.initialize(model.scenarios[0],model.bodies)
 
     def post_export_f5(self):
@@ -655,7 +664,7 @@ class NacaOMLOptimization():
         #3 - drag
 
         funcs = {}
-        funcs["obj"] = self.functions[1].value #mass
+        funcs["obj"] = self.functions[1].value.real #mass
         funcs["con"] = 1
         fail = False
 
@@ -665,7 +674,7 @@ class NacaOMLOptimization():
             print("Funcs dict {}".format(funcs))
 
         #update status
-        self.cwrite("\tObjective function is {}\n".format(funcs["obj"]))
+        self.cwrite("\tObjective function is {}\n".format(funcs["obj"].real))
 
         return funcs, fail
 
@@ -690,8 +699,8 @@ class NacaOMLOptimization():
             print("Shape grad {}".format(shapeGrad))
 
         #update status
-        self.cwrite("\tStruct Grad is {}\n".format(structGrad))
-        self.cwrite("\tShape Grad is {}\n".format(shapeGrad))
+        self.cwrite("\tStruct Grad is {}\n".format(structGrad.real))
+        self.cwrite("\tShape Grad is {}\n".format(shapeGrad.real))
         return sens, fail
 
     def computeShapeDerivatives(self):
@@ -735,21 +744,20 @@ class NacaOMLOptimization():
             for funcInd in range(self.nfunc):
                 
                 #get the pytacs/tacs sensitivity w.r.t. mesh for that function
-                sens = self.struct_mesh_sens[funcInd,:]
+                sens = self.struct_mesh_sens
 
                 #write the key,value,nnodes of the function
-                funcKey = "func #" + str(funcInd)
+                funcKey = "func#" + str(funcInd)
                 f.write(funcKey + "\n")
                 f.write("{}\n".format(self.functions[funcInd].value.real))
                 f.write("{}\n".format(len(self.structIds)))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
-                for nodeInd in self.structIds: # d(Func1)/d(xyz)
-                    bdfind = nodeInd
-                    #bdfind = nodeind + 1
-                    f.write("{} {} {} {}\n".format(bdfind, sens[nodeind,0], sens[nodeind,1], sens[nodeind,2]))
-
-                funcInd += 1
+                ct = 0
+                for nodeind in self.structIds: # d(Func1)/d(xyz)
+                    bdfind = nodeind + 1
+                    f.write("{} {} {} {}\n".format(bdfind, sens[3*ct, funcInd].real, sens[3*ct+1, funcInd].real, sens[3*ct+2, funcInd].real))
+                    ct += 1
         
         #update status
         self.cwrite("printed struct.sens file\n")
@@ -760,7 +768,7 @@ class NacaOMLOptimization():
 
         #update shape DV derivatives from struct mesh part
         for funcInd in range(self.nfunc):
-            funcKey = "func #" + str(funcInd)
+            funcKey = "func#" + str(funcInd)
             dvct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
@@ -787,7 +795,7 @@ class NacaOMLOptimization():
             for funcInd in range(self.nfunc):
                 
                 #get the pytacs/tacs sensitivity w.r.t. mesh for that function
-                sens = self.aero_mesh_sens[funcInd,:]
+                sens = self.aero_mesh_sens
 
                 #write the key,value,nnodes of the function
                 funcKey = "func #" + str(funcInd)
@@ -796,12 +804,11 @@ class NacaOMLOptimization():
                 f.write("{}\n".format(len(self.aeroIds)))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
+                ct = 0
                 for nodeind in self.aeroIds: # d(Func1)/d(xyz)
-                    bdfind = nodeind
-                    #bdfind = nodeind + 1
-                    f.write("{} {} {} {}\n".format(bdfind, sens[nodeind,0], sens[nodeind,1], sens[nodeind,2]))
-
-                funcInd += 1
+                    bdfind = nodeind + 1
+                    f.write("{} {} {} {}\n".format(bdfind, sens[3*ct, funcInd].real, sens[3*ct+1, funcInd].real, sens[3*ct+2, funcInd].real))
+                    ct += 1
         
         #update status
         self.cwrite("printed aero.sens file\n")
@@ -849,7 +856,8 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, False, "aerothermoelastic")
+debug = True
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, debug, "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)
