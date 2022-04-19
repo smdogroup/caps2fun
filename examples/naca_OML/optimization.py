@@ -495,20 +495,25 @@ class NacaOMLOptimization():
         f2fgrads = self.model.get_function_gradients()
         
         #update gradient for non shape DVs
-        nfunc = len(self.funcKeys)
+        nfunc = len(self.functions)
         structGrad = np.zeros((nfunc, 3))
-        ct = 0
-        funcCt = 0
-        for funcKey in self.funcKeys:
+        
+        for funcInd in range(nfunc):
+            ct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
-                if (not(DV["type"] == "shape")): structGrad[funcCt, ct] = f2fgrads[funcCt][ct].value
-                ct += 1
-            funcCt += 1
+                if (not(DV["type"] == "shape")): 
+                    structGrad[funcInd, ct] = f2fgrads[funcInd][ct].real
+                    ct += 1
         
         #get aero and struct mesh sensitivities for shape DVs
         self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
         self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
+
+        print("aero ids: {}".format(self.aeroIds))
+        print("aero mesh: {}".format(self.aero_mesh_sens))
+        print("struct ids: {}".format(self.structIds))
+        print("struct mesh: {}".format(self.struct_mesh_sens))
 
         #compute shape derivatives from aero and struct mesh sensitivities
         self.computeShapeDerivatives()
@@ -686,8 +691,8 @@ class NacaOMLOptimization():
 
         #update status
         self.cwrite("\tStruct Grad is {}\n".format(structGrad))
-        self.cwrite("\tShape Grad is {}\n".format(shapeGrad)
-        return objGrad, fail
+        self.cwrite("\tShape Grad is {}\n".format(shapeGrad))
+        return sens, fail
 
     def computeShapeDerivatives(self):
         if (self.comm.Get_rank() == 0):
@@ -699,6 +704,11 @@ class NacaOMLOptimization():
 
             #add aero_mesh_sens part to shape DV derivatives
             self.applyAeroMeshSens()
+        else:
+            #set shape gradient to None if not root proc
+            self.shapeGrad = None
+        
+        self.shapeGrad = comm.bcast(self.shapeGrad, root=0)
 
     def initShapeGrad(self):
         self.nfunc = len(self.functions)
@@ -706,9 +716,9 @@ class NacaOMLOptimization():
         #determine number of shapeDV
         self.nshapeDV = 0
         for DV in self.DVdict:
-            if (DV["type"] == shape): self.nshapeDV += 1
+            if (DV["type"] == "shape"): self.nshapeDV += 1
 
-        self.shapeGrad = np.zeros((self.nfunc, nshapeDV))
+        self.shapeGrad = np.zeros((self.nfunc, self.nshapeDV))
 
     def applyStructMeshSens(self):
         #print struct mesh sens to struct mesh sens file
@@ -730,7 +740,7 @@ class NacaOMLOptimization():
                 #write the key,value,nnodes of the function
                 funcKey = "func #" + str(funcInd)
                 f.write(funcKey + "\n")
-                f.write("{}\n".format(self.functions[funcInd]))
+                f.write("{}\n".format(self.functions[funcInd].value.real))
                 f.write("{}\n".format(len(self.structIds)))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
@@ -782,7 +792,7 @@ class NacaOMLOptimization():
                 #write the key,value,nnodes of the function
                 funcKey = "func #" + str(funcInd)
                 f.write(funcKey + "\n")
-                f.write("{}\n".format(self.function[funcInd]))
+                f.write("{}\n".format(self.functions[funcInd].value.real))
                 f.write("{}\n".format(len(self.aeroIds)))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
@@ -839,8 +849,7 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-debug = True
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, debug, "aerothermoelastic")
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, False, "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)
