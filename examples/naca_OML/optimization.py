@@ -102,7 +102,7 @@ class wedgeTACS(TacsSteadyInterface):
             FEASolver.initialize(elemCallBack)
             assembler = FEASolver.assembler
 
-            #Tim's fix
+            #Tim's fix, based on tacs/pyMeshloader.py
             #ownerRange = assembler.ownerRange
             #nodes = np.arange(ownerRange[tacs_comm.rank], ownerRange[tacs_comm.rank+1], dtype=int))
 
@@ -519,6 +519,8 @@ class NacaOMLOptimization():
         self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
         self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
 
+        #shift aeroIds to oneBased
+
         print("aero ids: {}".format(self.aeroIds))
         print("aero mesh: {}".format(self.aero_mesh_sens))
         print("struct ids: {}".format(self.structIds))
@@ -704,6 +706,8 @@ class NacaOMLOptimization():
         return sens, fail
 
     def computeShapeDerivatives(self):
+        self.cwrite("Compute shape derivatives... ")
+
         if (self.comm.Get_rank() == 0):
             #initialize shape gradient again at zero
             self.initShapeGrad()
@@ -728,6 +732,8 @@ class NacaOMLOptimization():
             if (DV["type"] == "shape"): self.nshapeDV += 1
 
         self.shapeGrad = np.zeros((self.nfunc, self.nshapeDV))
+
+        self.cwrite("initialized shape gradient\n")
 
     def applyStructMeshSens(self):
         #print struct mesh sens to struct mesh sens file
@@ -760,11 +766,11 @@ class NacaOMLOptimization():
                     ct += 1
         
         #update status
-        self.cwrite("printed struct.sens file\n")
+        self.cwrite("\tprinted struct.sens file, ")
 
         #run aim postanalysis
         self.tacsAim.postAnalysis()
-        self.cwrite("completed tacsAim postAnalysis()\n")
+        self.cwrite("completed tacsAim postAnalysis(), ")
 
         #update shape DV derivatives from struct mesh part
         for funcInd in range(self.nfunc):
@@ -777,7 +783,7 @@ class NacaOMLOptimization():
                     dvct += 1
 
         #update status
-        self.cwrite("finished shape DV contribution from struct mesh sens\n")
+        self.cwrite("finished struct mesh contribution to shape DVs\n")
 
 
     def applyAeroMeshSens(self):
@@ -801,7 +807,10 @@ class NacaOMLOptimization():
                 funcKey = "func #" + str(funcInd)
                 f.write(funcKey + "\n")
                 f.write("{}\n".format(self.functions[funcInd].value.real))
-                f.write("{}\n".format(len(self.aeroIds)))
+                
+                #print aero_nnodes on aerodynamic surface mesh
+                aero_nnodes = len(self.aeroIds)
+                f.write("{}\n".format(aero_nnodes))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
                 ct = 0
@@ -811,11 +820,11 @@ class NacaOMLOptimization():
                     ct += 1
         
         #update status
-        self.cwrite("printed aero.sens file\n")
+        self.cwrite("\tPrinted aero.sens file, ")
 
         #run aim postanalysis
         self.fun3dAim.postAnalysis()
-        self.cwrite("completed pointwiseAim postAnalysis()\n")
+        self.cwrite("completed pointwiseAim postAnalysis(), ")
 
         #update shape DV derivatives from aero mesh part
         for funcInd in range(self.nfunc):
@@ -828,7 +837,7 @@ class NacaOMLOptimization():
                     dvct += 1
             
         #update status
-        self.cwrite("finished shape DV contribution from aero mesh sens\n")
+        self.cwrite("finished aero mesh contribution to shape DVs\n")
 
 
 ##----------Outside of class, run cases------------------##
