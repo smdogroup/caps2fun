@@ -53,7 +53,7 @@
 /
 
 &volume_output_variables
-  export_to ='vtk'
+  export_to = 'vtk'
   x = .false.
   y = .false.
   z = .false.

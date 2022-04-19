@@ -495,13 +495,16 @@ class NacaOMLOptimization():
         f2fgrads = self.model.get_function_gradients()
         
         #update gradient for non shape DVs
-        structGrad = np.zeros(3)
+        nfunc = len(self.funcKeys)
+        structGrad = np.zeros((nfunc, 3))
         ct = 0
+        funcCt = 0
         for funcKey in self.funcKeys:
             for DV in self.DVdict:
                 dvname = DV["name"]
-                if (not(DV["type"] == "shape")): structGrad[ct] = f2fgrads[funcKey][ct]
+                if (not(DV["type"] == "shape")): structGrad[funcCt, ct] = f2fgrads[funcCt][ct].value
                 ct += 1
+            funcCt += 1
         
         #get aero and struct mesh sensitivities for shape DVs
         self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
@@ -513,7 +516,7 @@ class NacaOMLOptimization():
 
 
         #send or store gradient
-        return structGrad, shapeGrad
+        return structGrad, self.shapeGrad
 
     def updateDesign(self, x):
 
@@ -640,47 +643,72 @@ class NacaOMLOptimization():
 
 
     def objCon(self, x):
-        functions = self.forwardAnalysis(x)
+        self.functions = self.forwardAnalysis(x)
         #0 - stress
         #1 - mass
         #2 - lift
         #3 - drag
 
         funcs = {}
-        funcs["obj"] = functions[1] #lift
-        #funcs["con"] = func2
+        funcs["obj"] = self.functions[1].value #mass
+        funcs["con"] = 1
         fail = False
 
+        if (self.comm.Get_rank() == 0):
+            print("Input {}".format(x))
+            print("Functions {}".format(self.functions))
+            print("Funcs dict {}".format(funcs))
+
         #update status
-        self.cwrite("Objective function is {}\n".format(funcs["obj"]))
+        self.cwrite("\tObjective function is {}\n".format(funcs["obj"]))
 
         return funcs, fail
 
-    def objGrad(self, x):
-        gradients = self.adjointAnalysis(x)
+    def objGrad(self, x, funcs):
+        structGrad, shapeGrad = self.adjointAnalysis(x)
         #0 - stress
         #1 - mass
         #2 - lift
         #3 - drag
         fail = False
-        grad1 = gradients[1][:]
 
         sens = {}
         sens["obj"] = { "struct": structGrad,
                         "shape" : shapeGrad}
+        sens["con"] = {"struct" : 0 * structGrad,
+                        "shape" : 0 * shapeGrad}
         #sens["con"] = {"x": [grad2]}
 
+        if (self.comm.Get_rank() == 0):
+            print("Input {}".format(x))
+            print("Struct grad {}".format(structGrad))
+            print("Shape grad {}".format(shapeGrad))
+
         #update status
-        self.cwrite("gradient is {}\n".format(sens["obj"]))
+        self.cwrite("\tStruct Grad is {}\n".format(structGrad))
+        self.cwrite("\tShape Grad is {}\n".format(shapeGrad)
         return objGrad, fail
 
     def computeShapeDerivatives(self):
         if (self.comm.Get_rank() == 0):
+            #initialize shape gradient again at zero
+            self.initShapeGrad()
+
             #add struct_mesh_sens part to shape DV derivatives#struct shape derivatives
             self.applyStructMeshSens()
 
             #add aero_mesh_sens part to shape DV derivatives
             self.applyAeroMeshSens()
+
+    def initShapeGrad(self):
+        self.nfunc = len(self.functions)
+
+        #determine number of shapeDV
+        self.nshapeDV = 0
+        for DV in self.DVdict:
+            if (DV["type"] == shape): self.nshapeDV += 1
+
+        self.shapeGrad = np.zeros((self.nfunc, nshapeDV))
 
     def applyStructMeshSens(self):
         #print struct mesh sens to struct mesh sens file
@@ -693,21 +721,21 @@ class NacaOMLOptimization():
             #write (nfunctions) in first line
             f.write("{}\n".format(self.nfunc))
             
-            funcInd = 0
             #for each function mass, stress, etc.
-            for key in self.funcKeys:
+            for funcInd in range(self.nfunc):
                 
                 #get the pytacs/tacs sensitivity w.r.t. mesh for that function
-                sens = self.struct_mesh_sens[:,funcInd]
+                sens = self.struct_mesh_sens[funcInd,:]
 
                 #write the key,value,nnodes of the function
-                f.write(key + "\n")
-                f.write("{}\n".format(self.function[key]))
-                f.write("{}\n".format(self.structNodes))
+                funcKey = "func #" + str(funcInd)
+                f.write(funcKey + "\n")
+                f.write("{}\n".format(self.functions[funcInd]))
+                f.write("{}\n".format(len(self.structIds)))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
-                for structId in self.structIds: # d(Func1)/d(xyz)
-                    bdfind = structId
+                for nodeInd in self.structIds: # d(Func1)/d(xyz)
+                    bdfind = nodeInd
                     #bdfind = nodeind + 1
                     f.write("{} {} {} {}\n".format(bdfind, sens[nodeind,0], sens[nodeind,1], sens[nodeind,2]))
 
@@ -721,10 +749,14 @@ class NacaOMLOptimization():
         self.cwrite("completed tacsAim postAnalysis()\n")
 
         #update shape DV derivatives from struct mesh part
-        for funcKey in self.funcKeys:
+        for funcInd in range(self.nfunc):
+            funcKey = "func #" + str(funcInd)
+            dvct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
-                if (DV["type"] == "shape"): self.gradient[funcKey][dvname] = self.tacsAim.dynout[funcKey].deriv(dvname)
+                if (DV["type"] == "shape"): 
+                    self.shapeGrad[funcInd, dvct] += self.tacsAim.dynout[funcKey].deriv(dvname)
+                    dvct += 1
 
         #update status
         self.cwrite("finished shape DV contribution from struct mesh sens\n")
@@ -741,21 +773,21 @@ class NacaOMLOptimization():
             #write (nfunctions) in first line
             f.write("{}\n".format(self.nfunc))
             
-            funcInd = 0
             #for each function mass, stress, etc.
-            for key in self.funcKeys:
+            for funcInd in range(self.nfunc):
                 
                 #get the pytacs/tacs sensitivity w.r.t. mesh for that function
-                sens = self.aero_mesh_sens[:,funcInd]
+                sens = self.aero_mesh_sens[funcInd,:]
 
                 #write the key,value,nnodes of the function
-                f.write(key + "\n")
-                f.write("{}\n".format(self.function[key]))
-                f.write("{}\n".format(self.aeroNodes))
+                funcKey = "func #" + str(funcInd)
+                f.write(funcKey + "\n")
+                f.write("{}\n".format(self.function[funcInd]))
+                f.write("{}\n".format(len(self.aeroIds)))
 
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
-                for aeroId in self.aeroIds: # d(Func1)/d(xyz)
-                    bdfind = aeroId
+                for nodeind in self.aeroIds: # d(Func1)/d(xyz)
+                    bdfind = nodeind
                     #bdfind = nodeind + 1
                     f.write("{} {} {} {}\n".format(bdfind, sens[nodeind,0], sens[nodeind,1], sens[nodeind,2]))
 
@@ -769,10 +801,14 @@ class NacaOMLOptimization():
         self.cwrite("completed pointwiseAim postAnalysis()\n")
 
         #update shape DV derivatives from aero mesh part
-        for funcKey in self.funcKeys:
+        for funcInd in range(self.nfunc):
+            funcKey = "func #" + str(funcInd)
+            dvct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
-                if (DV["type"] == "shape"): self.gradient[funcKey][dvname] += self.fun3dAim.dynout[funcKey].deriv(dvname)
+                if (DV["type"] == "shape"): 
+                    self.shapeGrad[funcInd, dvct] += self.fun3dAim.dynout[funcKey].deriv(dvname)
+                    dvct += 1
             
         #update status
         self.cwrite("finished shape DV contribution from aero mesh sens\n")
@@ -803,7 +839,7 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-debug = False
+debug = True
 nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, debug, "aerothermoelastic")
 
 #setup pyOptSparse
@@ -822,14 +858,14 @@ init2 = 0.001*np.ones(3)
 sparseProb.addVarGroup("shape", 10, "c", lower=lbnds, upper=ubnds, value=init)
 sparseProb.addVarGroup("struct", 3, "c", lower=lBnds2, upper=uBnds2, value=init2)
 
-#optProb.addConGroup("con", 1, lower=1, upper=1)
+sparseProb.addConGroup("con", 1, lower=1, upper=1)
 sparseProb.addObj("obj")
 
 # if comm.rank == 0:
 #     print(sparseProb)
 
-optOptions = {"IPRINT": -1}
-opt = SLSQP(options=optOptions)
+#optOptions = {"IPRINT": -1}
+opt = SLSQP(options={})
 sol = opt(sparseProb, sens=nacaOpt.objGrad)
 
 if comm.rank == 0:
