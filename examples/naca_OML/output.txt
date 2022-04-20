@@ -385,10 +385,10 @@
     udprim                    2       0.010    1.0
     restore                   2       0.000    0.0
     loft                      1       0.010    1.0
-    hollow                    1       0.000    0.0
-    intersect                 1       0.130   12.5
-    union                     2       0.890   85.6
-    translate                 2       0.000    0.0
+    hollow                    1       0.010    1.0
+    intersect                 1       0.120   11.4
+    union                     2       0.890   84.8
+    translate                 2       0.010    1.0
     rotatey                   1       0.000    0.0
     rotatez                   1       0.000    0.0
     scale                     2       0.000    0.0
@@ -397,7 +397,7 @@
     store                     1       0.000    0.0
     patbeg                    7       0.000    0.0
     patend                   17       0.000    0.0
-    Total                    82       1.040
+    Total                    82       1.050
 Mapping capsGroup attributes ................
 	Number of unique capsGroup attributes = 3
 	Name = rib, index = 1
@@ -518,7 +518,7 @@ Writing TACS instruction file....
 	Writing property cards
 	Writing design variable cards
 	Writing design variable relation cards
-FUN3D 13.6-c04c9a5 Flow started 04/19/2022 at 17:22:27 with 192 processes
+FUN3D 13.6-c04c9a5 Flow started 04/20/2022 at 16:55:30 with 48 processes
 Contents of fun3d.nml file below------------------------
  &project
     project_rootname = "caps.GeomToMesh"
@@ -553,7 +553,7 @@ Contents of fun3d.nml file below------------------------
 /
 
  &code_run_control
-    steps              = 5
+    steps              = 1
     stopping_tolerance = 1.0E-15
     restart_write_freq = 1000
     restart_read = "off"
@@ -561,7 +561,7 @@ Contents of fun3d.nml file below------------------------
 
 &global
   moving_grid = .true.
-  volume_animation_freq = -1
+  volume_animation_freq = 0
   boundary_animation_freq = -1
 /
 
@@ -620,14 +620,14 @@ cell statistics:  all,  0.66412992E-11,  0.20072378E+02,  170.943140613
      ... PM (64,skip_do_min) :  F T
      ... Use subset of cores to call ParMETIS            4
      ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
-     ... Temporary memory usage               20508052  Bytes
-     ... edgeCut       439449
+     ... Temporary memory usage               20506564  Bytes
+     ... edgeCut       223265
      ... Constructing partition node sets for level-0...               4232729 T
      ... Edge Partitioning ....
      ... Boundary partitioning....
      ... Reordering for cache efficiency....
      ... Write global grid information to caps.GeomToMesh.grid_info
-     ... Time after preprocess TIME/Mem(MB):  ********    459.64    459.64
+     ... Time after preprocess TIME/Mem(MB):  ********    396.19    396.19
  Grid Motion Type 
    rigid+deform
  
@@ -637,9 +637,477 @@ cell statistics:  all,  0.66412992E-11,  0.20072378E+02,  170.943140613
   ... Use the reference Mach number for the freestream:  T
  Setting Sutherland constant =   198.60 rather than default value of  198.60
   Repaired 71 nodes of symmetry plane 6662, max deviation: 0.355E-14
-  y-symmetry metrics modified/examined: 41892/41952
+  y-symmetry metrics modified/examined: 40658/40716
   Running an aeroelastic case with itime = 0
   -->Setting ignore_grid_velocity to true
   -->Setting need_grid_velocity to false
  
  Computing distance function:
+ Boundary 3 allowed to deform with y=constant constraint
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ Done.
+[0] Creating TACSAssembler with numOwnedNodes = 116 numElements = 135
+[0] TACSAssembler: Total dof = 8876 Total nodes = 1268 Total elements = 1318
+[2] Creating TACSAssembler with numOwnedNodes = 127 numElements = 134
+[3] Creating TACSAssembler with numOwnedNodes = 130 numElements = 129
+[4] Creating TACSAssembler with numOwnedNodes = 126 numElements = 133
+[1] Creating TACSAssembler with numOwnedNodes = 127 numElements = 134
+[5] Creating TACSAssembler with numOwnedNodes = 124 numElements = 134
+[6] Creating TACSAssembler with numOwnedNodes = 135 numElements = 129
+[7] Creating TACSAssembler with numOwnedNodes = 136 numElements = 129
+[8] Creating TACSAssembler with numOwnedNodes = 120 numElements = 130
+[9] Creating TACSAssembler with numOwnedNodes = 127 numElements = 131
+[9] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.20, nnz(ILU) = 1458
+[3] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.67, nnz(ILU) = 2043
+[6] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.82, nnz(ILU) = 2373
+[8] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.32, nnz(ILU) = 1597
+[0] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.77, nnz(ILU) = 2221
+[1] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.57, nnz(ILU) = 2195
+[2] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.76, nnz(ILU) = 2488
+[4] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.47, nnz(ILU) = 1911
+[5] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 2.61, nnz(ILU) = 2071
+[7] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 3.01, nnz(ILU) = 2733
+[9] TACSBlockCyclicMat: (1890,1890) Initial density: 0.676 factor fill in: 0.139
+Transfer scheme [0]: Creating scheme of type MELD...
+Transfer scheme [1]: Creating scheme of type MELDThermal...
+FUN3D 13.6-c04c9a5 Flow started 04/20/2022 at 16:55:45 with 48 processes
+Contents of fun3d.nml file below------------------------
+ &project
+    project_rootname = "caps.GeomToMesh"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .true.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+  smooth_limiter_coeff    = 1.0
+  freeze_limiter_iteration = 3
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 1
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = 0
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to = 'vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ loading design ...
+ Preparing to read binary AFLR3 grid: caps.GeomToMesh.lb8.ugrid
+ 
+  nnodes              725294
+  ntface,nqface       124112 0
+  ntet,npyr,nprz,nhex 4232729 0 0 0
+ 
+ Swapping y- and z-points and preserving right-handedness.
+ ...y(new) = -z(input)
+ ...z(new) = +y(input)
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.66412992E-11,  0.20072378E+02,  170.943140613
+cell statistics:  all,  0.66412992E-11,  0.20072378E+02,  170.943140613
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               20506564  Bytes
+     ... edgeCut       223265
+     ... Constructing partition node sets for level-0...               4232729 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to caps.GeomToMesh.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    514.97    514.97
+  NOTE: kappa_umuscl set by grid: .00
+ 
+ Grid read complete
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  Repaired 71 nodes of symmetry plane 6662, max deviation: 0.355E-14
+  y-symmetry metrics modified/examined: 40658/40716
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Recomputing distance function:
+ Boundary 3 allowed to deform with y=constant constraint
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ 
+ Begin Mesh Movement, Time Step 1   (Current Step 1)
+ Solving linear elasticity equations for mesh deformation
+   Info: initial call to elasticity solver
+     Elasticity model: (1/distance)**1.0
+     Linear solver: gmres
+     Left preconditioner: point-multicolor  Preconditioner iterations: 5
+     Initial values for solution taken as zero
+     Convergence tolerances: tol_rel = 0.10000000E-09 tol_abs = 0.10000000E-13
+   Elasticity Convergence:
+     Search direction     1  residual =  0.43616011E-12   relative_residual =  0.10000000E+01
+     Search direction     5  residual =  0.69280853E-14   relative_residual =  0.15884271E-01
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10000000E-13
+ Iter            density_RMS  density_MAX   X-location   Y-location   Z-location
+    1  0.141427819902516E-04  0.81874E-03  0.20854E+01  0.23128E+01  0.27501E+00
+       Lift  0.804131241467654E+00         Drag  0.896251114469296E+00
+ 
+ Writing boundary output: caps.GeomToMesh_tec_boundary.dat
+  Time step: 1, ntt: 1, Prior iterations: 0
+ 
+ Writing caps.GeomToMesh.flow (version 12.2)
+  inserting current history iterations 1
+ Time for write: .1 s
+ 
+ Current value of function            1  0.000000000000000E+000
+ Done.
+FUN3D 13.6-c04c9a5 Adjoint started 04/20/2022 at 16:56:07 with 48 processes
+Contents of ../Flow//fun3d.nml file below------------------------
+ &project
+    project_rootname = "caps.GeomToMesh"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .true.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+  smooth_limiter_coeff    = 1.0
+  freeze_limiter_iteration = 3
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 1
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = 0
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to = 'vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of ../Flow//fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file ../Flow/moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ Code_id=           2
+ Preparing to read binary AFLR3 grid: ../Flow/caps.GeomToMesh.lb8.ugrid
+ 
+  nnodes              725294
+  ntface,nqface       124112 0
+  ntet,npyr,nprz,nhex 4232729 0 0 0
+ 
+ Swapping y- and z-points and preserving right-handedness.
+ ...y(new) = -z(input)
+ ...z(new) = +y(input)
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.66412992E-11,  0.20072378E+02,  170.943140613
+cell statistics:  all,  0.66412992E-11,  0.20072378E+02,  170.943140613
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               20506564  Bytes
+     ... edgeCut       223265
+     ... Constructing partition node sets for level-0...               4232729 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to caps.GeomToMesh.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    645.25    645.25
+  NOTE: kappa_umuscl set by grid: .00
+ loading design ...
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  Repaired 71 nodes of symmetry plane 6662, max deviation: 0.355E-14
+  y-symmetry metrics modified/examined: 40658/40716
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Recomputing distance function:
+ Boundary 3 allowed to deform with y=constant constraint
+ 
+ Using linear elasticity to reposition grid...
+ 
+ loading design ...
+ No active shape variables: exiting from reposition_grid...
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ Static aeroelastic adjoint mesh update
+ 
+ Begin Mesh Movement, Time Step 1   (Current Step 1)
+ Solving linear elasticity equations for mesh deformation
+   Info: initial call to elasticity solver
+     Elasticity model: (1/distance)**1.0
+     Linear solver: gmres
+     Left preconditioner: point-multicolor  Preconditioner iterations: 5
+     Initial values for solution taken as zero
+     Convergence tolerances: tol_rel = 0.10000000E-09 tol_abs = 0.10000000E-13
+   Elasticity Convergence:
+     Search direction     1  residual =  0.52734107E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.23596758E-09   relative_residual =  0.44746672E-05
+     Search direction    95  residual =  0.13288612E-13   relative_residual =  0.25199274E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.15273411E-13
+ Static adjoint mesh updated moving_grid = .false. now
+ Boundary 3 allowed to deform with y=constant constraint
+ Boundary 3 allowed to deform with y=constant constraint
+ 
+ Reading ../Flow/caps.GeomToMesh.flow (version  12.20)
+ the restart files contains history iterations = 1
+ 
+       Lift  0.804131247424598E+00         Drag  0.896251111711180E+00

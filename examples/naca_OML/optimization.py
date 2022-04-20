@@ -39,7 +39,7 @@ from tacs import functions
 from tacs import TACS, functions, constitutive, elements, pyTACS, problems
 
 #import normal classes
-import os, shutil
+import os, shutil, sys
 import numpy as np
 
 #import other modules
@@ -102,12 +102,14 @@ class wedgeTACS(TacsSteadyInterface):
             FEASolver.initialize(elemCallBack)
             assembler = FEASolver.assembler
 
-            #Tim's fix, based on tacs/pyMeshloader.py
-            #ownerRange = assembler.ownerRange
-            #nodes = np.arange(ownerRange[tacs_comm.rank], ownerRange[tacs_comm.rank+1], dtype=int))
 
-            origNodePositions = FEASolver.getOrigNodes()
-            nodes = np.arange(origNodePositions.shape[0]//3, dtype=int)
+            #Tim's fix, based on tacs/pyMeshloader.py
+            if (n_tacs_procs > 1):
+                ownerRange = assembler.getOwnerRange()
+                nodes = np.arange(ownerRange[tacs_comm.rank], ownerRange[tacs_comm.rank+1], dtype=int)
+            else:
+                origNodePositions = FEASolver.getOrigNodes()
+                nodes = np.arange(origNodePositions.shape[0]//3, dtype=int)
 
 
         self._initialize_variables(assembler, struct_id=nodes, thermal_index=6)
@@ -173,6 +175,11 @@ class NacaOMLOptimization():
         
             #immediately update it to be visibile in the file
             self.status.flush()
+
+    def commBarrier(self):
+        print("proc #{} reached here\n".format(self.comm.Get_rank()))
+        sys.stdout.flush()
+        self.comm.Barrier()
 
     def initializeAIMs(self, structCSM, fluidCSM):
         if (self.comm.Get_rank() == 0):
@@ -389,7 +396,9 @@ class NacaOMLOptimization():
         num_tacs_dvs = len(structDVs)
 
         # Set up the communicators
-        n_tacs_procs = 1
+        n_procs = self.comm.Get_size()
+        n_tacs_procs = 10
+        if (n_tacs_procs > n_procs): n_tacs_procs = n_procs
 
         world_rank = self.comm.Get_rank()
         if world_rank < n_tacs_procs:
@@ -412,7 +421,7 @@ class NacaOMLOptimization():
 
         self.model.add_body(self.wing)
 
-        steady = Scenario('steady', group=0, steps=5)
+        steady = Scenario('steady', group=0, steps=1)
         function1 = Function('ksfailure',analysis_type='structural')
         steady.add_function(function1)
 
@@ -503,6 +512,8 @@ class NacaOMLOptimization():
         #get the funtofem gradients
         f2fgrads = self.model.get_function_gradients()
         
+        self.commBarrier()
+
         #update gradient for non shape DVs
         nfunc = len(self.functions)
         structGrad = np.zeros((nfunc, 3))
@@ -515,21 +526,29 @@ class NacaOMLOptimization():
                     structGrad[funcInd, ct] = f2fgrads[funcInd][ct].real
                     ct += 1
         
-        #get aero and struct mesh sensitivities for shape DVs
-        self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
-        self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
 
         #shift aeroIds to oneBased
+        #oneBased = True
+        if (self.comm.Get_rank() == 0):
+            #get aero and struct mesh sensitivities for shape DVs
+            self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
+            self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
 
-        print("aero ids: {}".format(self.aeroIds))
-        print("aero mesh: {}".format(self.aero_mesh_sens))
-        print("struct ids: {}".format(self.structIds))
-        print("struct mesh: {}".format(self.struct_mesh_sens))
+            #if (oneBased): self.aeroIds = self.aeroIds - (min(self.aeroIds) - 1)
 
-        #compute shape derivatives from aero and struct mesh sensitivities
-        self.computeShapeDerivatives()
-        self.cwrite("computed shape derivative chain rule products\n")
+            print("aero ids: {}".format(self.aeroIds))
+            print("aero mesh: {}".format(self.aero_mesh_sens))
+            print("struct ids: {}".format(self.structIds))
+            print("struct mesh: {}".format(self.struct_mesh_sens))
 
+            #compute shape derivatives from aero and struct mesh sensitivities
+            self.computeShapeDerivatives()
+            self.cwrite("computed shape derivative chain rule products\n")
+
+        else:
+            self.shapeGrad = None
+
+        self.shapeGrad = self.comm.bcast(self.shapeGrad, root=0)
 
         #send or store gradient
         return structGrad, self.shapeGrad
@@ -720,8 +739,6 @@ class NacaOMLOptimization():
         else:
             #set shape gradient to None if not root proc
             self.shapeGrad = None
-        
-        self.shapeGrad = comm.bcast(self.shapeGrad, root=0)
 
     def initShapeGrad(self):
         self.nfunc = len(self.functions)
@@ -739,7 +756,7 @@ class NacaOMLOptimization():
         #print struct mesh sens to struct mesh sens file
         #where to print .sens file
         structSensFile = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+".sens")
-        
+
         #open the file
         with open(structSensFile, "w") as f:
             
@@ -765,6 +782,8 @@ class NacaOMLOptimization():
                     f.write("{} {} {} {}\n".format(bdfind, sens[3*ct, funcInd].real, sens[3*ct+1, funcInd].real, sens[3*ct+2, funcInd].real))
                     ct += 1
         
+            f.close()
+
         #update status
         self.cwrite("\tprinted struct.sens file, ")
 
@@ -789,10 +808,16 @@ class NacaOMLOptimization():
     def applyAeroMeshSens(self):
         #print aero mesh sens to aero mesh sens file
         #where to print .sens file
-        structSensFile = os.path.join(self.fun3dAim.analysisDir, self.fun3dAim.input.Proj_Name+".sens")
+        aeroSensFile = os.path.join(self.fun3dAim.analysisDir, self.fun3dAim.input.Proj_Name+".sens")
+        #print("Writing aero sens file, {}".format(aeroSensFile))
+
+        #make aero mesh derivatives (surface aero mesh) one based
+        aero_nnodes = len(self.aeroIds)
+        #minId = min(self.aeroIds)
+        #maxId = max(self.aeroIds)
         
         #open the file
-        with open(structSensFile, "w") as f:
+        with open(aeroSensFile, "w") as f:
             
             #write (nfunctions) in first line
             f.write("{}\n".format(self.nfunc))
@@ -804,7 +829,7 @@ class NacaOMLOptimization():
                 sens = self.aero_mesh_sens
 
                 #write the key,value,nnodes of the function
-                funcKey = "func #" + str(funcInd)
+                funcKey = "func#" + str(funcInd)
                 f.write(funcKey + "\n")
                 f.write("{}\n".format(self.functions[funcInd].value.real))
                 
@@ -815,12 +840,15 @@ class NacaOMLOptimization():
                 #for each node, print nodeind, dfdx, dfdy, dfdz for that mesh element
                 ct = 0
                 for nodeind in self.aeroIds: # d(Func1)/d(xyz)
-                    bdfind = nodeind + 1
+                    #bdfind = nodeind - (minId - 1)
+                    bdfind = nodeind
                     f.write("{} {} {} {}\n".format(bdfind, sens[3*ct, funcInd].real, sens[3*ct+1, funcInd].real, sens[3*ct+2, funcInd].real))
                     ct += 1
-        
+
+            f.close()
+
         #update status
-        self.cwrite("\tPrinted aero.sens file, ")
+        self.cwrite("\tprinted aero.sens file, ")
 
         #run aim postanalysis
         self.fun3dAim.postAnalysis()
