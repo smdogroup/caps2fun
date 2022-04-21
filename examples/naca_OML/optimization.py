@@ -906,9 +906,17 @@ optOptions = {"IPRINT": -1}
 opt = SLSQP(options=optOptions)
 sol = opt(sparseProb, sens=nacaOpt.objGrad)
 
+nacaOpt.cwrite("----------------------------")
+nacaOpt.cwrite("----------------------------\n")
+nacaOpt.cwrite("Finished optimization problem\n")
+
 if comm.rank == 0:
     print(sol)
     print('\nsol.xStar:  ', sol.xStar)
+
+nacaOpt.cwrite("Solution is: \n")
+nacaOpt.cwrite(sol)
+nacaOpt.cwrite("With optimal inputs {}".format(sol.xstar))
 
 #close the status file
 if (nacaOpt.comm.Get_rank() == 0): nacaOpt.status.close()

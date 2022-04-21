@@ -33,7 +33,7 @@ uBnds2 = 0.01*np.ones(3)
 init2 = 0.001*np.ones(3)
 
 #sparseProb.addVarGroup("shape", 10, "c", lower=lbnds, upper=ubnds, value=init)
-sparseProb.addVarGroup("struct", 3, lower=lBnds2, upper=uBnds2, value=init2)
+sparseProb.addVarGroup("struct", 3,lower=lBnds2, upper=uBnds2, value=init2)
 sparseProb.addVarGroup("shape", 3, lower=lBnds2, upper=uBnds2, value=init2)
 
 #sparseProb.addConGroup("con", 1, lower=1, upper=1)

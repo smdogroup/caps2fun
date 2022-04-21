@@ -1,4 +1,4 @@
-39 25 2
+39 25 0
 Proj_Name
 Mach
 Re
@@ -63,5 +63,3 @@ CXtot_v
 CYtot_v
 CZtot_v
 Forces
-func#0
-func#1
