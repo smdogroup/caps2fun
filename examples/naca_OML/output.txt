@@ -593,11 +593,11 @@ Writing TACS instruction file....
     finalizing:
 ==> Profile information
     Branch type           ncall  time (sec)    pct
-    box                       1       0.010   10.0
+    box                       1       0.000    0.0
     udprim                    2       0.010   10.0
     restore                   2       0.000    0.0
     loft                      1       0.010   10.0
-    subtract                  1       0.070   70.0
+    subtract                  1       0.080   80.0
     translate                 1       0.000    0.0
     rotatez                   1       0.000    0.0
     scale                     2       0.000    0.0
@@ -623,13 +623,498 @@ Getting mesh sizing parameters
 	Done getting mesh sizing parameters
 Writing global Glyph inputs...
 Writing egads file '/p/home/seanfire/git/caps2fun/examples/naca_OML/fluid/Scratch/pointwise/caps.egads'....
-Pointwise was unable to obtain a license.
-Reprise License Manager reported the following error:
-
-pointwise: All licenses in use (-22)
-
-Please check your license file, network, and license server status.
-Use environment variable pwid_LICENSE=port@hostname to specify a license server.
-NOT CMPLX_MODE
- EGADS Info: 0 Objects, 0 Reference in Use (of 1206) at Close!
- EGADS Info: 53 Objects, 77 Reference in Use (of 1658) at Close!
+Number of command line arguments = 2
+Thu Apr 21 2022  2:50:38PM EDT
+Pointwise V18.5
+Loading user defaults from capsUserDefaults.glf
+GeomToMesh: Defaults
+Connector level
+    InitDim                  = 11
+    MaxDim                   = 1024
+    MinDim                   = 4
+    TurnAngle                = 10.000000
+    Deviation                = 0.000000
+    SplitAngle               = 0.000000
+    JoinCons                 = 0
+    ProxGrowthRate           = 1.200000
+    SourceSpacing            = 1
+    TurnAngleHard            = 70.000000
+    EqualSpacing             = 0
+Domain level
+    Algorithm                = AdvancingFront
+    FullLayers               = 0
+    MaxLayers                = 15
+    GrowthRate               = 1.250000
+    IsoType                  = Triangle
+    TRexType                 = Triangle
+    TRexARLimit              = 40.000000
+    TRexAngleBC              = 0.000000
+    Decay                    = 0.800000
+    MinEdge                  = 0.000000
+    MaxEdge                  = 0.000000
+    Adapt                    = 0
+    WallSpacing              = 0.000000
+    StrDomConvertARTrigger   = 0.000000
+Block level
+    Algorithm                = Delaunay
+    VoxelLayers              = 3
+    boundaryDecay            = 0.800000
+    collisionBuffer          = 1.000000
+    maxSkewAngle             = 160.000000
+    TRexSkewDelay            = 0
+    edgeMaxGrowthRate        = 1.500000
+    fullLayers               = 1
+    maxLayers                = 100
+    growthRate               = 1.300000
+    TRexType                 = TetPyramid
+    volInitialize            = 1
+General
+    SkipMeshing              = 1
+    CAESolver                = UGRID
+    outerBoxScale            = 0
+    sourceBoxLengthScale     = 0.000000
+    sourceBoxDirection       =  1.000000 0.000000 0.000000 
+    sourceBoxAngle           = 0.000000
+    sourceGrowthFactor       = 10.000000
+    sourcePCDFile            = 
+    ModelSize                = 0
+    writeGMA                 = 2.0
+    assembleTolMult          = 2.0
+    modelOrientIntMeshVolume = 1
+Elevate On Export
+    degree                   = Q1
+    costThreshold            = 0.8
+    maxIncAngle              = 175.0
+    relax                    = 0.05
+    smoothingPasses          = 1000
+    WCNWeight                = 0.5
+    WCNMode                  = Calculate
+    writeVTU                 = false
+CADFile = caps.egads
+Determining model size from file.
+Info: Model Size adjusted to 100
+Computing maximum DB edge tolerance.
+  Quilt list has 10 entries.
+  Quilt quilt-1: edge tolerance = 5e-07
+  Quilt quilt-2: edge tolerance = 5.96207e-05
+  Quilt quilt-3: edge tolerance = 8.14871e-05
+  Quilt quilt-4: edge tolerance = 8.14871e-05
+  Quilt quilt-5: edge tolerance = 8.14871e-05
+  Quilt quilt-6: edge tolerance = 5e-07
+  Quilt quilt-7: edge tolerance = 5e-07
+  Quilt quilt-8: edge tolerance = 8.14871e-05
+  Quilt quilt-9: edge tolerance = 5e-07
+  Quilt quilt-10: edge tolerance = 5e-07
+  Maximum DB edge tolerance = 8.14871e-05
+Performing model assembly pass on geometry entities.
+domParams(MinEdge) defined as 1.629741e-04 due to model assembly tolerance
+Looking for quilt names in geometry.
+  Quilt list has 10 entries.
+Quilt list has 10 entries.
+Original connector list has 21 entries.
+Minimum connector length = 0.00361478
+Tolerance = 8.14871e-05
+Performing merge on connectors with equal dimensions and common end points.
+After regular merge, connector list has 21 entries.
+Updating conData
+Min Edge Tol: 5.000e-07 on con-2
+Max Edge Tol: 8.149e-05 on con-10
+Adjusting connector dimensions based on average spacings.
+Checking dimension for connector 1/21, name = con-1
+Checking dimension for connector 2/21, name = con-2
+  Changing dimension for connector 2/21 from 11 to 4
+Checking dimension for connector 3/21, name = con-3
+Checking dimension for connector 4/21, name = con-4
+  Changing dimension for connector 4/21 from 11 to 4
+Checking dimension for connector 5/21, name = con-5
+  Changing dimension for connector 5/21 from 11 to 4
+Checking dimension for connector 6/21, name = con-6
+  Changing dimension for connector 6/21 from 11 to 4
+Checking dimension for connector 7/21, name = con-7
+  Changing dimension for connector 7/21 from 11 to 4
+Checking dimension for connector 8/21, name = con-8
+Checking dimension for connector 9/21, name = con-10
+Checking dimension for connector 10/21, name = con-11
+  Changing dimension for connector 10/21 from 11 to 4
+Checking dimension for connector 11/21, name = con-12
+Checking dimension for connector 12/21, name = con-15
+  Changing dimension for connector 12/21 from 11 to 4
+Checking dimension for connector 13/21, name = con-19
+  Changing dimension for connector 13/21 from 11 to 4
+Checking dimension for connector 14/21, name = con-20
+  Changing dimension for connector 14/21 from 11 to 4
+Checking dimension for connector 15/21, name = con-21
+Checking dimension for connector 16/21, name = con-22
+  Changing dimension for connector 16/21 from 11 to 4
+Checking dimension for connector 17/21, name = con-23
+Checking dimension for connector 18/21, name = con-24
+Checking dimension for connector 19/21, name = con-26
+Checking dimension for connector 20/21, name = con-28
+Checking dimension for connector 21/21, name = con-30
+Processing spacing values for connector 1/21, name = con-1
+Processing spacing values for connector 2/21, name = con-2
+Processing spacing values for connector 3/21, name = con-3
+Processing spacing values for connector 4/21, name = con-4
+Processing spacing values for connector 5/21, name = con-5
+Processing spacing values for connector 6/21, name = con-6
+Processing spacing values for connector 7/21, name = con-7
+Processing spacing values for connector 8/21, name = con-8
+Processing spacing values for connector 9/21, name = con-10
+Processing spacing values for connector 10/21, name = con-11
+Processing spacing values for connector 11/21, name = con-12
+Processing spacing values for connector 12/21, name = con-15
+Processing spacing values for connector 13/21, name = con-19
+Processing spacing values for connector 14/21, name = con-20
+Processing spacing values for connector 15/21, name = con-21
+Processing spacing values for connector 16/21, name = con-22
+Processing spacing values for connector 17/21, name = con-23
+Processing spacing values for connector 18/21, name = con-24
+Processing spacing values for connector 19/21, name = con-26
+Processing spacing values for connector 20/21, name = con-28
+Processing spacing values for connector 21/21, name = con-30
+Number of unique endpoints = 14
+Checking for baffle intersections.
+Adjusting connector dimensions based on turning angles and/or deviation.
+  Connector 1/21 con:con-1. Curvature dim ratio = 1.0.
+  Connector 2/21 con:con-2. Curvature dim ratio = 1.0.
+  Connector 3/21 con:con-3. Curvature dim ratio = 1.0.
+  Connector 4/21 con:con-4. Curvature dim ratio = 1.0.
+  Connector 5/21 con:con-5. Curvature dim ratio = 1.0.
+  Connector 5/21. Dim changed from 4 to 11.
+  Connector 6/21 con:con-6. Curvature dim ratio = 1.0.
+  Connector 6/21. Dim changed from 4 to 11.
+  Connector 7/21 con:con-7. Curvature dim ratio = 1.0.
+  Connector 8/21 con:con-8. Curvature dim ratio = 1.0.
+  Connector 9/21 con:con-10. Curvature dim ratio = 58.27272727272727.
+  *** Soft Edge CON con-10
+  Connector 10/21 con:con-11. Curvature dim ratio = 1.0.
+  Connector 10/21. Dim changed from 4 to 11.
+  Connector 11/21 con:con-12. Curvature dim ratio = 1.0.
+  Connector 12/21 con:con-15. Curvature dim ratio = 1.0.
+  Connector 13/21 con:con-19. Curvature dim ratio = 1.0.
+  Connector 13/21. Dim changed from 4 to 11.
+  Connector 14/21 con:con-20. Curvature dim ratio = 1.0.
+  Connector 15/21 con:con-21. Curvature dim ratio = 1.0.
+  Connector 16/21 con:con-22. Curvature dim ratio = 1.0.
+  Connector 17/21 con:con-23. Curvature dim ratio = 1.0.
+  Connector 18/21 con:con-24. Curvature dim ratio = 1.0.
+  Connector 19/21 con:con-26. Curvature dim ratio = 1.0.
+  Connector 20/21 con:con-28. Curvature dim ratio = 1.0.
+  Connector 21/21 con:con-30. Curvature dim ratio = 1.0.
+  *** Hard Edge CON con-1
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-2
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-3
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-4
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-5
+average Dot = -0.11555657845064671, factor = 0.8844434215493533
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 97.832
+  *** Hard Edge CON con-6
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 86.1817
+  *** Hard Edge CON con-7
+average Dot = -0.32782193478111277, factor = 0.6721780652188872
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 109.137
+  *** Hard Edge CON con-8
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 84.7061
+  *** Hard Edge CON con-11
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 88.0772
+  *** Hard Edge CON con-12
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 81.6448
+  *** Hard Edge CON con-15
+average Dot = -0.3339440918043386, factor = 0.6660559081956614
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 109.509
+  *** Hard Edge CON con-19
+average Dot = -0.07592786520801278, factor = 0.9240721347919872
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 96.0438
+  *** Hard Edge CON con-20
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-21
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-22
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-23
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-24
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-26
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-28
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-30
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+Performing Local Proximity Refinement
+Adjusting connector dimensions based on proximity to other connectors.
+  Proximity test for connector 1/21, con-1.
+    Connector dimension changed from 11 to 18, avg. spacing changed from 10.328 to 6.07527
+  Proximity test for connector 2/21, con-2.
+    Connector dimension changed from 4 to 9, avg. spacing changed from 17.2133 to 6.45497
+  Proximity test for connector 3/21, con-3.
+    Connector dimension changed from 11 to 22, avg. spacing changed from 10.328 to 4.91807
+  Proximity test for connector 4/21, con-4.
+    Connector dimension changed from 4 to 9, avg. spacing changed from 17.2133 to 6.45497
+  Proximity test for connector 5/21, con-5.
+    Connector dimension changed from 11 to 96, avg. spacing changed from 0.174633 to 0.0183824
+  Proximity test for connector 6/21, con-6.
+    Connector dimension changed from 11 to 96, avg. spacing changed from 0.174633 to 0.0183824
+  Proximity test for connector 7/21, con-7.
+  Proximity test for connector 8/21, con-8.
+    Connector dimension changed from 11 to 108, avg. spacing changed from 0.823471 to 0.0769599
+  Proximity test for connector 9/21, con-10.
+    Connector dimension changed from 11 to 47, avg. spacing changed from 0.896991 to 0.194998
+  Proximity test for connector 10/21, con-11.
+    Connector dimension changed from 11 to 96, avg. spacing changed from 0.349266 to 0.0367649
+  Proximity test for connector 11/21, con-12.
+    Connector dimension changed from 11 to 108, avg. spacing changed from 0.823458 to 0.0769587
+  Proximity test for connector 12/21, con-15.
+  Proximity test for connector 13/21, con-19.
+    Connector dimension changed from 11 to 96, avg. spacing changed from 0.349266 to 0.0367649
+  Proximity test for connector 14/21, con-20.
+    Connector dimension changed from 4 to 10, avg. spacing changed from 17.2133 to 5.73775
+  Proximity test for connector 15/21, con-21.
+    Connector dimension changed from 11 to 21, avg. spacing changed from 10.328 to 5.16398
+  Proximity test for connector 16/21, con-22.
+    Connector dimension changed from 4 to 10, avg. spacing changed from 17.2133 to 5.73775
+  Proximity test for connector 17/21, con-23.
+    Connector dimension changed from 11 to 26, avg. spacing changed from 10.328 to 4.13118
+  Proximity test for connector 18/21, con-24.
+    Connector dimension changed from 11 to 18, avg. spacing changed from 10.328 to 6.07527
+  Proximity test for connector 19/21, con-26.
+    Connector dimension changed from 11 to 25, avg. spacing changed from 10.328 to 4.30331
+  Proximity test for connector 20/21, con-28.
+    Connector dimension changed from 11 to 24, avg. spacing changed from 10.328 to 4.49042
+  Proximity test for connector 21/21, con-30.
+    Connector dimension changed from 11 to 18, avg. spacing changed from 10.328 to 6.07527
+Adjusting node spacing from geometry
+Length of concave connector list = 5
+Adjusting connector dimensions based on end spacings.
+Connector con-1 current dim = 18
+Connector con-2 current dim = 9
+Connector con-3 current dim = 22
+Connector con-4 current dim = 9
+Connector con-5 current dim = 96
+Aspect ratio limit reduced to 20.0 for connector con-5
+Connector con-6 current dim = 96
+Aspect ratio limit reduced to 20.0 for connector con-6
+Connector con-7 current dim = 4
+Aspect ratio limit reduced to 20.0 for connector con-7
+  Changing dimension for connector con-7 7/21 from 4 to 5
+Connector con-8 current dim = 108
+Aspect ratio limit reduced to 20.0 for connector con-8
+  Changing dimension for connector con-8 8/21 from 108 to 774
+Connector con-10 current dim = 47
+  Changing dimension for connector con-10 9/21 from 47 to 87
+Connector con-11 current dim = 96
+Connector con-12 current dim = 108
+Aspect ratio limit reduced to 20.0 for connector con-12
+  Changing dimension for connector con-12 11/21 from 108 to 852
+Connector con-15 current dim = 4
+  Changing dimension for connector con-15 12/21 from 4 to 5
+Connector con-19 current dim = 96
+Connector con-20 current dim = 10
+Connector con-21 current dim = 21
+Connector con-22 current dim = 10
+Connector con-23 current dim = 26
+Connector con-24 current dim = 18
+Connector con-26 current dim = 25
+Connector con-28 current dim = 24
+Connector con-30 current dim = 18
+Domain list has 10 entries.
+Looking for periodic domain attributes from geometry.
+  Tolerance = 8.14871e-05
+Number of periodic target domains = 0
+Unstructured domain 1 of 10:
+  boundary name = Farfield.
+    Creating boundary name Farfield
+Unstructured domain 2 of 10:
+  boundary name = OML.
+    Creating boundary name OML
+Unstructured domain 3 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 4 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 5 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 6 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 7 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 8 of 10:
+  boundary name = Symmetry.
+    Creating boundary name Symmetry
+Unstructured domain 9 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 10 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Checking for blunt flag attribute on geometry faces.
+Performing Source Cloud Refinement
+Updating conData
+Min Edge Tol: 5.000e-07 on con-2
+Max Edge Tol: 8.149e-05 on con-10
+  Point cloud test for connector con-1.
+  Point cloud test for connector con-2.
+  Point cloud test for connector con-3.
+  Point cloud test for connector con-4.
+  Point cloud test for connector con-5.
+  Point cloud test for connector con-6.
+  Point cloud test for connector con-7.
+  Point cloud test for connector con-8.
+  Point cloud test for connector con-10.
+  Point cloud test for connector con-11.
+  Point cloud test for connector con-12.
+  Point cloud test for connector con-15.
+  Point cloud test for connector con-19.
+  Point cloud test for connector con-20.
+  Point cloud test for connector con-21.
+  Point cloud test for connector con-22.
+  Point cloud test for connector con-23.
+  Point cloud test for connector con-24.
+  Point cloud test for connector con-26.
+  Point cloud test for connector con-28.
+  Point cloud test for connector con-30.
+Setting up T-Rex domain boundary conditions.
+  Creating T-Rex wall boundary con-5
+  Creating T-Rex wall boundary con-6
+  Creating T-Rex wall boundary con-8
+  con-6 already in T-Rex boundary list.
+  Creating T-Rex wall boundary con-10
+  Creating T-Rex wall boundary con-11
+  Creating T-Rex wall boundary con-12
+  con-8 already in T-Rex boundary list.
+  con-10 already in T-Rex boundary list.
+  con-5 already in T-Rex boundary list.
+  con-12 already in T-Rex boundary list.
+  Creating T-Rex wall boundary con-19
+  con-19 already in T-Rex boundary list.
+  con-11 already in T-Rex boundary list.
+Applying T-Rex condition to opposite side for connector con-5.
+Applying T-Rex condition to opposite side for connector con-6.
+Applying T-Rex condition to opposite side for connector con-8.
+Applying T-Rex condition to opposite side for connector con-10.
+Applying T-Rex condition to opposite side for connector con-11.
+Applying T-Rex condition to opposite side for connector con-12.
+Applying T-Rex condition to opposite side for connector con-19.
+Performing initialization pass on all unstructured domains.
+Unstructured domain list for assembly has 10 entries.
+Structured domain list for assembly has 0 entries.
+Periodic target domain list for assembly has 0 entries.
+Creating unstructured block from 10 domains.
+Block = auto-blk
+  Setting up unstructured block.
+Retrieving block attributes from geometry.
+Retrieving T-Rex volume boundary conditions from geometry.
+  Domain OML has spacing value = 0.001.
+  Creating T-Rex wall boundary OML
+  Domain OML has spacing value = 0.001.
+  Domain OML has spacing value = 0.001.
+  Domain OML has spacing value = 0.001.
+  Looking for adjacent boundaries to set as match.
+  Creating T-Rex match boundary
+  Setting Push Attributes on Block.
+  Initializing unstructured block.
+Info: Begin: aniso layer     1: growthRate = 1.000000, height = 1.000000, totalHeight = 1.000000
+Info: End  : aniso layer     1: numPts =    109801, numTets =       285794, (2.360000 seconds)
+Info: Begin: aniso layer     2: growthRate = 1.300000, height = 1.300000, totalHeight = 2.300000
+Info: End  : aniso layer     2: numPts =    157338, numTets =       571588, (2.550000 seconds)
+Info: Begin: aniso layer     3: growthRate = 1.300000, height = 1.690000, totalHeight = 3.990000
+Info: End  : aniso layer     3: numPts =    203198, numTets =       847385, (2.360000 seconds)
+Info: Begin: aniso layer     4: growthRate = 1.300000, height = 2.197000, totalHeight = 6.187000
+Info: End  : aniso layer     4: numPts =    247470, numTets =      1113606, (2.330000 seconds)
+Info: Begin: aniso layer     5: growthRate = 1.300000, height = 2.856100, totalHeight = 9.043100
+Info: End  : aniso layer     5: numPts =    289544, numTets =      1366686, (2.190000 seconds)
+Info: Begin: aniso layer     6: growthRate = 1.300000, height = 3.712930, totalHeight = 12.756030
+Info: End  : aniso layer     6: numPts =    329030, numTets =      1604142, (2.130000 seconds)
+Info: Begin: aniso layer     7: growthRate = 1.300000, height = 4.826809, totalHeight = 17.582839
+Info: End  : aniso layer     7: numPts =    365403, numTets =      1823019, (1.950000 seconds)
+Info: Begin: aniso layer     8: growthRate = 1.300000, height = 6.274852, totalHeight = 23.857691
+Info: End  : aniso layer     8: numPts =    398044, numTets =      2019625, (1.780000 seconds)
+Info: Begin: aniso layer     9: growthRate = 1.300000, height = 8.157307, totalHeight = 32.014998
+Info: End  : aniso layer     9: numPts =    426543, numTets =      2191265, (1.590000 seconds)
+Info: Begin: aniso layer    10: growthRate = 1.300000, height = 10.604499, totalHeight = 42.619497
+Info: End  : aniso layer    10: numPts =    450124, numTets =      2333452, (1.390000 seconds)
+Info: Begin: aniso layer    11: growthRate = 1.300000, height = 13.785849, totalHeight = 56.405346
+Info: End  : aniso layer    11: numPts =    469010, numTets =      2447447, (1.180000 seconds)
+Info: Begin: aniso layer    12: growthRate = 1.300000, height = 17.921604, totalHeight = 74.326950
+Info: End  : aniso layer    12: numPts =    483558, numTets =      2535356, (0.980000 seconds)
+Info: Begin: aniso layer    13: growthRate = 1.300000, height = 23.298085, totalHeight = 97.625036
+Info: End  : aniso layer    13: numPts =    493468, numTets =      2595404, (0.800000 seconds)
+Info: Begin: aniso layer    14: growthRate = 1.300000, height = 30.287511, totalHeight = 127.912546
+Info: End  : aniso layer    14: numPts =    500323, numTets =      2636994, (0.660000 seconds)
+Info: Begin: aniso layer    15: growthRate = 1.300000, height = 39.373764, totalHeight = 167.286310
+Info: End  : aniso layer    15: numPts =    504836, numTets =      2664339, (0.490000 seconds)
+Info: Begin: aniso layer    16: growthRate = 1.300000, height = 51.185893, totalHeight = 218.472203
+Info: End  : aniso layer    16: numPts =    507705, numTets =      2681702, (0.410000 seconds)
+Info: Begin: aniso layer    17: growthRate = 1.300000, height = 66.541661, totalHeight = 285.013864
+Info: End  : aniso layer    17: numPts =    509623, numTets =      2693312, (0.370000 seconds)
+Info: Begin: aniso layer    18: growthRate = 1.300000, height = 86.504159, totalHeight = 371.518023
+Info: End  : aniso layer    18: numPts =    510882, numTets =      2700926, (0.350000 seconds)
+Info: Begin: aniso layer    19: growthRate = 1.300000, height = 112.455407, totalHeight = 483.973430
+Info: End  : aniso layer    19: numPts =    511647, numTets =      2705543, (0.330000 seconds)
+Info: Begin: aniso layer    20: growthRate = 1.300000, height = 146.192029, totalHeight = 630.165459
+Info: End  : aniso layer    20: numPts =    511922, numTets =      2707203, (0.310000 seconds)
+Info: Begin: aniso layer    21: growthRate = 1.300000, height = 190.049638, totalHeight = 820.215097
+Info: End  : aniso layer    21: numPts =    511987, numTets =      2707595, (0.300000 seconds)
+Info: Begin: aniso layer    22: growthRate = 1.300000, height = 247.064529, totalHeight = 1067.279626
+Info: End  : aniso layer    22: numPts =    511987, numTets =      2707595, (0.260000 seconds)
+Info: Begin: aniso layer    23: growthRate = 1.300000, height = 321.183888, totalHeight = 1388.463514
+Info: End  : aniso layer    23: numPts =    511987, numTets =      2707595, (0.220000 seconds)
+Warning: Domains that are not adjacent to growth BCs are not eligible for match cell replacement: (dom-1), (dom-7), (dom-6), (dom-9), (dom-10)
+Info: Average growth rate on match domains: 1.299812
+CAE Solver set to UGRID
+GeomToMesh finished!
+Thu Apr 21 2022  2:54:30PM EDT
+Run Time: 00 Hours 03 Minutes 52 Seconds
+Pointwise save filename = caps.GeomToMesh.pw
+Thu Apr 21 2022  2:54:30PM EDT
+Exporting in UGRID format to file basename = caps.GeomToMesh
+Mapped 63 / 63 curves to EGADS originals
+GMA contains 21 edge groups

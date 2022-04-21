@@ -1,0 +1,40 @@
+&project
+ project_rootname = "fun3dTetgenTest"
+/
+
+&raw_grid
+ grid_format = "AFLR3"
+ data_format = "stream"
+/
+
+&reference_physical_properties
+ mach_number = 0.700000
+ angle_of_attack = 0.000000
+/
+
+&governing_equations
+ viscous_terms = "inviscid"
+ eqn_type = "incompressible"
+/
+
+&nonlinear_solver_parameters
+ schedule_cfl = 0.500000 3.000000
+ schedule_iteration = 1 40
+/
+
+&code_run_control
+ steps = 10
+ restart_read = 'off'
+/
+
+&force_moment_integ_properties
+/
+
+&boundary_conditions
+ wall_temperature(3) = 1.000000
+ wall_temp_flag(3) = .true.
+/
+
+&noninertial_reference_frame
+/
+

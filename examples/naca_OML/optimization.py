@@ -130,6 +130,11 @@ class NacaOMLOptimization():
     def __init__(self, comm, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
 
         self.comm = comm
+        
+        #mesh style setting - pointwise or tetgen
+        self.mesh_style = "pointwise" #"pointwise", "tetgen"
+
+        self.n_tacs_procs = 1
 
         #status file
         if (self.comm.Get_rank() == 0):
@@ -204,10 +209,20 @@ class NacaOMLOptimization():
             self.tacsAim = self.capsStruct.analysis.create(aim = "tacsAIM", name = "tacs")
             self.cwrite("Initialized tacs AIM\n")
 
-            #initialize pointwise AIM
-            self.pointwiseAim = self.capsFluid.analysis.create(aim = "pointwiseAIM",
-                                        name = "pointwise")
-            self.cwrite("Initialized pointwise AIM\n")
+
+            if (self.mesh_style == "pointwise"):
+                #initialize pointwise AIM
+                self.pointwiseAim = self.capsFluid.analysis.create(aim = "pointwiseAIM",
+                                            name = "pointwise")
+                self.cwrite("Initialized pointwise AIM\n")
+            elif (self.mesh_style == "tetgen"):
+                #initialize egads fluid aim
+                self.egadsFluidAim = self.capsFluid.analysis.create(aim = "egadsTessAIM", name = "egadsTess")
+                self.cwrite("Initialized egadsTessAIM for fluid")
+                
+                #initialize tetgen aim
+                self.tetgenAim = self.capsFluid.analysis.create(aim = "tetgenAIM", name = "tetgen")
+                self.cwrite("Initialized tetgen AIM")
 
             #initialize FUN3D AIM from Pointwise mesh
             self.fun3dAim = self.capsFluid.analysis.create(aim = "fun3dAIM",
@@ -314,45 +329,58 @@ class NacaOMLOptimization():
         self.tacsAim.input.Design_Variable_Relation = DVRdict
 
     def fluidMeshSettings(self):
-        # Dump VTK files for visualization
-        self.pointwiseAim.input.Proj_Name   = "TransportWing"
-        self.pointwiseAim.input.Mesh_Format = "VTK"
+        if (self.mesh_style == "pointwise"):
+            # Dump VTK files for visualization
+            self.pointwiseAim.input.Proj_Name   = "TransportWing"
+            self.pointwiseAim.input.Mesh_Format = "VTK"
 
-        # Connector level
-        self.pointwiseAim.input.Connector_Turn_Angle       = 10
-        self.pointwiseAim.input.Connector_Prox_Growth_Rate = 1.2
-        self.pointwiseAim.input.Connector_Source_Spacing   = True
+            # Connector level
+            self.pointwiseAim.input.Connector_Turn_Angle       = 10
+            self.pointwiseAim.input.Connector_Prox_Growth_Rate = 1.2
+            self.pointwiseAim.input.Connector_Source_Spacing   = True
 
-        # Domain level
-        self.pointwiseAim.input.Domain_Algorithm    = "AdvancingFront"
-        self.pointwiseAim.input.Domain_Max_Layers   = 15
-        self.pointwiseAim.input.Domain_Growth_Rate  = 1.25
-        self.pointwiseAim.input.Domain_TRex_ARLimit = 40.0
-        self.pointwiseAim.input.Domain_Decay        = 0.8
-        self.pointwiseAim.input.Domain_Iso_Type = "Triangle"
+            # Domain level
+            self.pointwiseAim.input.Domain_Algorithm    = "AdvancingFront"
+            self.pointwiseAim.input.Domain_Max_Layers   = 15
+            self.pointwiseAim.input.Domain_Growth_Rate  = 1.25
+            self.pointwiseAim.input.Domain_TRex_ARLimit = 40.0
+            self.pointwiseAim.input.Domain_Decay        = 0.8
+            self.pointwiseAim.input.Domain_Iso_Type = "Triangle"
 
-        # Block level
-        self.pointwiseAim.input.Block_Boundary_Decay       = 0.8
-        self.pointwiseAim.input.Block_Collision_Buffer     = 1.0
-        self.pointwiseAim.input.Block_Max_Skew_Angle       = 160.0
-        self.pointwiseAim.input.Block_Edge_Max_Growth_Rate = 1.5
-        self.pointwiseAim.input.Block_Full_Layers          = 1
-        self.pointwiseAim.input.Block_Max_Layers           = 100
-        self.pointwiseAim.input.Block_TRexType = "TetPyramid"
-        #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms).
+            # Block level
+            self.pointwiseAim.input.Block_Boundary_Decay       = 0.8
+            self.pointwiseAim.input.Block_Collision_Buffer     = 1.0
+            self.pointwiseAim.input.Block_Max_Skew_Angle       = 160.0
+            self.pointwiseAim.input.Block_Edge_Max_Growth_Rate = 1.5
+            self.pointwiseAim.input.Block_Full_Layers          = 1
+            self.pointwiseAim.input.Block_Max_Layers           = 100
+            self.pointwiseAim.input.Block_TRexType = "TetPyramid"
+            #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms).
 
-        # Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
-        viscousWall  = {"boundaryLayerSpacing" : 0.001}
-        self.pointwiseAim.input.Mesh_Sizing = {"OML": viscousWall,
-                "Farfield": {"bcType":"Farfield"},
-                "Symmetry" : {"bcType" : "SymmetryY"}}
+            # Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
+            viscousWall  = {"boundaryLayerSpacing" : 0.001}
+            self.pointwiseAim.input.Mesh_Sizing = {"OML": viscousWall,
+                    "Farfield": {"bcType":"Farfield"},
+                    "Symmetry" : {"bcType" : "SymmetryY"}}
 
+        elif (self.mesh_style == "tetgen"):
+            #egads fluid tesselation params for surface mesh
+            self.egadsFluidAim.input.Tess_Params = [15.0, 0.01, 20.0]
+
+            #tetgen AIM mesh params
+            self.tetgenAim.input.Preserve_Surf_Mesh = True
+            self.tetgenAim.input["Surface_Mesh"].link(self.egadsFluidAim.output["Surface_Mesh"])
+            self.tetgenAim.input.Mesh_Format = "AFLR3"
+
+            viscousWall  = {"boundaryLayerSpacing" : 0.001}
+            self.tetgenAim.input.Mesh_Sizing = {"OML": viscousWall,
+                    "Farfield": {"bcType":"Farfield"},
+                    "Symmetry" : {"bcType" : "SymmetryY"}}
 
     def fun3dSettings(self):
         self.fun3dAim.input.Boundary_Condition = {"OML": {"bcType" : "Inviscid"},
                 "Farfield": {"bcType":"Farfield"},
                 "Symmetry" : "SymmetryY"}
-
 
         #add thickDVs and geomDVs to caps
         DVdict = {}
@@ -376,11 +404,10 @@ class NacaOMLOptimization():
 
         # Set up the communicators
         n_procs = self.comm.Get_size()
-        n_tacs_procs = 10
-        if (n_tacs_procs > n_procs): n_tacs_procs = n_procs
+        if (self.n_tacs_procs > n_procs): self.n_tacs_procs = n_procs
 
         world_rank = self.comm.Get_rank()
-        if world_rank < n_tacs_procs:
+        if world_rank < self.n_tacs_procs:
             color = 55
             key = world_rank
         else:
@@ -404,7 +431,7 @@ class NacaOMLOptimization():
         function1 = Function('ksfailure',analysis_type='structural')
         steady.add_function(function1)
 
-        function2 = Function('mass',analysis_type='structural', adjoint=False) #,adjoint=False
+        function2 = Function('mass',analysis_type='structural') #,adjoint=False
         steady.add_function(function2)
 
         # function3 = Function('lift', analysis_type='aerodynamic')
@@ -424,7 +451,7 @@ class NacaOMLOptimization():
         solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0)
         self.cwrite("setup fun3d interface, ")
         datFile = os.path.join(self.curDir,"steady","Flow","nastran_CAPS.dat")
-        solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,n_tacs_procs, datFile)
+        solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile)
         self.cwrite("setup tacs interface\n")
 
         # L&D transfer options
@@ -624,20 +651,32 @@ class NacaOMLOptimization():
         self.cwrite("Building fluid mesh... ")
 
         if (self.comm.Get_rank() == 0):
-            #build fluid mesh by running pointwise and then linking with fun3d
-            self.runPointwise()
-            self.cwrite("ran pointwise, ")
+            if (self.mesh_style == "pointwise"):
+                #build fluid mesh by running pointwise and then linking with fun3d
+                self.runPointwise()
+                self.cwrite("ran pointwise, ")
 
 
             #update fun3d with current mesh so it knows mesh sensitivity
-            self.fun3dAim.input["Mesh"].link(self.pointwiseAim.output["Volume_Mesh"])
+            if (self.mesh_style == "pointwise"):
+                self.fun3dAim.input["Mesh"].link(self.pointwiseAim.output["Volume_Mesh"])
+            elif (self.mesh_style == "tetgen"):
+                self.fun3dAim.input["Mesh"].link(self.tetgenAim.output["Volume_Mesh"])
             self.fun3dAim.preAnalysis()
             self.cwrite("linked to fun3d, ")
 
-            #copy the mesh file to funtofem directory steady/flow/
-            filename = "caps.GeomToMesh.ugrid"
-            src = os.path.join(self.pointwiseAim.analysisDir, filename)
-            dest = os.path.join(self.curDir, "steady", "Flow", filename)
+            #move ugrid file to fun3d run directory steady/Flow
+            if (self.mesh_style == "pointwise"):
+                srcFile = "caps.GeomToMesh.ugrid"
+                destFile = srcFile
+                src = os.path.join(self.pointwiseAim.analysisDir, srcFile)
+            else:
+                #might also need to move the fun3d.mapbc file for this one
+                srcFile = "tetgen_0.lb8.ugrid"
+                destFile = "caps.GeomToMesh.lb8.ugrid"
+                src = os.path.join(self.tetgenAim.analysisDir, srcFile)
+                
+            dest = os.path.join(self.curDir, "steady", "Flow", destFile)
             shutil.copy(src, dest)
 
     def runPointwise(self):

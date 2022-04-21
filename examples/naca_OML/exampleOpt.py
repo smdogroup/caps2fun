@@ -16,6 +16,7 @@ def objGrad(x, funcs):
     sens = {}
     grad = 2*x1
     grad2 = 2*x2
+    #grad2 = 0*x2
     sens = {"obj" : {"struct" : grad, "shape" : grad2}}
     print(grad)
     return sens
