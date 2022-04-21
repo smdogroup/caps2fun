@@ -127,10 +127,9 @@ class wedgeTACS(TacsSteadyInterface):
 
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, comm, structCSM, fluidCSM, DVdict, debug, analysisType = "aerothermoelastic"):
+    def __init__(self, comm, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
 
         self.comm = comm
-        self.debug = debug
 
         #status file
         if (self.comm.Get_rank() == 0):
@@ -176,8 +175,8 @@ class NacaOMLOptimization():
             #immediately update it to be visibile in the file
             self.status.flush()
 
-    def commBarrier(self):
-        print("proc #{} reached here\n".format(self.comm.Get_rank()))
+    def commBarrier(self, location):
+        print("proc #{} reached location {}\n".format(self.comm.Get_rank(), location))
         sys.stdout.flush()
         self.comm.Barrier()
 
@@ -354,40 +353,20 @@ class NacaOMLOptimization():
                 "Farfield": {"bcType":"Farfield"},
                 "Symmetry" : "SymmetryY"}
 
-        # # Set project name
-        # fun3dAIM.input.Proj_Name = "fun3dTetgenTest"
-        
-        # # Link the mesh
-        # fun3dAIM.input["Mesh"].link(meshAIM.output["Volume_Mesh"])
-        
-        # fun3dAIM.input.Mesh_ASCII_Flag = False
-        
-        # # Set AoA number
-        # myProblem.analysis["fun3d"].input.Alpha = 1.0
-        
-        # # Set Mach number
-        # myProblem.analysis["fun3d"].input.Mach = 0.5901
-        
-        # # Set equation type
-        # fun3dAIM.input.Equation_Type = "compressible"
-        
-        # # Set Viscous term
-        # myProblem.analysis["fun3d"].input.Viscous = "inviscid"
-        
-        # # Set number of iterations
-        # myProblem.analysis["fun3d"].input.Num_Iter = 10
-        
-        # # Set CFL number schedule
-        # myProblem.analysis["fun3d"].input.CFL_Schedule = [0.5, 3.0]
-        
-        # # Set read restart option
-        # fun3dAIM.input.Restart_Read = "off"
-        
-        # # Set CFL number iteration schedule
-        # myProblem.analysis["fun3d"].input.CFL_Schedule_Iter = [1, 40]
-        
-        # # Set overwrite fun3d.nml if not linking to Python library
-        # myProblem.analysis["fun3d"].input.Overwrite_NML = True
+
+        #add thickDVs and geomDVs to caps
+        DVdict = {}
+        for DV in self.DVdict:
+            dvname = DV["name"]
+            if (DV["type"] == "shape"): #geomDV, add empty entry into DV dicts
+                DVdict[dvname] = {}
+
+        #input DVdict and DVRdict into tacsAim
+        self.fun3dAim.input.Design_Variable = DVdict
+
+        #fun3d design sensitivities settings
+        self.fun3dAim.input.Design_SensFile = True
+        self.fun3dAim.input.Design_Sensitivity = True
 
     def initF2F(self, x):
         structDVs = x["struct"]
@@ -421,7 +400,7 @@ class NacaOMLOptimization():
 
         self.model.add_body(self.wing)
 
-        steady = Scenario('steady', group=0, steps=1)
+        steady = Scenario('steady', group=0, steps=5)
         function1 = Function('ksfailure',analysis_type='structural')
         steady.add_function(function1)
 
@@ -506,13 +485,15 @@ class NacaOMLOptimization():
         #run funtofem adjoint analysis, with fun3d
         self.driver.solve_adjoint()
 
+        self.commBarrier("solve_adjoint()")
+
         #update status
         self.cwrite("finished adjoint analysis\n")
 
         #get the funtofem gradients
         f2fgrads = self.model.get_function_gradients()
         
-        self.commBarrier()
+        self.commBarrier("function_gradients()")
 
         #update gradient for non shape DVs
         nfunc = len(self.functions)
@@ -527,26 +508,27 @@ class NacaOMLOptimization():
                     ct += 1
         
 
-        #shift aeroIds to oneBased
-        #oneBased = True
+        #get aero and struct mesh sensitivities for shape DVs
+        self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
+        self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
+
         if (self.comm.Get_rank() == 0):
-            #get aero and struct mesh sensitivities for shape DVs
-            self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
-            self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
 
             #if (oneBased): self.aeroIds = self.aeroIds - (min(self.aeroIds) - 1)
-
             print("aero ids: {}".format(self.aeroIds))
             print("aero mesh: {}".format(self.aero_mesh_sens))
             print("struct ids: {}".format(self.structIds))
             print("struct mesh: {}".format(self.struct_mesh_sens))
 
             #compute shape derivatives from aero and struct mesh sensitivities
-            self.computeShapeDerivatives()
+            self.shapeGrad = self.computeShapeDerivatives()
             self.cwrite("computed shape derivative chain rule products\n")
 
         else:
             self.shapeGrad = None
+
+        #barrier to wait for root proc to finish computing the shape derivatives
+        self.commBarrier("computeShapeDerivatives()")
 
         self.shapeGrad = self.comm.bcast(self.shapeGrad, root=0)
 
@@ -641,7 +623,7 @@ class NacaOMLOptimization():
     def buildFluidMesh(self):
         self.cwrite("Building fluid mesh... ")
 
-        if (self.comm.Get_rank() == 0 and not(self.debug)):
+        if (self.comm.Get_rank() == 0):
             #build fluid mesh by running pointwise and then linking with fun3d
             self.runPointwise()
             self.cwrite("ran pointwise, ")
@@ -654,8 +636,8 @@ class NacaOMLOptimization():
 
             #copy the mesh file to funtofem directory steady/flow/
             filename = "caps.GeomToMesh.ugrid"
-            src = os.path.join(self.pointwiseAim.analysisDir, "caps.GeomToMesh.ugrid")
-            dest = os.path.join(self.curDir, "steady", "Flow", "caps.GeomToMesh.ugrid")
+            src = os.path.join(self.pointwiseAim.analysisDir, filename)
+            dest = os.path.join(self.curDir, "steady", "Flow", filename)
             shutil.copy(src, dest)
 
     def runPointwise(self):
@@ -686,13 +668,13 @@ class NacaOMLOptimization():
 
         funcs = {}
         funcs["obj"] = self.functions[1].value.real #mass
-        funcs["con"] = 1
+        #funcs["con"] = 1
         fail = False
 
         if (self.comm.Get_rank() == 0):
             print("Input {}".format(x))
-            print("Functions {}".format(self.functions))
-            print("Funcs dict {}".format(funcs))
+            for func in self.functions:
+                print("function value {}".format(func.value.real))
 
         #update status
         self.cwrite("\tObjective function is {}\n".format(funcs["obj"].real))
@@ -708,20 +690,24 @@ class NacaOMLOptimization():
         fail = False
 
         sens = {}
-        sens["obj"] = { "struct": structGrad,
-                        "shape" : shapeGrad}
-        sens["con"] = {"struct" : 0 * structGrad,
-                        "shape" : 0 * shapeGrad}
+        massStructGrad = structGrad[1,:]
+        massShapeGrad = shapeGrad[1,:]
+        sens["obj"] = { "struct": massStructGrad,
+                        "shape" : massShapeGrad}
+        #sens["con"] = {"struct" : 0 * massStructGrad,
+        #                "shape" : 0 * massShapeGrad}
         #sens["con"] = {"x": [grad2]}
 
         if (self.comm.Get_rank() == 0):
             print("Input {}".format(x))
-            print("Struct grad {}".format(structGrad))
+            for funcind in range(self.nfunc):
+                for tind in range(3):
+                    print("dfunc {} dthickness = {}".format(funcind, structGrad[funcind, tind].real))
             print("Shape grad {}".format(shapeGrad))
 
         #update status
-        self.cwrite("\tStruct Grad is {}\n".format(structGrad.real))
-        self.cwrite("\tShape Grad is {}\n".format(shapeGrad.real))
+        self.cwrite("\tStruct Grad is {}\n".format(massStructGrad))
+        self.cwrite("\tShape Grad is {}\n".format(massShapeGrad))
         return sens, fail
 
     def computeShapeDerivatives(self):
@@ -736,9 +722,8 @@ class NacaOMLOptimization():
 
             #add aero_mesh_sens part to shape DV derivatives
             self.applyAeroMeshSens()
-        else:
-            #set shape gradient to None if not root proc
-            self.shapeGrad = None
+
+        return self.shapeGrad
 
     def initShapeGrad(self):
         self.nfunc = len(self.functions)
@@ -856,7 +841,7 @@ class NacaOMLOptimization():
 
         #update shape DV derivatives from aero mesh part
         for funcInd in range(self.nfunc):
-            funcKey = "func #" + str(funcInd)
+            funcKey = "func#" + str(funcInd)
             dvct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
@@ -893,8 +878,7 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-debug = True
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, debug, "aerothermoelastic")
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)
@@ -909,17 +893,17 @@ lBnds2 = 0.0001 * np.ones(3)
 uBnds2 = 0.01*np.ones(3)
 init2 = 0.001*np.ones(3)
 
-sparseProb.addVarGroup("shape", 10, "c", lower=lbnds, upper=ubnds, value=init)
-sparseProb.addVarGroup("struct", 3, "c", lower=lBnds2, upper=uBnds2, value=init2)
+sparseProb.addVarGroup("shape", 10, lower=lbnds, upper=ubnds, value=init)
+sparseProb.addVarGroup("struct", 3, lower=lBnds2, upper=uBnds2, value=init2)
 
-sparseProb.addConGroup("con", 1, lower=1, upper=1)
+#sparseProb.addConGroup("con", 1, lower=1, upper=1)
 sparseProb.addObj("obj")
 
 # if comm.rank == 0:
 #     print(sparseProb)
 
-#optOptions = {"IPRINT": -1}
-opt = SLSQP(options={})
+optOptions = {"IPRINT": -1}
+opt = SLSQP(options=optOptions)
 sol = opt(sparseProb, sens=nacaOpt.objGrad)
 
 if comm.rank == 0:
@@ -927,4 +911,4 @@ if comm.rank == 0:
     print('\nsol.xStar:  ', sol.xStar)
 
 #close the status file
-nacaOpt.status.close()
+if (nacaOpt.comm.Get_rank() == 0): nacaOpt.status.close()

@@ -19,9 +19,15 @@ thickDVs [rib,spar,OML]
 shapeDVs [area,aspect,camb0,cambf,ctwist,dihedral,lesweep,taper,tc0,tcf]
 	[40.   6.   0.   0.   5.   5.  30.   0.5  0.1  0.1]
 Building structure mesh... built structure mesh
-Building fluid mesh... built fluid mesh
+Building fluid mesh... ran pointwise, linked to fun3d, built fluid mesh
 Initializing funtofem... setup model, setup fun3d interface, setup tacs interface
 	 setup adjoint driver, initialized funtofem
 Running F2F forward analysis... completed F2F forward analysis
 	Objective function is 122.86673627290975
-Running F2F adjoint analysis... 
+Running F2F adjoint analysis... finished adjoint analysis
+Compute shape derivatives... initialized shape gradient
+	printed struct.sens file, completed tacsAim postAnalysis(), finished struct mesh contribution to shape DVs
+	printed aero.sens file, completed pointwiseAim postAnalysis(), finished aero mesh contribution to shape DVs
+computed shape derivative chain rule products
+	Struct Grad is [116197.60744795426     1256.56648213148     5412.5623428240215]
+	Shape Grad is [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
