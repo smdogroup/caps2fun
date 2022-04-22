@@ -2,3 +2,4 @@
 **/*.pw
 **/*.ugrid
 **/*.flow
+**/*.adjoint

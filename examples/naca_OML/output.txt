@@ -1077,3 +1077,710 @@ Info: End  : aniso layer     5: numPts =    275034, numTets =      1300478, (2.0
 Info: Begin: aniso layer     6: growthRate = 1.300000, height = 3.712930, totalHeight = 12.756030
 Info: End  : aniso layer     6: numPts =    312768, numTets =      1527303, (2.000000 seconds)
 Info: Begin: aniso layer     7: growthRate = 1.300000, height = 4.826809, totalHeight = 17.582839
+Info: End  : aniso layer     7: numPts =    347638, numTets =      1737099, (1.830000 seconds)
+Info: Begin: aniso layer     8: growthRate = 1.300000, height = 6.274852, totalHeight = 23.857691
+Info: End  : aniso layer     8: numPts =    379010, numTets =      1926037, (1.660000 seconds)
+Info: Begin: aniso layer     9: growthRate = 1.300000, height = 8.157307, totalHeight = 32.014998
+Info: End  : aniso layer     9: numPts =    406613, numTets =      2092360, (1.490000 seconds)
+Info: Begin: aniso layer    10: growthRate = 1.300000, height = 10.604499, totalHeight = 42.619497
+Info: End  : aniso layer    10: numPts =    429440, numTets =      2229960, (1.300000 seconds)
+Info: Begin: aniso layer    11: growthRate = 1.300000, height = 13.785849, totalHeight = 56.405346
+Info: End  : aniso layer    11: numPts =    447715, numTets =      2340234, (1.100000 seconds)
+Info: Begin: aniso layer    12: growthRate = 1.300000, height = 17.921604, totalHeight = 74.326950
+Info: End  : aniso layer    12: numPts =    461956, numTets =      2426249, (0.920000 seconds)
+Info: Begin: aniso layer    13: growthRate = 1.300000, height = 23.298085, totalHeight = 97.625036
+Info: End  : aniso layer    13: numPts =    471528, numTets =      2484254, (0.740000 seconds)
+Info: Begin: aniso layer    14: growthRate = 1.300000, height = 30.287511, totalHeight = 127.912546
+Info: End  : aniso layer    14: numPts =    478264, numTets =      2525159, (0.630000 seconds)
+Info: Begin: aniso layer    15: growthRate = 1.300000, height = 39.373764, totalHeight = 167.286310
+Info: End  : aniso layer    15: numPts =    482690, numTets =      2552029, (0.510000 seconds)
+Info: Begin: aniso layer    16: growthRate = 1.300000, height = 51.185893, totalHeight = 218.472203
+Info: End  : aniso layer    16: numPts =    485540, numTets =      2569314, (0.450000 seconds)
+Info: Begin: aniso layer    17: growthRate = 1.300000, height = 66.541661, totalHeight = 285.013864
+Info: End  : aniso layer    17: numPts =    487448, numTets =      2580849, (0.360000 seconds)
+Info: Begin: aniso layer    18: growthRate = 1.300000, height = 86.504159, totalHeight = 371.518023
+Info: End  : aniso layer    18: numPts =    488751, numTets =      2588719, (0.330000 seconds)
+Info: Begin: aniso layer    19: growthRate = 1.300000, height = 112.455407, totalHeight = 483.973430
+Info: End  : aniso layer    19: numPts =    489569, numTets =      2593659, (0.310000 seconds)
+Info: Begin: aniso layer    20: growthRate = 1.300000, height = 146.192029, totalHeight = 630.165459
+Info: End  : aniso layer    20: numPts =    489871, numTets =      2595486, (0.290000 seconds)
+Info: Begin: aniso layer    21: growthRate = 1.300000, height = 190.049638, totalHeight = 820.215097
+Info: End  : aniso layer    21: numPts =    489958, numTets =      2596011, (0.280000 seconds)
+Info: Begin: aniso layer    22: growthRate = 1.300000, height = 247.064529, totalHeight = 1067.279626
+Info: End  : aniso layer    22: numPts =    489958, numTets =      2596011, (0.240000 seconds)
+Info: Begin: aniso layer    23: growthRate = 1.300000, height = 321.183888, totalHeight = 1388.463514
+Info: End  : aniso layer    23: numPts =    489958, numTets =      2596011, (0.210000 seconds)
+Warning: Domains that are not adjacent to growth BCs are not eligible for match cell replacement: (dom-1), (dom-7), (dom-6), (dom-9), (dom-10)
+Info: Average growth rate on match domains: 1.299799
+CAE Solver set to UGRID
+GeomToMesh finished!
+Fri Apr 22 2022  7:47:34PM EDT
+Run Time: 00 Hours 03 Minutes 42 Seconds
+Pointwise save filename = caps.GeomToMesh.pw
+Fri Apr 22 2022  7:47:34PM EDT
+Exporting in UGRID format to file basename = caps.GeomToMesh
+Mapped 63 / 63 curves to EGADS originals
+GMA contains 21 edge groups
+GMA contains 10 face groups
+Wrote geometry-mesh associativity to caps.GeomToMesh.gma
+GeomToMesh I/O finished!
+Fri Apr 22 2022  7:48:58PM EDT
+Export Time: 00 Hours 01 Minutes 24 Seconds
+Volume mesh:
+	Number of nodes          = 771211
+	Number of elements       = 4514038
+	Number of triangles      = 117788
+	Number of quadrilatarals = 0
+	Number of tetrahedrals   = 4514038
+	Number of pyramids       = 0
+	Number of prisms         = 0
+	Number of hexahedrals    = 0
+Body = 1
+	Number of nodes    = 58896
+	Number of elements = 117788
+	Number of tris = 117788
+	Number of quad = 0
+
+Writing VTK file: TransportWing_Surf_1.vtk....
+Finished writing VTK file
+
+
+Writing VTK file: TransportWing.vtk....
+Finished writing VTK file
+
+Python library was linked, but will not be used!
+Getting CFD boundary conditions
+	Boundary condition name - Farfield
+	Boundary condition name - OML
+	Boundary condition name - Symmetry
+	Done getting CFD boundary conditions
+
+Getting CFD design variables.......
+	Number of design variables - 10
+	Design Variable name - area
+	Design Variable name - aspect
+	Design Variable name - camb0
+	Design Variable name - cambf
+	Design Variable name - ctwist
+	Design Variable name - dihedral
+	Design Variable name - lesweep
+	Design Variable name - taper
+	Design Variable name - tc0
+	Design Variable name - tcf
+	Done getting CFD design variables
+Creating FUN3D directory tree
+
+Writing MAPBC file ....
+Finished writing MAPBC file
+
+Since Python was not linked and/or being used, the "Overwrite_NML" input needs to be set to "True" to give permission to create a new fun3d.nml. fun3d.nml will NOT be updated!!
+No recognized data transfer names found!
+FUN3D 13.6-c04c9a5 Flow started 04/22/2022 at 19:49:07 with 192 processes
+Contents of fun3d.nml file below------------------------
+ &project
+    project_rootname = "pointwise"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .false.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+  smooth_limiter_coeff    = 1.0
+  freeze_limiter_iteration = 3
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 5
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = -1
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to = 'vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ loading design ...
+ Preparing to read binary AFLR3 grid: pointwise.lb8.ugrid
+ 
+  nnodes              771211
+  ntface,nqface       117788 0
+  ntet,npyr,nprz,nhex 4514038 0 0 0
+ 
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.29895671E-10,  0.77502573E+02,  170.664011871
+cell statistics:  all,  0.29895671E-10,  0.77502573E+02,  170.664011871
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               22048476  Bytes
+     ... edgeCut       498580
+     ... Constructing partition node sets for level-0...               4514038 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to pointwise.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    893.76    893.76
+ Grid Motion Type 
+   rigid+deform
+ 
+  NOTE: kappa_umuscl set by grid: .00
+ 
+ Grid read complete
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  z-symmetry metrics modified/examined: 39431/39486
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Computing distance function:
+ Boundary 3 allowed to deform with z=constant constraint
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ Done.
+[0] Creating TACSAssembler with numOwnedNodes = 1267 numElements = 1317
+[0] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 5.34, nnz(ILU) = 62499
+Transfer scheme [0]: Creating scheme of type MELD...
+Transfer scheme [1]: Creating scheme of type MELDThermal...
+FUN3D 13.6-c04c9a5 Flow started 04/22/2022 at 19:49:17 with 192 processes
+Contents of fun3d.nml file below------------------------
+ &project
+    project_rootname = "pointwise"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .false.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+  smooth_limiter_coeff    = 1.0
+  freeze_limiter_iteration = 3
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 5
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = -1
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to = 'vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ loading design ...
+ Preparing to read binary AFLR3 grid: pointwise.lb8.ugrid
+ 
+  nnodes              771211
+  ntface,nqface       117788 0
+  ntet,npyr,nprz,nhex 4514038 0 0 0
+ 
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.29895671E-10,  0.77502573E+02,  170.664011871
+cell statistics:  all,  0.29895671E-10,  0.77502573E+02,  170.664011871
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               22048476  Bytes
+     ... edgeCut       498580
+     ... Constructing partition node sets for level-0...               4514038 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to pointwise.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    908.14    908.14
+  NOTE: kappa_umuscl set by grid: .00
+ 
+ Grid read complete
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  z-symmetry metrics modified/examined: 39431/39486
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Recomputing distance function:
+ Boundary 3 allowed to deform with z=constant constraint
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ 
+ Begin Mesh Movement, Time Step 1   (Current Step 1)
+ Solving linear elasticity equations for mesh deformation
+   Info: initial call to elasticity solver
+     Elasticity model: (1/distance)**1.0
+     Linear solver: gmres
+     Left preconditioner: point-multicolor  Preconditioner iterations: 5
+     Initial values for solution taken as zero
+     Convergence tolerances: tol_rel = 0.10000000E-09 tol_abs = 0.10000000E-13
+   Elasticity Convergence:
+     Search direction     1  residual =  0.50494468E-13   relative_residual =  0.10000000E+01
+     Search direction     3  residual =  0.45801590E-14   relative_residual =  0.90706153E-01
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10000000E-13
+ Iter            density_RMS  density_MAX   X-location   Y-location   Z-location
+    1  0.283757389361597E-02  0.21382E+00 -0.37757E+02 -0.34469E+02  0.00000E+00
+       Lift  0.210944840940883E+01         Drag  0.393130639312717E+01
+ 
+ Begin Mesh Movement, Time Step 2   (Current Step 2)
+ Solving linear elasticity equations for mesh deformation
+   Info: restarting elasticity solver
+     Initial values for solution taken as final values from previous step
+   Elasticity Convergence:
+     Search direction     1  residual =  0.31167045E-03   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.11918866E-08   relative_residual =  0.38241886E-05
+     Search direction    97  residual =  0.37946345E-13   relative_residual =  0.12175150E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.41167045E-13
+    2  0.206752165224599E-02  0.14703E+00 -0.23276E+02  0.41992E+02 -0.30922E+01
+       Lift  0.325557063057101E+01         Drag  0.612491401315903E+01
+ 
+ Begin Mesh Movement, Time Step 3   (Current Step 3)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.89226783E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.32491904E-09   relative_residual =  0.36414967E-05
+     Search direction    95  residual =  0.17461658E-13   relative_residual =  0.19569973E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.18922678E-13
+    3  0.159438484471148E-02  0.10349E+00 -0.23276E+02  0.41992E+02 -0.30922E+01
+       Lift  0.352603947672003E+01         Drag  0.666503297691219E+01
+ 
+ Begin Mesh Movement, Time Step 4   (Current Step 4)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.37968873E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.14267429E-06   relative_residual =  0.37576645E-05
+     Search direction    98  residual =  0.36738993E-11   relative_residual =  0.96760820E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.38068873E-11
+   limiter frozen
+    4  0.116874195415338E-02  0.62703E-01  0.40134E+02 -0.30875E+02 -0.73815E+01
+       Lift  0.336238403835677E+01         Drag  0.637510731130641E+01
+ 
+ Begin Mesh Movement, Time Step 5   (Current Step 5)
+ Solving linear elasticity equations for mesh deformation
+   Elasticity Convergence:
+     Search direction     1  residual =  0.40939627E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.15425650E-06   relative_residual =  0.37679019E-05
+     Search direction    98  residual =  0.39598822E-11   relative_residual =  0.96724921E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.41039627E-11
+   limiter frozen
+    5  0.104029670026220E-02  0.50330E-01  0.42847E+02 -0.29115E+02 -0.99082E+01
+       Lift  0.321764292592152E+01         Drag  0.610269219608297E+01
+ 
+ Writing boundary output: pointwise_tec_boundary.dat
+  Time step: 5, ntt: 5, Prior iterations: 0
+ Writing Legacy VTK volume file='pointwise_volume.vtk'
+ 
+ Writing pointwise.flow (version 12.2)
+  inserting current history iterations 5
+ Time for write: .2 s
+ 
+ Current value of function            1  0.000000000000000E+000
+ Done.
+FUN3D 13.6-c04c9a5 Adjoint started 04/22/2022 at 19:50:31 with 192 processes
+Contents of ../Flow//fun3d.nml file below------------------------
+ &project
+    project_rootname = "pointwise"
+ /
+
+ &governing_equations
+    viscous_terms = "inviscid"
+ /
+
+ &raw_grid
+  grid_format = 'aflr3'
+  data_format = 'default'
+  swap_yz_axes = .false.
+/
+
+ &reference_physical_properties
+    mach_number     = 0.5
+    angle_of_attack = 1.0
+    reynolds_number = 35e6
+ /
+
+ &inviscid_flux_method
+  flux_construction = 'roe'
+  flux_limiter = 'hminmod'
+  smooth_limiter_coeff    = 1.0
+  freeze_limiter_iteration = 3
+/
+
+&nonlinear_solver_parameters
+  schedule_iteration(1:2) = 1, 100
+  schedule_cfl(1:2) = 5, 100
+/
+
+ &code_run_control
+    steps              = 5
+    stopping_tolerance = 1.0E-15
+    restart_write_freq = 1000
+    restart_read = "off"
+ /
+
+&global
+  moving_grid = .true.
+  volume_animation_freq = -1
+  boundary_animation_freq = -1
+/
+
+&elasticity_gmres
+  nsearch = 200
+  tol = 1.e-10
+/
+
+&massoud_output
+  funtofem_include_skin_friction = .false.
+/
+
+&volume_output_variables
+  export_to = 'vtk'
+  x = .false.
+  y = .false.
+  z = .false.
+  temperature = .true.
+  mach = .true.
+  p = .true.
+/
+
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-3'
+  temperature          = .true.
+  mach                 = .true.
+  p                    = .true.
+/
+Contents of ../Flow//fun3d.nml file above------------------------
+ The default "stream" data format is being used for the grid format "aflr3".
+ Namelist data file ../Flow/moving_body.input successfully opened
+   Namelist forced_motion not read
+   Namelist observer_motion not read
+   Namelist surface_motion_from_file not read
+   Namelist motion_from_file not read
+   Namelist composite_overset_mesh not read
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+ Setting flow solver convergence tolerance to  0.1E-29
+ (to prevent unintended kickout from coupling process)
+ 
+ Code_id=           2
+ Preparing to read binary AFLR3 grid: ../Flow/pointwise.lb8.ugrid
+ 
+  nnodes              771211
+  ntface,nqface       117788 0
+  ntet,npyr,nprz,nhex 4514038 0 0 0
+ 
+cell statistics: type,      min volume,      max volume, max face angle
+cell statistics:  tet,  0.29895671E-10,  0.77502573E+02,  170.664011871
+cell statistics:  all,  0.29895671E-10,  0.77502573E+02,  170.664011871
+
+     ... PM (64,skip_do_min) :  F T
+     ... Use subset of cores to call ParMETIS            4
+     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
+     ... Temporary memory usage               22048476  Bytes
+     ... edgeCut       498580
+     ... Constructing partition node sets for level-0...               4514038 T
+     ... Edge Partitioning ....
+     ... Boundary partitioning....
+     ... Reordering for cache efficiency....
+     ... Write global grid information to pointwise.grid_info
+     ... Time after preprocess TIME/Mem(MB):  ********    940.28    940.28
+  NOTE: kappa_umuscl set by grid: .00
+ loading design ...
+  ... Use the reference Mach number for the freestream:  T
+ Setting Sutherland constant =   198.60 rather than default value of  198.60
+  z-symmetry metrics modified/examined: 39431/39486
+  Running an aeroelastic case with itime = 0
+  -->Setting ignore_grid_velocity to true
+  -->Setting need_grid_velocity to false
+ 
+ Recomputing distance function:
+ Boundary 3 allowed to deform with z=constant constraint
+ 
+ Using linear elasticity to reposition grid...
+ 
+ loading design ...
+ No active shape variables: exiting from reposition_grid...
+ 
+ Number of Moving Bodies:
+  1
+ 
+ Motion Data for Body    1
+   Body Name:   NACA_Wing
+   Parent Name: 
+  Number of Boundaries Defining Body:
+    1
+  List of Boundaries Defining Body:
+    2
+  Mesh Movement For Body Motion
+   rigid+deform
+  Component Mesh ID:
+    0
+  Rotational Motion:
+   rotate
+    0
+   no forced rotation specified
+  Translational Motion
+   translate
+    0
+   no forced translation specified
+  List of Boundaries Used For Force/Moment Integration:
+    2
+  Moment Center:
+   xmc         ymc         zmc  
+   0.00000E+00 0.00000E+00 0.00000E+00
+   move_mc
+    1
+  Surface Files
+   No surface files specified
+ 
+ Moving Body Family Trees:
+ 
+   number after each component name is the generation;
+   generation 0 motion is relative to inertial frame
+   generation 1 motion is relative to generation 0
+   generation 2 motion is relative to generation 1, etc
+ 
+   Body Name: NACA_Wing (0)
+    Ancestors:
+      none
+    Descendants:
+      none
+ 
+ Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
+ Static aeroelastic adjoint mesh update
+ 
+ Begin Mesh Movement, Time Step 5   (Current Step 5)
+ Solving linear elasticity equations for mesh deformation
+   Info: initial call to elasticity solver
+     Elasticity model: (1/distance)**1.0
+     Linear solver: gmres
+     Left preconditioner: point-multicolor  Preconditioner iterations: 5
+     Initial values for solution taken as zero
+     Convergence tolerances: tol_rel = 0.10000000E-09 tol_abs = 0.10000000E-13
+   Elasticity Convergence:
+     Search direction     1  residual =  0.35602938E-01   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.13344721E-06   relative_residual =  0.37482078E-05
+     Search direction    98  residual =  0.34452118E-11   relative_residual =  0.96767624E-10
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.35702938E-11
+ Static adjoint mesh updated moving_grid = .false. now
+ Boundary 3 allowed to deform with z=constant constraint
+ Boundary 3 allowed to deform with z=constant constraint
+ 
+ Reading ../Flow/pointwise.flow (version  12.20)
+ the restart files contains history iterations = 5
+ 
+       Lift  0.321764178793783E+01         Drag  0.610269816955575E+01
+ Iter            adjoint RMS  adjoint MAX   X location   Y location   Z location
+    1  0.000000000000000E+00  0.00000E+00  0.60081E+01  0.49402E+00 -0.72635E+01
+ Current value of function            1  0.000000000000000E+000
