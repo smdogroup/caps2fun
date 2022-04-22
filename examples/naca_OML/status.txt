@@ -1,26 +1,8 @@
-Aerothermoelastic Optimization with FuntoFem and ESP/CAPS
-	Design Problem: NACA Symmetric Wing
-Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy
-	Georgia Tech SMDO Lab April 2022
+Global iteration 1
 --------------------------------------------------------
-Initialized caps Struct AIM
-Initialized caps fluid AIM
-Initialized egads AIM
-Initialized tacs AIM
-Initialized egadsTessAIM for fluid
-Initialized tetgen AIM
-Initialized fun3d AIM
-Set Structure mesh settings
-Set Fluid mesh settings
-Set fun3d settings
---------------------------------------------------------
-Iteration #1
 thickDVs [rib,spar,OML]
 	[0.001 0.001 0.001]
 shapeDVs [area,aspect,camb0,cambf,ctwist,dihedral,lesweep,taper,tc0,tcf]
 	[40.    6.    0.05  0.05  5.    5.   30.    0.5   0.1   0.1 ]
 Building structure mesh... built structure mesh
-Building fluid mesh... linked to fun3d, built fluid mesh
-Initializing funtofem... setup model, setup fun3d interface, setup tacs interface
-	 setup adjoint driver, initialized funtofem
-Running F2F forward analysis... 
+Building fluid mesh... 

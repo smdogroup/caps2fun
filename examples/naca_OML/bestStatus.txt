@@ -1,0 +1,48 @@
+Aerothermoelastic Optimization with FuntoFem and ESP/CAPS
+	Design Problem: NACA Symmetric Wing
+Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy
+	Georgia Tech SMDO Lab April 2022
+--------------------------------------------------------
+Initialized caps Struct AIM
+Initialized caps fluid AIM
+Initialized egads AIM
+Initialized tacs AIM
+Initialized pointwise AIM
+Initialized fun3d AIM
+Set Structure mesh settings
+Set Fluid mesh settings
+Set fun3d settings
+--------------------------------------------------------
+Iteration #1
+thickDVs [rib,spar,OML]
+	[0.001 0.001 0.001]
+shapeDVs [area,aspect,camb0,cambf,ctwist,dihedral,lesweep,taper,tc0,tcf]
+	[40.    6.    0.05  0.05  5.    5.   30.    0.5   0.1   0.1 ]
+Building structure mesh... built structure mesh
+Building fluid mesh... ran pointwise, linked to fun3d, built fluid mesh
+Initializing funtofem... setup model, setup fun3d interface, setup tacs interface
+	 setup adjoint driver, initialized funtofem
+Running F2F forward analysis... completed F2F forward analysis
+	Objective function is 0.08292268865626012
+Running F2F adjoint analysis... finished adjoint analysis
+Compute shape derivatives... initialized shape gradient
+	printed struct.sens file, completed tacsAim postAnalysis(), finished struct mesh contribution to shape DVs
+	printed aero.sens file, completed pointwiseAim postAnalysis(), finished aero mesh contribution to shape DVs
+computed shape derivative chain rule products
+	Struct Grad is [-0.097495012675874 -0.000474596048341 -0.003135990317572]
+	Shape Grad is [ 8.121739147466870e-06  4.679939089955133e-06  5.366908036657439e-04
+  5.752921692914125e-04  1.039351141117353e-05  5.946596081987350e-06
+  5.873332985591252e-06  5.784334953400200e-05 -1.140938816529947e-05
+ -2.104368465092250e-06]
+--------------------------------------------------------
+Iteration #2
+thickDVs [rib,spar,OML]
+	[0.01              0.001474596048341 0.004135990317572]
+shapeDVs [area,aspect,camb0,cambf,ctwist,dihedral,lesweep,taper,tc0,tcf]
+	[39.99999187826085   5.99999532006091   0.049463309196334
+  0.049424707830709  4.999989606488588  4.999994053403918
+ 29.999994126667016  0.499942156650466  0.100011409388165
+  0.100002104368465]
+Building structure mesh... built structure mesh
+Building fluid mesh... ran pointwise, linked to fun3d, built fluid mesh
+Initializing funtofem... setup model, 

@@ -186,30 +186,33 @@
     nextline ( 0:  45)[  18]: select face
     nextline ( 0:  46)[  19]: attribute capsGroup $OML
     nextline ( 0:  47)[  19]: attribute capsMesh $OML
-    nextline ( 0:  48)[  19]: 
-    nextline ( 0:  49)[  19]: store OML
-    nextline ( 0:  50)[  20]: 
-    nextline ( 0:  51)[  20]: set ff 20*cmean
-    nextline ( 0:  52)[  21]: set df 2*ff
-    nextline ( 0:  53)[  22]: #farfield
-    nextline ( 0:  54)[  22]: box -ff -ff 0 df df -ff
-    nextline ( 0:  55)[  23]: select face
-    nextline ( 0:  56)[  24]: attribute capsGroup $Farfield
-    nextline ( 0:  57)[  24]: attribute capsMesh $Farfield
-    nextline ( 0:  58)[  24]: store box
-    nextline ( 0:  59)[  25]: 
-    nextline ( 0:  60)[  25]: restore box
-    nextline ( 0:  61)[  26]: restore OML
-    nextline ( 0:  62)[  27]: subtract
-    nextline ( 0:  63)[  28]: 
-    nextline ( 0:  64)[  28]: select face 3
-    nextline ( 0:  65)[  29]: attribute capsGroup $Symmetry
-    nextline ( 0:  66)[  29]: attribute capsMesh $Symmetry
-    nextline ( 0:  67)[  29]: #capsAIM attribute
-    nextline ( 0:  68)[  29]: select body
-    nextline ( 0:  69)[  30]: attribute capsAIM $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM
-    nextline ( 0:  70)[  30]: attribute capsMeshLength 1.0
-    nextline ( 0:  71)[  30]: #restore wing
+    nextline ( 0:  48)[  19]: attribute capsMeshLength 0.1
+    nextline ( 0:  49)[  19]: 
+    nextline ( 0:  50)[  19]: store OML
+    nextline ( 0:  51)[  20]: 
+    nextline ( 0:  52)[  20]: set ff 20*cmean
+    nextline ( 0:  53)[  21]: set df 2*ff
+    nextline ( 0:  54)[  22]: #farfield
+    nextline ( 0:  55)[  22]: box -ff -ff 0 df df -ff
+    nextline ( 0:  56)[  23]: select face
+    nextline ( 0:  57)[  24]: attribute capsGroup $Farfield
+    nextline ( 0:  58)[  24]: attribute capsMesh $Farfield
+    nextline ( 0:  59)[  24]: #attribute capsMeshLength 0.5
+    nextline ( 0:  60)[  24]: store box
+    nextline ( 0:  61)[  25]: 
+    nextline ( 0:  62)[  25]: restore box
+    nextline ( 0:  63)[  26]: restore OML
+    nextline ( 0:  64)[  27]: subtract
+    nextline ( 0:  65)[  28]: 
+    nextline ( 0:  66)[  28]: select face 3
+    nextline ( 0:  67)[  29]: attribute capsGroup $Symmetry
+    nextline ( 0:  68)[  29]: attribute capsMesh $Symmetry
+    nextline ( 0:  69)[  29]: 
+    nextline ( 0:  70)[  29]: #capsAIM attribute
+    nextline ( 0:  71)[  29]: select body
+    nextline ( 0:  72)[  30]: attribute capsAIM $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM
+    nextline ( 0:  73)[  30]: attribute capsMeshLength 1.0
+    nextline ( 0:  74)[  30]: #restore wing
 --> enter ocsmCheck()
 --> checks passed
 --> enter ocsmSave(filename=/p/home/seanfire/git/caps2fun/examples/naca_OML/fluid/Scratch/capsRestart.cpc)
@@ -382,22 +385,22 @@
     Branch type           ncall  time (sec)    pct
     dimension                 4       0.000    0.0
     box                       2       0.000    0.0
-    udprim                    2       0.020    1.6
+    udprim                    2       0.010    0.8
     restore                   2       0.000    0.0
-    loft                      1       0.010    0.8
+    loft                      1       0.020    1.7
     hollow                    1       0.010    0.8
-    intersect                 1       0.150   12.2
-    union                     2       1.020   82.9
-    translate                 2       0.010    0.8
+    intersect                 1       0.140   11.7
+    union                     2       1.020   85.0
+    translate                 2       0.000    0.0
     rotatey                   1       0.000    0.0
     rotatez                   1       0.000    0.0
     scale                     2       0.000    0.0
     set                      17       0.000    0.0
-    select                   19       0.010    0.8
+    select                   19       0.000    0.0
     store                     1       0.000    0.0
     patbeg                    7       0.000    0.0
     patend                   17       0.000    0.0
-    Total                    82       1.230
+    Total                    82       1.200
 Mapping capsGroup attributes ................
 	Number of unique capsGroup attributes = 3
 	Name = rib, index = 1
@@ -594,17 +597,17 @@ Writing TACS instruction file....
 ==> Profile information
     Branch type           ncall  time (sec)    pct
     box                       1       0.000    0.0
-    udprim                    2       0.010   10.0
+    udprim                    2       0.010    9.1
     restore                   2       0.000    0.0
-    loft                      1       0.010   10.0
-    subtract                  1       0.080   80.0
+    loft                      1       0.010    9.1
+    subtract                  1       0.080   72.7
     translate                 1       0.000    0.0
-    rotatez                   1       0.000    0.0
+    rotatez                   1       0.010    9.1
     scale                     2       0.000    0.0
     set                      12       0.000    0.0
     select                    4       0.000    0.0
     store                     2       0.000    0.0
-    Total                    29       0.100
+    Total                    29       0.110
 Mapping capsGroup attributes ................
 	Number of unique capsGroup attributes = 3
 	Name = Farfield, index = 1
@@ -615,367 +618,462 @@ Mapping capsMesh attributes ................
 	Name = Farfield, index = 1
 	Name = Symmetry, index = 2
 	Name = OML, index = 3
-Getting surface mesh for body 1 (of 1)
- 2AAB81228700 Odd Degenerate test for side 0: 5!
-Body 1 (of 1)
-Number of nodes    = 656
-Number of elements = 1308
-Number of node elements          = 0
-Number of line elements          = 0
-Number of triangle elements      = 1308
-Number of quadrilateral elements = 0
-----------------------------
-Total number of nodes    = 656
-Total number of elements = 1308
-Mapping capsGroup attributes ................
-	Number of unique capsGroup attributes = 3
-	Name = Farfield, index = 1
-	Name = Symmetry, index = 2
-	Name = OML, index = 3
-Number of surface nodes - 656
-Number of surface elements - 1308
-Getting volume mesh
 
-Generating volume mesh using TetGen.....
-
-Tetgen input string = pYq1.500/0.000T1.00e-16
-Delaunizing vertices...
-Delaunay seconds:  0.01
-Creating surface mesh ...
-Surface mesh seconds:  0
-Recovering boundaries...
-Boundary recovery seconds:  0.01
-Removing exterior tetrahedra ...
-Exterior tets removal seconds:  0
-Recovering Delaunayness...
-Delaunay recovery seconds:  0
-Refining mesh...
-  874 insertions, added 296 points, 12257 tetrahedra in queue.
-  291 insertions, added 57 points, 12264 tetrahedra in queue.
-  387 insertions, added 50 points, 11068 tetrahedra in queue.
-  516 insertions, added 41 points, 7582 tetrahedra in queue.
-  688 insertions, added 50 points, 2784 tetrahedra in queue.
-  917 insertions, added 56 points, 768 tetrahedra in queue.
-  1223 insertions, added 124 points, 1401 tetrahedra in queue.
-  1630 insertions, added 193 points, 70 tetrahedra in queue.
-Refinement seconds:  0.12
-Smoothing vertices...
-Mesh smoothing seconds:  0.06
-Improving mesh...
-Mesh improvement seconds:  0
-
-Writing nodes.
-Writing elements.
-Writing faces.
-Writing edges.
-
-Output seconds:  0
-Total running seconds:  0.2
-
-Statistics:
-
-  Input points: 656
-  Input facets: 1308
-  Input segments: 1962
-  Input holes: 0
-  Input regions: 0
-
-  Mesh points: 1551
-  Mesh tetrahedra: 7257
-  Mesh faces: 15168
-  Mesh faces on exterior boundary: 1308
-  Mesh faces on input facets: 1308
-  Mesh edges on input segments: 1962
-  Steiner points inside domain: 895
-
-Done meshing using TetGen!
-No project name ("Proj_Name") provided - A volume mesh will not be written out
-Python library was linked, but will not be used!
-Getting CFD boundary conditions
-	Boundary condition name - Farfield
-	Boundary condition name - OML
-	Boundary condition name - Symmetry
-	Done getting CFD boundary conditions
-
-Getting CFD design variables.......
-	Number of design variables - 10
-	Design Variable name - area
-	Design Variable name - aspect
-	Design Variable name - camb0
-	Design Variable name - cambf
-	Design Variable name - ctwist
-	Design Variable name - dihedral
-	Design Variable name - lesweep
-	Design Variable name - taper
-	Design Variable name - tc0
-	Design Variable name - tcf
-	Done getting CFD design variables
-Creating FUN3D directory tree
-
-Writing MAPBC file ....
-Finished writing MAPBC file
-
-Since Python was not linked and/or being used, the "Overwrite_NML" input needs to be set to "True" to give permission to create a new fun3d.nml. fun3d.nml will NOT be updated!!
-No recognized data transfer names found!
-FUN3D 13.6-c04c9a5 Flow started 04/21/2022 at 20:31:41 with 192 processes
-Contents of fun3d.nml file below------------------------
- &project
-    project_rootname = "pointwise"
- /
-
- &governing_equations
-    viscous_terms = "inviscid"
- /
-
- &raw_grid
-  grid_format = 'aflr3'
-  data_format = 'default'
-  swap_yz_axes = .false.
-/
-
- &reference_physical_properties
-    mach_number     = 0.5
-    angle_of_attack = 1.0
-    reynolds_number = 35e6
- /
-
- &inviscid_flux_method
-  flux_construction = 'roe'
-  flux_limiter = 'hminmod'
-  smooth_limiter_coeff    = 1.0
-  freeze_limiter_iteration = 3
-/
-
-&nonlinear_solver_parameters
-  schedule_iteration(1:2) = 1, 100
-  schedule_cfl(1:2) = 5, 100
-/
-
- &code_run_control
-    steps              = 5
-    stopping_tolerance = 1.0E-15
-    restart_write_freq = 1000
-    restart_read = "off"
- /
-
-&global
-  moving_grid = .true.
-  volume_animation_freq = -1
-  boundary_animation_freq = -1
-/
-
-&elasticity_gmres
-  nsearch = 200
-  tol = 1.e-10
-/
-
-&massoud_output
-  funtofem_include_skin_friction = .false.
-/
-
-&volume_output_variables
-  export_to = 'vtk'
-  x = .false.
-  y = .false.
-  z = .false.
-  temperature = .true.
-  mach = .true.
-  p = .true.
-/
-
-&boundary_output_variables
-  number_of_boundaries = -1
-  boundary_list        = '1-3'
-  temperature          = .true.
-  mach                 = .true.
-  p                    = .true.
-/
-Contents of fun3d.nml file above------------------------
- The default "stream" data format is being used for the grid format "aflr3".
- Namelist data file moving_body.input successfully opened
-   Namelist forced_motion not read
-   Namelist observer_motion not read
-   Namelist surface_motion_from_file not read
-   Namelist motion_from_file not read
-   Namelist composite_overset_mesh not read
-  ... Use the reference Mach number for the freestream:  T
- Setting flow solver convergence tolerance to  0.1E-29
- (to prevent unintended kickout from coupling process)
- 
- loading design ...
- Preparing to read binary AFLR3 grid: pointwise.lb8.ugrid
- 
-  nnodes              771646
-  ntface,nqface       117788 0
-  ntet,npyr,nprz,nhex 4516093 0 0 0
- 
-cell statistics: type,      min volume,      max volume, max face angle
-cell statistics:  tet,  0.31153093E-10,  0.89404042E+02,  172.381500336
-cell statistics:  all,  0.31153093E-10,  0.89404042E+02,  172.381500336
-
-     ... PM (64,skip_do_min) :  F T
-     ... Use subset of cores to call ParMETIS            4
-     ... Calling ParMETIS (ParMETIS_V3_PartKway) .... F T
-     ... Temporary memory usage               22061156  Bytes
-     ... edgeCut       478870
-     ... Constructing partition node sets for level-0...               4516093 T
-     ... Edge Partitioning ....
-     ... Boundary partitioning....
-     ... Reordering for cache efficiency....
-     ... Write global grid information to pointwise.grid_info
-     ... Time after preprocess TIME/Mem(MB):  ********    467.60    467.60
- Grid Motion Type 
-   rigid+deform
- 
-  NOTE: kappa_umuscl set by grid: .00
- 
- Grid read complete
-  ... Use the reference Mach number for the freestream:  T
- Setting Sutherland constant =   198.60 rather than default value of  198.60
-  z-symmetry metrics modified/examined: 39315/39373
-  Running an aeroelastic case with itime = 0
-  -->Setting ignore_grid_velocity to true
-  -->Setting need_grid_velocity to false
- 
- Computing distance function:
- Boundary 3 allowed to deform with z=constant constraint
- 
- Number of Moving Bodies:
-  1
- 
- Motion Data for Body    1
-   Body Name:   NACA_Wing
-   Parent Name: 
-  Number of Boundaries Defining Body:
-    1
-  List of Boundaries Defining Body:
-    2
-  Mesh Movement For Body Motion
-   rigid+deform
-  Component Mesh ID:
-    0
-  Rotational Motion:
-   rotate
-    0
-   no forced rotation specified
-  Translational Motion
-   translate
-    0
-   no forced translation specified
-  List of Boundaries Used For Force/Moment Integration:
-    2
-  Moment Center:
-   xmc         ymc         zmc  
-   0.00000E+00 0.00000E+00 0.00000E+00
-   move_mc
-    1
-  Surface Files
-   No surface files specified
- 
- Moving Body Family Trees:
- 
-   number after each component name is the generation;
-   generation 0 motion is relative to inertial frame
-   generation 1 motion is relative to generation 0
-   generation 2 motion is relative to generation 1, etc
- 
-   Body Name: NACA_Wing (0)
-    Ancestors:
-      none
-    Descendants:
-      none
- 
- Body 1 initial moment center:   0.0000000E+00  0.0000000E+00  0.0000000E+00
- Done.
-[0] Creating TACSAssembler with numOwnedNodes = 1267 numElements = 1317
-[0] BCSRMat: ILU(1000000) Input fill ratio 10.00, actual fill ratio: 5.34, nnz(ILU) = 62499
-Transfer scheme [0]: Creating scheme of type MELD...
-Transfer scheme [1]: Creating scheme of type MELDThermal...
-FUN3D 13.6-c04c9a5 Flow started 04/21/2022 at 20:31:54 with 192 processes
-Contents of fun3d.nml file below------------------------
- &project
-    project_rootname = "pointwise"
- /
-
- &governing_equations
-    viscous_terms = "inviscid"
- /
-
- &raw_grid
-  grid_format = 'aflr3'
-  data_format = 'default'
-  swap_yz_axes = .false.
-/
-
- &reference_physical_properties
-    mach_number     = 0.5
-    angle_of_attack = 1.0
-    reynolds_number = 35e6
- /
-
- &inviscid_flux_method
-  flux_construction = 'roe'
-  flux_limiter = 'hminmod'
-  smooth_limiter_coeff    = 1.0
-  freeze_limiter_iteration = 3
-/
-
-&nonlinear_solver_parameters
-  schedule_iteration(1:2) = 1, 100
-  schedule_cfl(1:2) = 5, 100
-/
-
- &code_run_control
-    steps              = 5
-    stopping_tolerance = 1.0E-15
-    restart_write_freq = 1000
-    restart_read = "off"
- /
-
-&global
-  moving_grid = .true.
-  volume_animation_freq = -1
-  boundary_animation_freq = -1
-/
-
-&elasticity_gmres
-  nsearch = 200
-  tol = 1.e-10
-/
-
-&massoud_output
-  funtofem_include_skin_friction = .false.
-/
-
-&volume_output_variables
-  export_to = 'vtk'
-  x = .false.
-  y = .false.
-  z = .false.
-  temperature = .true.
-  mach = .true.
-  p = .true.
-/
-
-&boundary_output_variables
-  number_of_boundaries = -1
-  boundary_list        = '1-3'
-  temperature          = .true.
-  mach                 = .true.
-  p                    = .true.
-/
-Contents of fun3d.nml file above------------------------
- The default "stream" data format is being used for the grid format "aflr3".
- Namelist data file moving_body.input successfully opened
-   Namelist forced_motion not read
-   Namelist observer_motion not read
-   Namelist surface_motion_from_file not read
-   Namelist motion_from_file not read
-   Namelist composite_overset_mesh not read
-  ... Use the reference Mach number for the freestream:  T
- Setting Sutherland constant =   198.60 rather than default value of  198.60
- Setting flow solver convergence tolerance to  0.1E-29
- (to prevent unintended kickout from coupling process)
- 
- loading design ...
- Preparing to read binary AFLR3 grid: pointwise.lb8.ugrid
+Getting mesh sizing parameters
+	Mesh sizing name - Farfield
+	Mesh sizing name - OML
+	Mesh sizing name - Symmetry
+	Done getting mesh sizing parameters
+Writing global Glyph inputs...
+Writing egads file '/p/home/seanfire/git/caps2fun/examples/naca_OML/fluid/Scratch/pointwise/caps.egads'....
+Number of command line arguments = 2
+Fri Apr 22 2022  7:43:52PM EDT
+Pointwise V18.5
+Loading user defaults from capsUserDefaults.glf
+GeomToMesh: Defaults
+Connector level
+    InitDim                  = 11
+    MaxDim                   = 1024
+    MinDim                   = 4
+    TurnAngle                = 10.000000
+    Deviation                = 0.000000
+    SplitAngle               = 0.000000
+    JoinCons                 = 0
+    ProxGrowthRate           = 1.200000
+    SourceSpacing            = 1
+    TurnAngleHard            = 70.000000
+    EqualSpacing             = 0
+Domain level
+    Algorithm                = AdvancingFront
+    FullLayers               = 0
+    MaxLayers                = 15
+    GrowthRate               = 1.250000
+    IsoType                  = Triangle
+    TRexType                 = Triangle
+    TRexARLimit              = 40.000000
+    TRexAngleBC              = 0.000000
+    Decay                    = 0.800000
+    MinEdge                  = 0.000000
+    MaxEdge                  = 0.000000
+    Adapt                    = 0
+    WallSpacing              = 0.000000
+    StrDomConvertARTrigger   = 0.000000
+Block level
+    Algorithm                = Delaunay
+    VoxelLayers              = 3
+    boundaryDecay            = 0.800000
+    collisionBuffer          = 1.000000
+    maxSkewAngle             = 160.000000
+    TRexSkewDelay            = 0
+    edgeMaxGrowthRate        = 1.500000
+    fullLayers               = 1
+    maxLayers                = 100
+    growthRate               = 1.300000
+    TRexType                 = TetPyramid
+    volInitialize            = 1
+General
+    SkipMeshing              = 1
+    CAESolver                = UGRID
+    outerBoxScale            = 0
+    sourceBoxLengthScale     = 0.000000
+    sourceBoxDirection       =  1.000000 0.000000 0.000000 
+    sourceBoxAngle           = 0.000000
+    sourceGrowthFactor       = 10.000000
+    sourcePCDFile            = 
+    ModelSize                = 0
+    writeGMA                 = 2.0
+    assembleTolMult          = 2.0
+    modelOrientIntMeshVolume = 1
+Elevate On Export
+    degree                   = Q1
+    costThreshold            = 0.8
+    maxIncAngle              = 175.0
+    relax                    = 0.05
+    smoothingPasses          = 1000
+    WCNWeight                = 0.5
+    WCNMode                  = Calculate
+    writeVTU                 = false
+CADFile = caps.egads
+Determining model size from file.
+Info: Model Size adjusted to 100
+Computing maximum DB edge tolerance.
+  Quilt list has 10 entries.
+  Quilt quilt-1: edge tolerance = 5e-07
+  Quilt quilt-2: edge tolerance = 5.91075e-05
+  Quilt quilt-3: edge tolerance = 8.10489e-05
+  Quilt quilt-4: edge tolerance = 8.10486e-05
+  Quilt quilt-5: edge tolerance = 8.10489e-05
+  Quilt quilt-6: edge tolerance = 5e-07
+  Quilt quilt-7: edge tolerance = 5e-07
+  Quilt quilt-8: edge tolerance = 8.10489e-05
+  Quilt quilt-9: edge tolerance = 5e-07
+  Quilt quilt-10: edge tolerance = 5e-07
+  Maximum DB edge tolerance = 8.10489e-05
+Performing model assembly pass on geometry entities.
+domParams(MinEdge) defined as 1.620978e-04 due to model assembly tolerance
+Looking for quilt names in geometry.
+  Quilt list has 10 entries.
+Quilt list has 10 entries.
+Original connector list has 21 entries.
+Minimum connector length = 0.00361478
+Tolerance = 8.10489e-05
+Performing merge on connectors with equal dimensions and common end points.
+After regular merge, connector list has 21 entries.
+Updating conData
+Min Edge Tol: 5.000e-07 on con-2
+Max Edge Tol: 8.105e-05 on con-10
+Adjusting connector dimensions based on average spacings.
+Checking dimension for connector 1/21, name = con-1
+Checking dimension for connector 2/21, name = con-2
+  Changing dimension for connector 2/21 from 11 to 4
+Checking dimension for connector 3/21, name = con-3
+Checking dimension for connector 4/21, name = con-4
+  Changing dimension for connector 4/21 from 11 to 4
+Checking dimension for connector 5/21, name = con-5
+  Changing dimension for connector 5/21 from 11 to 4
+Checking dimension for connector 6/21, name = con-6
+  Changing dimension for connector 6/21 from 11 to 4
+Checking dimension for connector 7/21, name = con-7
+  Changing dimension for connector 7/21 from 11 to 4
+Checking dimension for connector 8/21, name = con-8
+Checking dimension for connector 9/21, name = con-10
+Checking dimension for connector 10/21, name = con-11
+  Changing dimension for connector 10/21 from 11 to 4
+Checking dimension for connector 11/21, name = con-12
+Checking dimension for connector 12/21, name = con-15
+  Changing dimension for connector 12/21 from 11 to 4
+Checking dimension for connector 13/21, name = con-19
+  Changing dimension for connector 13/21 from 11 to 4
+Checking dimension for connector 14/21, name = con-20
+  Changing dimension for connector 14/21 from 11 to 4
+Checking dimension for connector 15/21, name = con-21
+Checking dimension for connector 16/21, name = con-22
+  Changing dimension for connector 16/21 from 11 to 4
+Checking dimension for connector 17/21, name = con-23
+Checking dimension for connector 18/21, name = con-24
+Checking dimension for connector 19/21, name = con-26
+Checking dimension for connector 20/21, name = con-28
+Checking dimension for connector 21/21, name = con-30
+Processing spacing values for connector 1/21, name = con-1
+Processing spacing values for connector 2/21, name = con-2
+Processing spacing values for connector 3/21, name = con-3
+Processing spacing values for connector 4/21, name = con-4
+Processing spacing values for connector 5/21, name = con-5
+Processing spacing values for connector 6/21, name = con-6
+Processing spacing values for connector 7/21, name = con-7
+Processing spacing values for connector 8/21, name = con-8
+Processing spacing values for connector 9/21, name = con-10
+Processing spacing values for connector 10/21, name = con-11
+Processing spacing values for connector 11/21, name = con-12
+Processing spacing values for connector 12/21, name = con-15
+Processing spacing values for connector 13/21, name = con-19
+Processing spacing values for connector 14/21, name = con-20
+Processing spacing values for connector 15/21, name = con-21
+Processing spacing values for connector 16/21, name = con-22
+Processing spacing values for connector 17/21, name = con-23
+Processing spacing values for connector 18/21, name = con-24
+Processing spacing values for connector 19/21, name = con-26
+Processing spacing values for connector 20/21, name = con-28
+Processing spacing values for connector 21/21, name = con-30
+Number of unique endpoints = 14
+Checking for baffle intersections.
+Adjusting connector dimensions based on turning angles and/or deviation.
+  Connector 1/21 con:con-1. Curvature dim ratio = 1.0.
+  Connector 2/21 con:con-2. Curvature dim ratio = 1.0.
+  Connector 3/21 con:con-3. Curvature dim ratio = 1.0.
+  Connector 4/21 con:con-4. Curvature dim ratio = 1.0.
+  Connector 5/21 con:con-5. Curvature dim ratio = 1.0.
+  Connector 6/21 con:con-6. Curvature dim ratio = 1.0.
+  Connector 6/21. Dim changed from 4 to 11.
+  Connector 7/21 con:con-7. Curvature dim ratio = 1.0.
+  Connector 8/21 con:con-8. Curvature dim ratio = 1.0.
+  Connector 9/21 con:con-10. Curvature dim ratio = 58.27272727272727.
+  *** Soft Edge CON con-10
+  Connector 10/21 con:con-11. Curvature dim ratio = 1.0.
+  Connector 11/21 con:con-12. Curvature dim ratio = 1.0.
+  Connector 12/21 con:con-15. Curvature dim ratio = 1.0.
+  Connector 13/21 con:con-19. Curvature dim ratio = 1.0.
+  Connector 13/21. Dim changed from 4 to 11.
+  Connector 14/21 con:con-20. Curvature dim ratio = 1.0.
+  Connector 15/21 con:con-21. Curvature dim ratio = 1.0.
+  Connector 16/21 con:con-22. Curvature dim ratio = 1.0.
+  Connector 17/21 con:con-23. Curvature dim ratio = 1.0.
+  Connector 18/21 con:con-24. Curvature dim ratio = 1.0.
+  Connector 19/21 con:con-26. Curvature dim ratio = 1.0.
+  Connector 20/21 con:con-28. Curvature dim ratio = 1.0.
+  Connector 21/21 con:con-30. Curvature dim ratio = 1.0.
+  *** Hard Edge CON con-1
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-2
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-3
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-4
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-5
+average Dot = -0.30998304698427004, factor = 0.69001695301573
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 108.059
+  *** Hard Edge CON con-6
+average Dot = -0.10024120903169995, factor = 0.8997587909683
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 100.29
+  *** Hard Edge CON con-7
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 84.4363
+  *** Hard Edge CON con-8
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 85.7628
+  *** Hard Edge CON con-11
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 86.9448
+  *** Hard Edge CON con-12
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 80.8559
+  *** Hard Edge CON con-15
+average Dot = -0.3204274744810665, factor = 0.6795725255189335
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 108.689
+  *** Hard Edge CON con-19
+average Dot = -0.061062557314051885, factor = 0.9389374426859481
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 98.6154
+  *** Hard Edge CON con-20
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-21
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-22
+     Fail  :  0.0%
+     Exceed: 2 / 2 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-23
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-24
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-26
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-28
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+  *** Hard Edge CON con-30
+     Fail  :  0.0%
+     Exceed: 9 / 9 = 100.0%
+     max turning angle: 90
+Performing Local Proximity Refinement
+Adjusting connector dimensions based on proximity to other connectors.
+  Proximity test for connector 1/21, con-1.
+    Connector dimension changed from 11 to 18, avg. spacing changed from 10.328 to 6.07527
+  Proximity test for connector 2/21, con-2.
+    Connector dimension changed from 4 to 9, avg. spacing changed from 17.2133 to 6.45497
+  Proximity test for connector 3/21, con-3.
+    Connector dimension changed from 11 to 22, avg. spacing changed from 10.328 to 4.91807
+  Proximity test for connector 4/21, con-4.
+    Connector dimension changed from 4 to 9, avg. spacing changed from 17.2133 to 6.45497
+  Proximity test for connector 5/21, con-5.
+  Proximity test for connector 6/21, con-6.
+    Connector dimension changed from 11 to 98, avg. spacing changed from 0.178391 to 0.0183908
+  Proximity test for connector 7/21, con-7.
+    Connector dimension changed from 4 to 33, avg. spacing changed from 0.577253 to 0.0541175
+  Proximity test for connector 8/21, con-8.
+    Connector dimension changed from 11 to 108, avg. spacing changed from 0.823481 to 0.0769608
+  Proximity test for connector 9/21, con-10.
+    Connector dimension changed from 11 to 47, avg. spacing changed from 0.896991 to 0.194998
+  Proximity test for connector 10/21, con-11.
+    Connector dimension changed from 4 to 33, avg. spacing changed from 1.1545 to 0.108235
+  Proximity test for connector 11/21, con-12.
+    Connector dimension changed from 11 to 108, avg. spacing changed from 0.823448 to 0.0769578
+  Proximity test for connector 12/21, con-15.
+  Proximity test for connector 13/21, con-19.
+    Connector dimension changed from 11 to 98, avg. spacing changed from 0.356782 to 0.0367816
+  Proximity test for connector 14/21, con-20.
+    Connector dimension changed from 4 to 10, avg. spacing changed from 17.2133 to 5.73775
+  Proximity test for connector 15/21, con-21.
+    Connector dimension changed from 11 to 21, avg. spacing changed from 10.328 to 5.16398
+  Proximity test for connector 16/21, con-22.
+    Connector dimension changed from 4 to 10, avg. spacing changed from 17.2133 to 5.73775
+  Proximity test for connector 17/21, con-23.
+    Connector dimension changed from 11 to 26, avg. spacing changed from 10.328 to 4.13118
+  Proximity test for connector 18/21, con-24.
+    Connector dimension changed from 11 to 18, avg. spacing changed from 10.328 to 6.07527
+  Proximity test for connector 19/21, con-26.
+    Connector dimension changed from 11 to 25, avg. spacing changed from 10.328 to 4.30331
+  Proximity test for connector 20/21, con-28.
+    Connector dimension changed from 11 to 23, avg. spacing changed from 10.328 to 4.69453
+  Proximity test for connector 21/21, con-30.
+    Connector dimension changed from 11 to 18, avg. spacing changed from 10.328 to 6.07527
+Adjusting node spacing from geometry
+Length of concave connector list = 5
+Adjusting connector dimensions based on end spacings.
+Connector con-1 current dim = 18
+Connector con-2 current dim = 9
+Connector con-3 current dim = 22
+Connector con-4 current dim = 9
+Connector con-5 current dim = 4
+Aspect ratio limit reduced to 20.0 for connector con-5
+  Changing dimension for connector con-5 5/21 from 4 to 5
+Connector con-6 current dim = 98
+Aspect ratio limit reduced to 20.0 for connector con-6
+Connector con-7 current dim = 33
+Aspect ratio limit reduced to 20.0 for connector con-7
+  Changing dimension for connector con-7 7/21 from 33 to 79
+Connector con-8 current dim = 108
+Aspect ratio limit reduced to 20.0 for connector con-8
+  Changing dimension for connector con-8 8/21 from 108 to 757
+Connector con-10 current dim = 47
+  Changing dimension for connector con-10 9/21 from 47 to 84
+Connector con-11 current dim = 33
+  Changing dimension for connector con-11 10/21 from 33 to 44
+Connector con-12 current dim = 108
+Aspect ratio limit reduced to 20.0 for connector con-12
+  Changing dimension for connector con-12 11/21 from 108 to 819
+Connector con-15 current dim = 4
+  Changing dimension for connector con-15 12/21 from 4 to 5
+Connector con-19 current dim = 98
+Connector con-20 current dim = 10
+Connector con-21 current dim = 21
+Connector con-22 current dim = 10
+Connector con-23 current dim = 26
+Connector con-24 current dim = 18
+Connector con-26 current dim = 25
+Connector con-28 current dim = 23
+Connector con-30 current dim = 18
+Domain list has 10 entries.
+Looking for periodic domain attributes from geometry.
+  Tolerance = 8.10489e-05
+Number of periodic target domains = 0
+Unstructured domain 1 of 10:
+  boundary name = Farfield.
+    Creating boundary name Farfield
+Unstructured domain 2 of 10:
+  boundary name = OML.
+    Creating boundary name OML
+Unstructured domain 3 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 4 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 5 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 6 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 7 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 8 of 10:
+  boundary name = Symmetry.
+    Creating boundary name Symmetry
+Unstructured domain 9 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 10 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Checking for blunt flag attribute on geometry faces.
+Performing Source Cloud Refinement
+Updating conData
+Min Edge Tol: 5.000e-07 on con-2
+Max Edge Tol: 8.105e-05 on con-10
+  Point cloud test for connector con-1.
+  Point cloud test for connector con-2.
+  Point cloud test for connector con-3.
+  Point cloud test for connector con-4.
+  Point cloud test for connector con-5.
+  Point cloud test for connector con-6.
+  Point cloud test for connector con-7.
+  Point cloud test for connector con-8.
+  Point cloud test for connector con-10.
+  Point cloud test for connector con-11.
+  Point cloud test for connector con-12.
+  Point cloud test for connector con-15.
+  Point cloud test for connector con-19.
+  Point cloud test for connector con-20.
+  Point cloud test for connector con-21.
+  Point cloud test for connector con-22.
+  Point cloud test for connector con-23.
+  Point cloud test for connector con-24.
+  Point cloud test for connector con-26.
+  Point cloud test for connector con-28.
+  Point cloud test for connector con-30.
+Setting up T-Rex domain boundary conditions.
+  Creating T-Rex wall boundary con-6
+  Creating T-Rex wall boundary con-7
+  Creating T-Rex wall boundary con-8
+  con-7 already in T-Rex boundary list.
+  Creating T-Rex wall boundary con-10
+  Creating T-Rex wall boundary con-11
+  Creating T-Rex wall boundary con-12
+  con-8 already in T-Rex boundary list.
+  con-10 already in T-Rex boundary list.
+  con-6 already in T-Rex boundary list.
+  con-12 already in T-Rex boundary list.
+  Creating T-Rex wall boundary con-19
+  con-19 already in T-Rex boundary list.
+  con-11 already in T-Rex boundary list.
+Applying T-Rex condition to opposite side for connector con-6.
+Applying T-Rex condition to opposite side for connector con-7.
+Applying T-Rex condition to opposite side for connector con-8.
+Applying T-Rex condition to opposite side for connector con-10.
+Applying T-Rex condition to opposite side for connector con-11.
+Applying T-Rex condition to opposite side for connector con-12.
+Applying T-Rex condition to opposite side for connector con-19.
+Performing initialization pass on all unstructured domains.
+Unstructured domain list for assembly has 10 entries.
+Structured domain list for assembly has 0 entries.
+Periodic target domain list for assembly has 0 entries.
+Creating unstructured block from 10 domains.
+Block = auto-blk
+  Setting up unstructured block.
+Retrieving block attributes from geometry.
+Retrieving T-Rex volume boundary conditions from geometry.
+  Domain OML has spacing value = 0.001.
+  Creating T-Rex wall boundary OML
+  Domain OML has spacing value = 0.001.
+  Domain OML has spacing value = 0.001.
+  Domain OML has spacing value = 0.001.
+  Looking for adjacent boundaries to set as match.
+  Creating T-Rex match boundary
+  Setting Push Attributes on Block.
+  Initializing unstructured block.
+Info: Begin: aniso layer     1: growthRate = 1.000000, height = 1.000000, totalHeight = 1.000000
+Info: End  : aniso layer     1: numPts =    103884, numTets =       271509, (2.200000 seconds)
+Info: Begin: aniso layer     2: growthRate = 1.300000, height = 1.300000, totalHeight = 2.300000
+Info: End  : aniso layer     2: numPts =    149053, numTets =       543018, (2.390000 seconds)
+Info: Begin: aniso layer     3: growthRate = 1.300000, height = 1.690000, totalHeight = 3.990000
+Info: End  : aniso layer     3: numPts =    192745, numTets =       805710, (2.220000 seconds)
+Info: Begin: aniso layer     4: growthRate = 1.300000, height = 2.197000, totalHeight = 6.187000
+Info: End  : aniso layer     4: numPts =    234922, numTets =      1059288, (2.190000 seconds)
+Info: Begin: aniso layer     5: growthRate = 1.300000, height = 2.856100, totalHeight = 9.043100
+Info: End  : aniso layer     5: numPts =    275034, numTets =      1300478, (2.090000 seconds)
+Info: Begin: aniso layer     6: growthRate = 1.300000, height = 3.712930, totalHeight = 12.756030
+Info: End  : aniso layer     6: numPts =    312768, numTets =      1527303, (2.000000 seconds)
+Info: Begin: aniso layer     7: growthRate = 1.300000, height = 4.826809, totalHeight = 17.582839

@@ -4,6 +4,9 @@ from mpi4py import MPI
 from tacs.pytacs import pyTACS
 from tacs import functions
 
+os.system("rm struct/Scratch/capsLock")
+os.system("rm fluid/Scratch/capsLock")
+
 ##--------set design parameters------##
 #taper = 0.5
 isHPC = True
@@ -284,9 +287,11 @@ else:
     fun3dAim = capsFluid.analysis.create(aim = "fun3dAIM",
                                     name = "fun3d")
 
-    egadsFluidAim.input.Tess_Params = [1.5, 0.001, 0.5]
-    egadsFluidAim.input.Edge_Point_Min = 5
-    egadsFluidAim.input.Edge_Point_Max = 30
+    #egadsFluidAim.input.Tess_Params = [2.0, 0.01, 15]
+    #egadsFluidAim.input.Tess_Params = [.25,.01,15]
+    egadsFluidAim.input.Tess_Params = [0.01, 0.001, 5]
+    egadsFluidAim.input.Edge_Point_Min = 10
+    egadsFluidAim.input.Edge_Point_Max = 40
 
     #tetgen AIM mesh params
     tetgenAim.input.Preserve_Surf_Mesh = True

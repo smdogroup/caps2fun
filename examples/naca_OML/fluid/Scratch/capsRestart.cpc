@@ -38,6 +38,7 @@ attribute OML   0
 select    face
 attribute capsGroup   $OML
 attribute capsMesh   $OML
+attribute capsMeshLength   0.1
 store     OML   0   0
 set       ff 20*cmean
 set       df 2*ff

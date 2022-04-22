@@ -140,18 +140,19 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0): self.clearCapsLock()
 
         #status file
+
         if (self.comm.Get_rank() == 0):
             prevStatus = os.path.join(os.getcwd(), "prev_status.txt")
             statusFile = os.path.join(os.getcwd(), "status.txt")
-            if (os.path.exists(statusFile)): os.remove(statusFile)
-            self.status =  open(statusFile, "w")
+            self.status =  open(statusFile, "a")
+            
 
-        self.cwrite("Aerothermoelastic Optimization with FuntoFem and ESP/CAPS\n")
-        self.cwrite("\tDesign Problem: NACA Symmetric Wing\n")
-        self.cwrite("Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy\n")
-        self.cwrite("\tGeorgia Tech SMDO Lab April 2022\n")
-        self.cwrite("----------------------------")
-        self.cwrite("----------------------------\n")
+        #self.cwrite("Aerothermoelastic Optimization with FuntoFem and ESP/CAPS\n")
+        #self.cwrite("\tDesign Problem: NACA Symmetric Wing\n")
+        #self.cwrite("Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy\n")
+        #self.cwrite("\tGeorgia Tech SMDO Lab April 2022\n")
+        #self.cwrite("----------------------------")
+        #self.cwrite("----------------------------\n")
 
 
         #iteration counter for optimizer
@@ -201,53 +202,53 @@ class NacaOMLOptimization():
             self.capsStruct = pyCAPS.Problem(problemName = "struct",
                         capsFile = structCSM,
                         outLevel = 1)
-            self.cwrite("Initialized caps Struct AIM\n")
+            #self.cwrite("Initialized caps Struct AIM\n")
 
             #initialize pyCAPS fluid problem
             self.capsFluid = pyCAPS.Problem(problemName = "fluid",
                         capsFile = fluidCSM,
                         outLevel = 1)
-            self.cwrite("Initialized caps fluid AIM\n")
+            #self.cwrite("Initialized caps fluid AIM\n")
 
             #initialize egads Aim
             self.egadsAim = self.capsStruct.analysis.create(aim="egadsTessAIM")
-            self.cwrite("Initialized egads AIM\n")
+            #self.cwrite("Initialized egads AIM\n")
 
             #initialize tacs Aim
             self.tacsAim = self.capsStruct.analysis.create(aim = "tacsAIM", name = "tacs")
-            self.cwrite("Initialized tacs AIM\n")
+            #self.cwrite("Initialized tacs AIM\n")
 
 
             if (self.mesh_style == "pointwise"):
                 #initialize pointwise AIM
                 self.pointwiseAim = self.capsFluid.analysis.create(aim = "pointwiseAIM",
                                             name = "pointwise")
-                self.cwrite("Initialized pointwise AIM\n")
+                #self.cwrite("Initialized pointwise AIM\n")
             elif (self.mesh_style == "tetgen"):
                 #initialize egads fluid aim
                 self.egadsFluidAim = self.capsFluid.analysis.create(aim = "egadsTessAIM", name = "egadsTess")
-                self.cwrite("Initialized egadsTessAIM for fluid\n")
+                #self.cwrite("Initialized egadsTessAIM for fluid\n")
                 
                 #initialize tetgen aim
                 self.tetgenAim = self.capsFluid.analysis.create(aim = "tetgenAIM", name = "tetgen")
-                self.cwrite("Initialized tetgen AIM\n")
+                #self.cwrite("Initialized tetgen AIM\n")
 
             #initialize FUN3D AIM from Pointwise mesh
             self.fun3dAim = self.capsFluid.analysis.create(aim = "fun3dAIM",
                                     name = "fun3d")
-            self.cwrite("Initialized fun3d AIM\n")
+            #self.cwrite("Initialized fun3d AIM\n")
 
             #structural mesh settings
             self.structureMeshSettings()
-            self.cwrite("Set Structure mesh settings\n")
+            #self.cwrite("Set Structure mesh settings\n")
 
             #fluid mesh settings
             self.fluidMeshSettings()
-            self.cwrite("Set Fluid mesh settings\n")
+            #self.cwrite("Set Fluid mesh settings\n")
 
             #set fun3d settings
             self.fun3dSettings()
-            self.cwrite("Set fun3d settings\n")
+            #self.cwrite("Set fun3d settings\n")
 
     def structureMeshSettings(self):
         #names the bdf and dat files as pointwise.ext or tetgen.ext
@@ -376,12 +377,15 @@ class NacaOMLOptimization():
 
         elif (self.mesh_style == "tetgen"):
             #egads fluid tesselation params for surface mesh
-            #self.egadsFluidAim.input.Tess_Params = [1.5, 0.001, 0.5]
-            self.egadsFluidAim.input.Tess_Params = [15, 0.1, 20]
-            self.egadsFluidAim.input.Edge_Point_Min = 5
-            self.egadsFluidAim.input.Edge_Point_Max = 30
+            #self.egadsFluidAim.input.Tess_Params = [1.0, 0.001, 0.1]
+            self.egadsFluidAim.input.Tess_Params = [0.01, 0.001, 5]
+            #self.egadsFluidAim.input.Edge_Point_Min = 2
+            #self.egadsFluidAim.input.Edge_Point_Max = 50
+            #self.egadsFluidAim.input.Tess_Params = [15, 0.1, 20]
+            #self.egadsFluidAim.input.Edge_Point_Min = 5
+            #self.egadsFluidAim.input.Edge_Point_Max = 30
 
-            #tetgen AIM mesh params
+            #tetgen solvers['flow'] = fun3d_interface(self.comm, )AIM mesh params
             self.tetgenAim.input.Preserve_Surf_Mesh = True
             self.tetgenAim.input["Surface_Mesh"].link(self.egadsFluidAim.output["Surface_Mesh"])
             self.tetgenAim.input.Mesh_Format = "AFLR3"
@@ -467,14 +471,13 @@ class NacaOMLOptimization():
 
         #==================================================================================================#
 
-        # instantiate TACS on the master
         solvers = {}
         solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0)
-        self.cwrite("setup fun3d interface, ")
+        #self.cwrite("setup fun3d interface, ")
 
         datFile = os.path.join(self.curDir,"steady","Flow",self.mesh_style + ".dat")
         solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile)
-        self.cwrite("setup tacs interface\n")
+        #self.cwrite("setup tacs interface\n")
 
         # L&D transfer options
         transfer_options = {'analysis_type': self.analysis_type,
@@ -483,23 +486,23 @@ class NacaOMLOptimization():
         # instantiate the driver
         self.driver = FUNtoFEMnlbgs(solvers,self.comm,tacs_comm,0,self.comm,0,transfer_options,model=self.model)
         struct_tacs = solvers['structural'].assembler
-        self.cwrite("\t setup adjoint driver, ")
+        #self.cwrite("\t setup adjoint driver, ")
 
         #section to update funtofem DV values for next fun3d run
         self.model.set_variables(structDVs)
 
     def clearF2F(self):
-        #if (self.comm.Get_rank() == 0):
-        #del self.model
-        #del self.driver
-        #del self.wing
-        print("yup")
+        #clear previous funtofem data and destroy it
+        if (self.comm.Get_rank() == 0):
+            delattr(self, "model")
+            delattr(self, "driver")
+            delattr(self, "wing")
 
     def forwardAnalysis(self, x):
         #update status
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
-        self.cwrite("Iteration #{}\n".format(self.iteration))
+        #self.cwrite("Iteration #{}\n".format(self.iteration))
 
         #set design variables from desvarDict
         self.updateDesign(x)
@@ -516,9 +519,9 @@ class NacaOMLOptimization():
         self.cwrite("built fluid mesh\n")
 
         #initialize fun2fem with new meshes
-        self.cwrite("Initializing funtofem... ")
+        #self.cwrite("Initializing funtofem... ")
         self.initF2F(x)
-        self.cwrite("initialized funtofem\n")
+        #self.cwrite("initialized funtofem\n")
 
         #run FUNtoFEM forward analysis
         #run funtofem forward analysis, including fun3d
@@ -549,7 +552,7 @@ class NacaOMLOptimization():
         #get the funtofem gradients
         f2fgrads = self.model.get_function_gradients()
         
-        self.commBarrier("function_gradients()")
+        #self.commBarrier("function_gradients()")
 
         #update gradient for non shape DVs
         nfunc = len(self.functions)
@@ -956,7 +959,8 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "tetgen", "aerothermoelastic")
+#INIT
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "pointwise", "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)
@@ -964,12 +968,15 @@ sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", naca
 #  ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "taper","tc0","tcf"]
 lbnds =   [20.0, 3.0, 0.01 , 0.01, 1.0,  1.0, 3.0,   0.3, 0.0, 0.0]
 init = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 30.0,  0.5, 0.1, 0.1]
+#init = [39.999991869346715, 5.999995306703384, 0.049463148679084, 0.049423581788623,  4.999989617621726,  \
+#4.999994041018077, 29.999994112774047,  0.499942320035062,  0.100011276236523,   0.100002193120896]
 ubnds =   [100.0,10.0, 0.3, 0.3, 10.0, 20.0, 50.0, 1.0, 0.3, 0.3]
 
 #["rib","spar","OML"]
 lBnds2 = 0.0001 * np.ones(3)
 uBnds2 = 0.01*np.ones(3)
 init2 = 0.001*np.ones(3)
+#init2 = [0.01,              0.001474601375415, 0.004135864329755]
 
 sparseProb.addVarGroup("shape", 10, lower=lbnds, upper=ubnds, value=init)
 sparseProb.addVarGroup("struct", 3, lower=lBnds2, upper=uBnds2, value=init2)
@@ -980,21 +987,28 @@ sparseProb.addObj("obj")
 # if comm.rank == 0:
 #     print(sparseProb)
 
-optOptions = {"IPRINT": -1}
+optOptions = {"IPRINT": -1, "MAXIT" : 1}
 opt = SLSQP(options=optOptions)
 sol = opt(sparseProb, sens=nacaOpt.objGrad)
 
-nacaOpt.cwrite("----------------------------")
-nacaOpt.cwrite("----------------------------\n")
-nacaOpt.cwrite("Finished optimization problem\n")
+#nacaOpt.cwrite("----------------------------")
+#nacaOpt.cwrite("----------------------------\n")
+#nacaOpt.cwrite("Finished optimization problem\n")
 
 if comm.rank == 0:
     print(sol)
     print('\nsol.xStar:  ', sol.xStar)
 
-nacaOpt.cwrite("Solution is: \n")
-nacaOpt.cwrite(sol)
-nacaOpt.cwrite("With optimal inputs {}".format(sol.xStar))
+nacaOpt.cwrite("\tSolution is: \n")
+#nacaOpt.cwrite(sol)
+nacaOpt.cwrite("\tWith optimal inputs {}".format(sol.xStar))
+
+nacaOpt.cwrite("----------------------------")
+nacaOpt.cwrite("----------------------------\n")
 
 #close the status file
 if (nacaOpt.comm.Get_rank() == 0): nacaOpt.status.close()
+
+#exit after 1 iteration since fun3d is annoying
+#and won't run again in the same python file
+#sys.exit("Exited after 1 iteration")

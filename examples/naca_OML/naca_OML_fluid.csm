@@ -45,6 +45,7 @@ attribute	OML	0
 select face
 	attribute capsGroup $OML
 	attribute capsMesh $OML
+	attribute capsMeshLength 0.1
 
 store OML
 
@@ -55,6 +56,7 @@ box -ff -ff 0 df df -ff
 select face
    attribute capsGroup $Farfield
    attribute capsMesh $Farfield
+   #attribute capsMeshLength 0.5
 store box
 
 restore box
@@ -64,6 +66,7 @@ subtract
 select face 3
 	attribute capsGroup $Symmetry
 	attribute capsMesh $Symmetry
+	#attribute capsMeshLength 0.25
 #capsAIM attribute
 select body
 	attribute capsAIM $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM
