@@ -192,85 +192,118 @@ builtStruct = True
 #load pointwise if on HPC
 #module load pointwise/18.5R1
 
-#save cfd egads version for fluid mesh to read next
+#pointwise or tetgen style
+mesh_style = "tetgen"
 
-def run_pointwise(pointwise):
-    #run AIM pre-analysis
-    pointwise.preAnalysis()
+if (mesh_style == "pointwise"):
+    #save cfd egads version for fluid mesh to read next
 
-    #move to test directory
-    currentDir = os.getcwd()
-    os.chdir(pointwise.analysisDir)
+    def run_pointwise(pointwise):
+        #run AIM pre-analysis
+        pointwise.preAnalysis()
 
-    CAPS_GLYPH = os.environ["CAPS_GLYPH"]
-    for i in range(1):
-         os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
+        #move to test directory
+        currentDir = os.getcwd()
+        os.chdir(pointwise.analysisDir)
 
-        #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
-    
-    os.chdir(currentDir)
+        CAPS_GLYPH = os.environ["CAPS_GLYPH"]
+        for i in range(1):
+            os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
 
-    #run AIM postanalysis
-    pointwise.postAnalysis()
+            #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
+        
+        os.chdir(currentDir)
 
-#-------------------Start fluid capsProblem------------------------------------------#
+        #run AIM postanalysis
+        pointwise.postAnalysis()
 
-caps2 = pyCAPS.Problem(problemName = "fluid",
-                    capsFile = "naca_OML_fluid.csm",
-                    outLevel = 1)
+    #-------------------Start fluid capsProblem------------------------------------------#
 
-#update despmtr
-#caps2.geometry.despmtr["taper"].value = taper
+    caps2 = pyCAPS.Problem(problemName = "fluid",
+                        capsFile = "naca_OML_fluid.csm",
+                        outLevel = 1)
 
-# Create pointwise aim
-pointwise = caps2.analysis.create(aim = "pointwiseAIM",
-                                    name = "pointwise")
+    #update despmtr
+    #caps2.geometry.despmtr["taper"].value = taper
+
+    # Create pointwise aim
+    pointwise = caps2.analysis.create(aim = "pointwiseAIM",
+                                        name = "pointwise")
 
 
-#pointwise.geometry.cfgpmtr["cfdOn"].value = 1
+    #pointwise.geometry.cfgpmtr["cfdOn"].value = 1
 
-# Dump VTK files for visualization
-pointwise.input.Proj_Name   = "TransportWing"
-pointwise.input.Mesh_Format = "VTK"
+    # Dump VTK files for visualization
+    pointwise.input.Proj_Name   = "TransportWing"
+    pointwise.input.Mesh_Format = "VTK"
 
-# Connector level
-pointwise.input.Connector_Turn_Angle       = 10
-pointwise.input.Connector_Prox_Growth_Rate = 1.2
-pointwise.input.Connector_Source_Spacing   = True
+    # Connector level
+    pointwise.input.Connector_Turn_Angle       = 10
+    pointwise.input.Connector_Prox_Growth_Rate = 1.2
+    pointwise.input.Connector_Source_Spacing   = True
 
-# Domain level
-pointwise.input.Domain_Algorithm    = "AdvancingFront"
-pointwise.input.Domain_Max_Layers   = 15
-pointwise.input.Domain_Growth_Rate  = 1.25
-pointwise.input.Domain_TRex_ARLimit = 40.0
-pointwise.input.Domain_Decay        = 0.8
-pointwise.input.Domain_Iso_Type = "Triangle"
+    # Domain level
+    pointwise.input.Domain_Algorithm    = "AdvancingFront"
+    pointwise.input.Domain_Max_Layers   = 15
+    pointwise.input.Domain_Growth_Rate  = 1.25
+    pointwise.input.Domain_TRex_ARLimit = 40.0
+    pointwise.input.Domain_Decay        = 0.8
+    pointwise.input.Domain_Iso_Type = "Triangle"
 
-# Block level
-pointwise.input.Block_Boundary_Decay       = 0.8
-pointwise.input.Block_Collision_Buffer     = 1.0
-pointwise.input.Block_Max_Skew_Angle       = 160.0
-pointwise.input.Block_Edge_Max_Growth_Rate = 1.5
-pointwise.input.Block_Full_Layers          = 1
-pointwise.input.Block_Max_Layers           = 100
-pointwise.input.Block_TRexType = "TetPyramid"
-#T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms).
+    # Block level
+    pointwise.input.Block_Boundary_Decay       = 0.8
+    pointwise.input.Block_Collision_Buffer     = 1.0
+    pointwise.input.Block_Max_Skew_Angle       = 160.0
+    pointwise.input.Block_Edge_Max_Growth_Rate = 1.5
+    pointwise.input.Block_Full_Layers          = 1
+    pointwise.input.Block_Max_Layers           = 100
+    pointwise.input.Block_TRexType = "TetPyramid"
+    #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms).
 
-# Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
-viscousWall  = {"boundaryLayerSpacing" : 0.001}
-pointwise.input.Mesh_Sizing = {"OML": viscousWall,
-        "Farfield": {"bcType":"Farfield"},
-        "Symmetry" : {"bcType" : "SymmetryY"}}
+    # Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
+    viscousWall  = {"boundaryLayerSpacing" : 0.001}
+    pointwise.input.Mesh_Sizing = {"OML": viscousWall,
+            "Farfield": {"bcType":"Farfield"},
+            "Symmetry" : {"bcType" : "SymmetryY"}}
 
-# Execute pointwise
-run_pointwise(pointwise)
+    # Execute pointwise
+    run_pointwise(pointwise)
 
-#ran fluid mesh boolean
-builtFluid = True
+    #ran fluid mesh boolean
+    builtFluid = True
 
-#copy files from pointwise analysis dir to meshDir
-os.system("cp " + pointwise.analysisDir + "/*.ugrid ./mesh/") 
+    #copy files from pointwise analysis dir to meshDir
+    os.system("cp " + pointwise.analysisDir + "/*.ugrid ./mesh/") 
 
-##---------------Feedback------------##
-if (builtStruct): print("Built structural mesh!")
-if (builtFluid): print("Built fluid mesh!")
+else:
+    capsFluid = pyCAPS.Problem(problemName = "fluid",
+                        capsFile = "naca_OML_fluid.csm",
+                        outLevel = 1)
+    egadsFluidAim = capsFluid.analysis.create(aim = "egadsTessAIM", name = "egadsTess")
+    tetgenAim = capsFluid.analysis.create(aim = "tetgenAIM", name = "tetgen")
+    fun3dAim = capsFluid.analysis.create(aim = "fun3dAIM",
+                                    name = "fun3d")
+
+    egadsFluidAim.input.Tess_Params = [1.5, 0.001, 0.5]
+    egadsFluidAim.input.Edge_Point_Min = 5
+    egadsFluidAim.input.Edge_Point_Max = 30
+
+    #tetgen AIM mesh params
+    tetgenAim.input.Preserve_Surf_Mesh = True
+    tetgenAim.input["Surface_Mesh"].link(egadsFluidAim.output["Surface_Mesh"])
+    tetgenAim.input.Mesh_Format = "AFLR3"
+
+    '''
+    meshSizeDict = {}
+    meshSizeDict["OML"] = {"tessParams" : [0.25, 0.01, 10.0]}
+    meshSizeDict["Farfield"] = {"tessParams" : [7.5, 0.01, 10.0]}
+    meshSizeDict["Symmetry"] = {"tessParams" : [1, 0.01, 10.0]}
+    tetgenAim.input.Mesh_Sizing = meshSizeDict
+    '''
+
+    fun3dAim.input["Mesh"].link(tetgenAim.output["Volume_Mesh"])
+
+    fun3dAim.input.Boundary_Condition = {"OML": {"bcType" : "Inviscid"},
+                "Farfield": {"bcType":"Farfield"},
+                "Symmetry" : "SymmetryZ"}
+    fun3dAim.preAnalysis()

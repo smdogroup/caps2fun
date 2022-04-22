@@ -127,14 +127,17 @@ class wedgeTACS(TacsSteadyInterface):
 
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, comm, structCSM, fluidCSM, DVdict, analysisType = "aerothermoelastic"):
+    def __init__(self, comm, structCSM, fluidCSM, DVdict, meshStyle = "tetgen", analysisType = "aerothermoelastic"):
 
         self.comm = comm
         
         #mesh style setting - pointwise or tetgen
-        self.mesh_style = "pointwise" #"pointwise", "tetgen"
+        self.mesh_style = meshStyle #"pointwise", "tetgen"
 
         self.n_tacs_procs = 1
+
+        #clear capslock files
+        if (self.comm.Get_rank() == 0): self.clearCapsLock()
 
         #status file
         if (self.comm.Get_rank() == 0):
@@ -171,6 +174,11 @@ class NacaOMLOptimization():
 
         #initialize AIMS
         if (self.comm.Get_rank() == 0): self.initializeAIMs(structCSM, fluidCSM)
+
+    def clearCapsLock(self):
+        #delete capsLock files for next run
+        if (os.path.exists("struct/Scratch/capsLock")): os.system("rm struct/Scratch/capsLock")
+        if (os.path.exists("fluid/Scratch/capsLock")): os.system("rm fluid/Scratch/capsLock")
 
     def cwrite(self, text):
         if (self.comm.Get_rank() == 0):
@@ -218,11 +226,11 @@ class NacaOMLOptimization():
             elif (self.mesh_style == "tetgen"):
                 #initialize egads fluid aim
                 self.egadsFluidAim = self.capsFluid.analysis.create(aim = "egadsTessAIM", name = "egadsTess")
-                self.cwrite("Initialized egadsTessAIM for fluid")
+                self.cwrite("Initialized egadsTessAIM for fluid\n")
                 
                 #initialize tetgen aim
                 self.tetgenAim = self.capsFluid.analysis.create(aim = "tetgenAIM", name = "tetgen")
-                self.cwrite("Initialized tetgen AIM")
+                self.cwrite("Initialized tetgen AIM\n")
 
             #initialize FUN3D AIM from Pointwise mesh
             self.fun3dAim = self.capsFluid.analysis.create(aim = "fun3dAIM",
@@ -242,13 +250,16 @@ class NacaOMLOptimization():
             self.cwrite("Set fun3d settings\n")
 
     def structureMeshSettings(self):
+        #names the bdf and dat files as pointwise.ext or tetgen.ext
+        self.tacsAim.input.Proj_Name = self.mesh_style
+        
         #Egads Aim section, for mesh
         self.egadsAim.input.Edge_Point_Min = 5
         self.egadsAim.input.Edge_Point_Max = 10
 
         self.egadsAim.input.Mesh_Elements = "Quad"
 
-        self.egadsAim.input.Tess_Params = [.25,.01,15]
+        self.egadsAim.input.Tess_Params = [0.25,.01,10]
 
         #increase the precision in the BDF file
         self.tacsAim.input.File_Format = "Large"
@@ -361,26 +372,32 @@ class NacaOMLOptimization():
             viscousWall  = {"boundaryLayerSpacing" : 0.001}
             self.pointwiseAim.input.Mesh_Sizing = {"OML": viscousWall,
                     "Farfield": {"bcType":"Farfield"},
-                    "Symmetry" : {"bcType" : "SymmetryY"}}
+                    "Symmetry" : {"bcType" : "SymmetryZ"}}
 
         elif (self.mesh_style == "tetgen"):
             #egads fluid tesselation params for surface mesh
-            self.egadsFluidAim.input.Tess_Params = [15.0, 0.01, 20.0]
+            #self.egadsFluidAim.input.Tess_Params = [1.5, 0.001, 0.5]
+            self.egadsFluidAim.input.Tess_Params = [15, 0.1, 20]
+            self.egadsFluidAim.input.Edge_Point_Min = 5
+            self.egadsFluidAim.input.Edge_Point_Max = 30
 
             #tetgen AIM mesh params
             self.tetgenAim.input.Preserve_Surf_Mesh = True
             self.tetgenAim.input["Surface_Mesh"].link(self.egadsFluidAim.output["Surface_Mesh"])
             self.tetgenAim.input.Mesh_Format = "AFLR3"
 
-            viscousWall  = {"boundaryLayerSpacing" : 0.001}
-            self.tetgenAim.input.Mesh_Sizing = {"OML": viscousWall,
-                    "Farfield": {"bcType":"Farfield"},
-                    "Symmetry" : {"bcType" : "SymmetryY"}}
+            #self.tetgenAim.input.Edge_Point_Min = 5
+            #self.tetgenAim.input.Edge_Point_Max = 10
+
+            #viscousWall  = {"boundaryLayerSpacing" : 0.001}
+            #self.tetgenAim.input.Mesh_Sizing = {"OML": viscousWall,
+            #        "Farfield": {"bcType":"Farfield"},
+            #        "Symmetry" : {"bcType" : "SymmetryZ"}}
 
     def fun3dSettings(self):
         self.fun3dAim.input.Boundary_Condition = {"OML": {"bcType" : "Inviscid"},
                 "Farfield": {"bcType":"Farfield"},
-                "Symmetry" : "SymmetryY"}
+                "Symmetry" : "SymmetryZ"}
 
         #add thickDVs and geomDVs to caps
         DVdict = {}
@@ -397,6 +414,9 @@ class NacaOMLOptimization():
         self.fun3dAim.input.Design_Sensitivity = True
 
     def initF2F(self, x):
+        #clear F2F from previous run
+        if (self.iteration > 1): self.clearF2F()
+
         structDVs = x["struct"]
         
         maximum_mass = 40.0 
@@ -428,17 +448,18 @@ class NacaOMLOptimization():
         self.model.add_body(self.wing)
 
         steady = Scenario('steady', group=0, steps=5)
+        
         function1 = Function('ksfailure',analysis_type='structural')
         steady.add_function(function1)
 
-        function2 = Function('mass',analysis_type='structural') #,adjoint=False
-        steady.add_function(function2)
+        #function2 = Function('cl', analysis_type='aerodynamic')
+        #steady.add_function(function2)
 
-        # function3 = Function('lift', analysis_type='aerodynamic')
-        # steady.add_function(function3)
+        #function3 = Function('cd', analysis_type='aerodynamic')
+        #steady.add_function(function3)
 
-        # function4 = Function('drag', analysis_type='aerodynamic')
-        # steady.add_function(function4)
+        #function2 = Function('mass',analysis_type='structural', adjoint=False) #,adjoint=False
+        #steady.add_function(function2)
 
         self.model.add_scenario(steady)
 
@@ -450,7 +471,8 @@ class NacaOMLOptimization():
         solvers = {}
         solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0)
         self.cwrite("setup fun3d interface, ")
-        datFile = os.path.join(self.curDir,"steady","Flow","nastran_CAPS.dat")
+
+        datFile = os.path.join(self.curDir,"steady","Flow",self.mesh_style + ".dat")
         solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile)
         self.cwrite("setup tacs interface\n")
 
@@ -466,12 +488,18 @@ class NacaOMLOptimization():
         #section to update funtofem DV values for next fun3d run
         self.model.set_variables(structDVs)
 
+    def clearF2F(self):
+        #if (self.comm.Get_rank() == 0):
+        #del self.model
+        #del self.driver
+        #del self.wing
+        print("yup")
+
     def forwardAnalysis(self, x):
         #update status
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
         self.cwrite("Iteration #{}\n".format(self.iteration))
-        self.iteration += 1
 
         #set design variables from desvarDict
         self.updateDesign(x)
@@ -512,7 +540,8 @@ class NacaOMLOptimization():
         #run funtofem adjoint analysis, with fun3d
         self.driver.solve_adjoint()
 
-        self.commBarrier("solve_adjoint()")
+        self.commBarrier("ran adjoint")
+
 
         #update status
         self.cwrite("finished adjoint analysis\n")
@@ -666,18 +695,26 @@ class NacaOMLOptimization():
             self.cwrite("linked to fun3d, ")
 
             #move ugrid file to fun3d run directory steady/Flow
-            if (self.mesh_style == "pointwise"):
-                srcFile = "caps.GeomToMesh.ugrid"
-                destFile = srcFile
-                src = os.path.join(self.pointwiseAim.analysisDir, srcFile)
-            else:
-                #might also need to move the fun3d.mapbc file for this one
-                srcFile = "tetgen_0.lb8.ugrid"
-                destFile = "caps.GeomToMesh.lb8.ugrid"
-                src = os.path.join(self.tetgenAim.analysisDir, srcFile)
+            for ext in [".ugrid", ".lb8.ugrid"]:
+                if (self.mesh_style == "pointwise"):
+                    srcFile = "caps.GeomToMesh" + ext
+                    destFile = "pointwise" + ext
+                    src = os.path.join(self.pointwiseAim.analysisDir, srcFile)
+                elif (self.mesh_style == "tetgen"):
+                    if (".lb8" in ext):
+                        #might also need to move the fun3d.mapbc file for this one
+                        srcFile = "fun3d_CAPS" + ext
+                        destFile = "tetgen" + ext
+                        src = os.path.join(self.fun3dAim.analysisDir, "Flow", srcFile)
                 
             dest = os.path.join(self.curDir, "steady", "Flow", destFile)
             shutil.copy(src, dest)
+
+            #if tetgen also move the mapbc file
+            if (self.mesh_style == "tetgen"):
+                src = os.path.join(self.fun3dAim.analysisDir, "Flow", "fun3d_CAPS.mapbc")
+                dest = os.path.join(self.curDir, "steady", "Flow", "tetgen.mapbc")
+                shutil.copy(src, dest)
 
     def runPointwise(self):
         #run AIM pre-analysis
@@ -706,7 +743,7 @@ class NacaOMLOptimization():
         #3 - drag
 
         funcs = {}
-        funcs["obj"] = self.functions[1].value.real #mass
+        funcs["obj"] = self.functions[0].value.real #mass
         #funcs["con"] = 1
         fail = False
 
@@ -729,8 +766,8 @@ class NacaOMLOptimization():
         fail = False
 
         sens = {}
-        massStructGrad = structGrad[1,:]
-        massShapeGrad = shapeGrad[1,:]
+        massStructGrad = structGrad[0,:]
+        massShapeGrad = shapeGrad[0,:]
         sens["obj"] = { "struct": massStructGrad,
                         "shape" : massShapeGrad}
         #sens["con"] = {"struct" : 0 * massStructGrad,
@@ -747,6 +784,8 @@ class NacaOMLOptimization():
         #update status
         self.cwrite("\tStruct Grad is {}\n".format(massStructGrad))
         self.cwrite("\tShape Grad is {}\n".format(massShapeGrad))
+
+        self.iteration += 1
         return sens, fail
 
     def computeShapeDerivatives(self):
@@ -917,14 +956,14 @@ for dvname in ["thick1", "thick2", "thick3"]:
 
 #call the class and initialize it
 comm = MPI.COMM_WORLD
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "aerothermoelastic")
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", DVdict, "tetgen", "aerothermoelastic")
 
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", nacaOpt.objCon)
 
 #  ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "taper","tc0","tcf"]
-lbnds =   [20.0, 3.0, 0.0 , 0.0, 1.0,  1.0, 3.0,   0.3, 0.0, 0.0]
-init = [40.0, 6.0,  0.0, 0.0, 5.0,  5.0, 30.0,  0.5, 0.1, 0.1]
+lbnds =   [20.0, 3.0, 0.01 , 0.01, 1.0,  1.0, 3.0,   0.3, 0.0, 0.0]
+init = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 30.0,  0.5, 0.1, 0.1]
 ubnds =   [100.0,10.0, 0.3, 0.3, 10.0, 20.0, 50.0, 1.0, 0.3, 0.3]
 
 #["rib","spar","OML"]
@@ -955,7 +994,7 @@ if comm.rank == 0:
 
 nacaOpt.cwrite("Solution is: \n")
 nacaOpt.cwrite(sol)
-nacaOpt.cwrite("With optimal inputs {}".format(sol.xstar))
+nacaOpt.cwrite("With optimal inputs {}".format(sol.xStar))
 
 #close the status file
 if (nacaOpt.comm.Get_rank() == 0): nacaOpt.status.close()
