@@ -952,3 +952,130 @@ Connector con-11 current dim = 33
   Changing dimension for connector con-11 10/21 from 33 to 44
 Connector con-12 current dim = 108
 Aspect ratio limit reduced to 20.0 for connector con-12
+  Changing dimension for connector con-12 11/21 from 108 to 819
+Connector con-15 current dim = 4
+  Changing dimension for connector con-15 12/21 from 4 to 5
+Connector con-19 current dim = 98
+Connector con-20 current dim = 10
+Connector con-21 current dim = 21
+Connector con-22 current dim = 10
+Connector con-23 current dim = 26
+Connector con-24 current dim = 18
+Connector con-26 current dim = 25
+Connector con-28 current dim = 23
+Connector con-30 current dim = 18
+Domain list has 10 entries.
+Looking for periodic domain attributes from geometry.
+  Tolerance = 8.10489e-05
+Number of periodic target domains = 0
+Unstructured domain 1 of 10:
+  boundary name = Farfield.
+    Creating boundary name Farfield
+Unstructured domain 2 of 10:
+  boundary name = OML.
+    Creating boundary name OML
+Unstructured domain 3 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 4 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 5 of 10:
+  boundary name = OML.
+    OML already in boundary name list.
+Unstructured domain 6 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 7 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 8 of 10:
+  boundary name = Symmetry.
+    Creating boundary name Symmetry
+Unstructured domain 9 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Unstructured domain 10 of 10:
+  boundary name = Farfield.
+    Farfield already in boundary name list.
+Checking for blunt flag attribute on geometry faces.
+Performing Source Cloud Refinement
+Updating conData
+Min Edge Tol: 5.000e-07 on con-2
+Max Edge Tol: 8.105e-05 on con-10
+  Point cloud test for connector con-1.
+  Point cloud test for connector con-2.
+  Point cloud test for connector con-3.
+  Point cloud test for connector con-4.
+  Point cloud test for connector con-5.
+  Point cloud test for connector con-6.
+  Point cloud test for connector con-7.
+  Point cloud test for connector con-8.
+  Point cloud test for connector con-10.
+  Point cloud test for connector con-11.
+  Point cloud test for connector con-12.
+  Point cloud test for connector con-15.
+  Point cloud test for connector con-19.
+  Point cloud test for connector con-20.
+  Point cloud test for connector con-21.
+  Point cloud test for connector con-22.
+  Point cloud test for connector con-23.
+  Point cloud test for connector con-24.
+  Point cloud test for connector con-26.
+  Point cloud test for connector con-28.
+  Point cloud test for connector con-30.
+Setting up T-Rex domain boundary conditions.
+  Creating T-Rex wall boundary con-6
+  Creating T-Rex wall boundary con-7
+  Creating T-Rex wall boundary con-8
+  con-7 already in T-Rex boundary list.
+  Creating T-Rex wall boundary con-10
+  Creating T-Rex wall boundary con-11
+  Creating T-Rex wall boundary con-12
+  con-8 already in T-Rex boundary list.
+  con-10 already in T-Rex boundary list.
+  con-6 already in T-Rex boundary list.
+  con-12 already in T-Rex boundary list.
+  Creating T-Rex wall boundary con-19
+  con-19 already in T-Rex boundary list.
+  con-11 already in T-Rex boundary list.
+Applying T-Rex condition to opposite side for connector con-6.
+Applying T-Rex condition to opposite side for connector con-7.
+Applying T-Rex condition to opposite side for connector con-8.
+Applying T-Rex condition to opposite side for connector con-10.
+Applying T-Rex condition to opposite side for connector con-11.
+Applying T-Rex condition to opposite side for connector con-12.
+Applying T-Rex condition to opposite side for connector con-19.
+Performing initialization pass on all unstructured domains.
+Unstructured domain list for assembly has 10 entries.
+Structured domain list for assembly has 0 entries.
+Periodic target domain list for assembly has 0 entries.
+Creating unstructured block from 10 domains.
+Block = auto-blk
+  Setting up unstructured block.
+Retrieving block attributes from geometry.
+Retrieving T-Rex volume boundary conditions from geometry.
+  Domain OML has spacing value = 0.001.
+  Creating T-Rex wall boundary OML
+  Domain OML has spacing value = 0.001.
+  Domain OML has spacing value = 0.001.
+  Domain OML has spacing value = 0.001.
+  Looking for adjacent boundaries to set as match.
+  Creating T-Rex match boundary
+  Setting Push Attributes on Block.
+  Initializing unstructured block.
+Info: Begin: aniso layer     1: growthRate = 1.000000, height = 1.000000, totalHeight = 1.000000
+Info: End  : aniso layer     1: numPts =    103884, numTets =       271509, (2.170000 seconds)
+Info: Begin: aniso layer     2: growthRate = 1.300000, height = 1.300000, totalHeight = 2.300000
+Info: End  : aniso layer     2: numPts =    149053, numTets =       543018, (2.360000 seconds)
+Info: Begin: aniso layer     3: growthRate = 1.300000, height = 1.690000, totalHeight = 3.990000
+Info: End  : aniso layer     3: numPts =    192745, numTets =       805710, (2.200000 seconds)
+Info: Begin: aniso layer     4: growthRate = 1.300000, height = 2.197000, totalHeight = 6.187000
+Info: End  : aniso layer     4: numPts =    234922, numTets =      1059288, (2.150000 seconds)
+Info: Begin: aniso layer     5: growthRate = 1.300000, height = 2.856100, totalHeight = 9.043100
+Info: End  : aniso layer     5: numPts =    275034, numTets =      1300478, (2.060000 seconds)
+Info: Begin: aniso layer     6: growthRate = 1.300000, height = 3.712930, totalHeight = 12.756030
+Info: End  : aniso layer     6: numPts =    312768, numTets =      1527303, (1.970000 seconds)
+Info: Begin: aniso layer     7: growthRate = 1.300000, height = 4.826809, totalHeight = 17.582839
+Info: End  : aniso layer     7: numPts =    347638, numTets =      1737099, (1.800000 seconds)
+Info: Begin: aniso layer     8: growthRate = 1.300000, height = 6.274852, totalHeight = 23.857691
