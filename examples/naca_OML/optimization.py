@@ -451,7 +451,7 @@ class NacaOMLOptimization():
 
         self.model.add_body(self.wing)
 
-        steady = Scenario('steady', group=0, steps=5)
+        steady = Scenario('steady', group=0, steps=50)
         
         function1 = Function('ksfailure',analysis_type='structural')
         steady.add_function(function1)
@@ -467,7 +467,7 @@ class NacaOMLOptimization():
 
         self.model.add_scenario(steady)
 
-        self.cwrite("setup model, ")
+        #self.cwrite("setup model, ")
 
         #==================================================================================================#
 
@@ -739,7 +739,8 @@ class NacaOMLOptimization():
 
 
     def objCon(self, x):
-        self.functions = self.forwardAnalysis(x)
+        if (self.iteration == 1): 
+            self.functions = self.forwardAnalysis(x)
         #0 - stress
         #1 - mass
         #2 - lift
@@ -761,7 +762,14 @@ class NacaOMLOptimization():
         return funcs, fail
 
     def objGrad(self, x, funcs):
-        structGrad, shapeGrad = self.adjointAnalysis(x)
+        structDV = x["struct"]
+        shapeDV = x["shape"]
+        if (self.iteration == 1): 
+            structGrad, shapeGrad = self.adjointAnalysis(x)
+        else:
+            nfunc = 1
+            structGrad = np.zeros((nfunc, len(structDV)))
+            shapeGrad = np.zeros((nfunc, len(shapeDV)))
         #0 - stress
         #1 - mass
         #2 - lift
@@ -785,8 +793,9 @@ class NacaOMLOptimization():
             print("Shape grad {}".format(shapeGrad))
 
         #update status
-        self.cwrite("\tStruct Grad is {}\n".format(massStructGrad))
-        self.cwrite("\tShape Grad is {}\n".format(massShapeGrad))
+        if (self.iteration == 1):
+            self.cwrite("\tStruct Grad is {}\n".format(massStructGrad))
+            self.cwrite("\tShape Grad is {}\n".format(massShapeGrad))
 
         self.iteration += 1
         return sens, fail

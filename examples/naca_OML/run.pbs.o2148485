@@ -1,0 +1,68 @@
+Start Prologue v2.5.3 Fri Apr 22 20:11:35 EDT 2022 
+r3i6n13: MemFree:        184643624 kB
+r3i6n15: MemFree:        184837260 kB
+r3i6n14: MemFree:        184733880 kB
+r3i6n17: MemFree:        184869632 kB
+End Prologue v2.5.3 Fri Apr 22 20:11:39 EDT 2022 
+JOBID  QSTAT_OUT 2148485
+EUID 0
+WORKSPACE /p/work1
+PBS_HOME /var/spool/pbs
+JOB_ID 2148485.pbsserver
+whoami root
+LOG /p/work1/PBS/prologue/2148485.pbsserver
+whoami root
+file workspace /p/work1: directory
+file /p /p: directory
+PBS_REQUESTED_CPH = 576
+PBS_REQUESTED_CPS = 2073600
+jobStarter
+Information: Please note that compiler is Intel but /p/app/gnu/7.3.0/bin is now also in PATH
+  
+	Module loaded.
+	If on HPC Portal in a GNOME session, start the application with:
+		 vglrun pointwise
+
+	Copy & Paste server info if using SRD, keyboard mapping is incorrect.
+
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:188: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  gg = np.zeros([la], np.float)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:189: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  df = np.zeros([n + 1], np.float)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:190: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  dg = np.zeros([la, n + 1], np.float)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:191: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  acc = np.array([self.getOption("ACC")], np.float)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:207: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  lw = np.array([lwM], np.int)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:208: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  w = np.zeros(lw, np.float)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:210: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  ljw = np.array([ljwM], np.int)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:212: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  nfunc = np.array([0], np.int)
+/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pySLSQP/pySLSQP.py:213: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  ngrad = np.array([0], np.int)
+MPT: Received signal 15
+Start Epilogue v2.5.3 Fri Apr 22 20:13:26 EDT 2022 
+Memory usage reported in GB
+                    % of     user     user     user    total    total
+Node               limit      max    limit  current  current     phys
+r3i6n13             3.33     5.83   175.00     0.51     5.56   187.31
+r3i6n14             2.99     5.24   175.00     0.36     5.53   187.31
+r3i6n15             2.98     5.21   175.00     0.34     5.51   187.31
+r3i6n17             2.98     5.21   175.00     0.34     5.52   187.31
+Memory summary:
+		min    5.21 GB
+		max    5.83 GB
+		ave    5.37 GB
+End Epilogue v2.5.3 Fri Apr 22 20:13:30 EDT 2022 

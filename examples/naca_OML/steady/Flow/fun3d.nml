@@ -31,7 +31,7 @@
 /
 
  &code_run_control
-    steps              = 5
+    steps              = 50
     stopping_tolerance = 1.0E-15
     restart_write_freq = 1000
     restart_read = "off"
@@ -39,8 +39,8 @@
 
 &global
   moving_grid = .true.
-  volume_animation_freq = -1
-  boundary_animation_freq = -1
+  volume_animation_freq = 0
+  boundary_animation_freq = 0
 /
 
 &elasticity_gmres

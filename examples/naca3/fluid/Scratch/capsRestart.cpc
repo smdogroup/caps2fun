@@ -1,0 +1,60 @@
+# /p/home/seanfire/git/caps2fun/examples/naca3/fluid/Scratch/capsRestart.cpc written by ocsmSave (v1.21)
+
+# Constant, Design, and Output Parameters:
+cfgpmtr   nspar       1.00000
+cfgpmtr   nrib       1.00000
+despmtr   area      15.00000
+despmtr   aspect       6.00000
+despmtr   taper       0.50000
+despmtr   ctwist       0.00000
+despmtr   lesweep      30.00000
+despmtr   dihedral       5.00000
+despmtr   tc0       0.10000
+despmtr   tcf       0.10000
+despmtr   camb0       0.00000
+despmtr   cambf       0.00000
+
+# Global Attributes:
+
+# Branches:
+set       cmean sqrt(area/aspect)
+set       span cmean*aspect
+set       sspan span/2
+set       croot 2*cmean/(1+taper)
+set       ctip croot*taper
+set       xtip sspan*tand(lesweep)
+set       ytip sspan*tand(dihedral)
+set       margin 0.02*cmean
+set       ybot -0.2*croot-margin
+set       ytop 0.2*croot+ytip+margin
+udprim    naca   thickness   tc0   Camber   camb0
+scale     croot   0   0   0
+udprim    naca   thickness   tcf   Camber   cambf
+scale     ctip   0   0   0
+rotatez   -ctwist   0   0
+translate xtip   ytip   -sspan
+loft      0
+attribute OML   0
+select    face
+attribute capsGroup   $OML
+attribute capsMesh   $OML
+attribute capsMeshLength   0.1
+store     OML   0   0
+set       ff 20*cmean
+set       df 2*ff
+box       -ff   -ff   0   df   df   -ff
+select    face
+attribute capsGroup   $Farfield
+attribute capsMesh   $Farfield
+store     box   0   0
+restore   box   0
+restore   OML   0
+subtract  none   1   0
+select    face   3
+attribute capsGroup   $Symmetry
+attribute capsMesh   $Symmetry
+select    body
+attribute capsAIM   $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM
+attribute capsMeshLength   1.0
+
+end
