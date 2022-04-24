@@ -139,18 +139,18 @@ class WingOptimizer():
             
             elif ("grad" in line):
                 #grad,* line
+                ishape = 0
+                istruct = 0
                 if ("shape" in line):
-                    #grad,shape,deriv1,deriv2,...,derivN
+                    #grad,shape,deriv_i
                     parts = line.split(",")
-                    parts = parts[2:]
-                    for ishape in range(len(parts)):
-                        self.shapeGrad[name][ishape] = float(parts[ishape])
+                    self.shapeGrad[name][ishape] = float(parts[2])
+                    ishape += 1
                 elif ("struct" in line):
-                    #grad,struct,deriv1,deriv2,...,derivN
+                    #grad,struct,deriv_i
                     parts = line.split(",")
-                    parts = parts[2:]
-                    for istruct in range(len(parts)):
-                        self.structGrad[name][istruct] = float(parts[istruct])
+                    self.structGrad[name][istruct] = float(parts[2])
+                    istruct += 1
 
         outputHandle.close()
 
@@ -186,7 +186,7 @@ class WingOptimizer():
 
         sens = {}
         sens["obj"] = { "struct": shapeGrad,
-                        "shape" : massShstructGradapeGrad}
+                        "shape" : structGrad}
         #sens["con"] = {"struct" : 0 * massStructGrad,
         #                "shape" : 0 * massShapeGrad}
         #sens["con"] = {"x": [grad2]}

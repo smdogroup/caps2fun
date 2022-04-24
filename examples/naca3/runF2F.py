@@ -804,42 +804,47 @@ class NacaOMLOptimization():
         #write functions
         if (self.comm.Get_rank() == 0):
 
-            #count number of shape and struct DV
-            nshape = 0
-            nstruct = 0
-            for DV in self.DVdict:
-                if (DV["type"] == "shape"): nshape += 1
-                if (DV["type"] == "struct"): nstruct += 1
+            #format of the output file:
+            #nfunc,nshape,nstruct
+            #func,name,value
+            #grad,shape,deriv1
+            #grad,shape,deriv2
+            #grad,shape,deriv3
+            #...
+            #grad,shape,derivN
+            #grad,struct,deriv1
+            #grad,struct,deriv2
+            #...
+            #grad,struct,derivM
+            #... for each function
 
             #write number of functions, variables, etc.
-            outputHandle.write("{},{},{}\n".format(self.nfunc, nshape, nstruct))
-            ct = 0
+            outputHandle.write("{},{},{}\n".format(self.nfunc, self.nshapeDV, self.nstructDV))
+            ifunc = 0
             for func in self.functions:
 
-                name = self.functionNames[ct]
-                value = self.functions[ct].value.real
-                ct += 1
+                name = self.functionNames[ifunc]
+                value = self.functions[ifunc].value.real
 
                 #write function name and value
                 outputHandle.write("func,{},{}\n".format(name,value))
 
                 #write shape gradients
-                outputHandle.write("grad,shape")
-
-                for ishape in range(nshape):
-                    deriv = self.shapeGrad[ct, ishape]
-                    outputHandle.write(",{}".format(deriv))
+                for ishape in range(self.nshapeDV):
+                    deriv = self.shapeGrad[ifunc, ishape]
+                    outputHandle.write("grad,shape,{}".format(deriv))
                 
                 outputHandle.write("\n")
 
                 #write struct gradients
-                outputHandle.write("grad,struct")
-
-                for istruct in range(nstruct):
-                    deriv = self.structGrad[ct, istruct]
-                    outputHandle.write(",{}".format(deriv))
+                for istruct in range(self.nstructDV):
+                    deriv = self.structGrad[ifunc, istruct]
+                    outputHandle.write("grad,struct,{}".format(deriv))
                 
                 outputHandle.write("\n")
+
+                #update function counter
+                ifunc += 1
 
         outputHandle.close()
 
@@ -863,8 +868,10 @@ class NacaOMLOptimization():
 
         #determine number of shapeDV
         self.nshapeDV = 0
+        self.nstructDV = 0
         for DV in self.DVdict:
             if (DV["type"] == "shape"): self.nshapeDV += 1
+            if (DV["type"] == "struct"): self.nstructDV += 1
 
         self.shapeGrad = np.zeros((self.nfunc, self.nshapeDV))
 
@@ -996,6 +1003,3 @@ nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm",
 
 #RUN analysis
 nacaOpt.runF2F()
-
-#write output
-nacaOpt.writeOutput()

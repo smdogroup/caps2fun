@@ -1,5 +1,4 @@
+Running Funtofem with ESP/CAPS
 --------------------------------------------------------
 Building structure mesh... built structure mesh
-Building fluid mesh... ran pointwise, linked to fun3d, built fluid mesh
-Running F2F forward analysis... completed F2F forward analysis
-Running F2F adjoint analysis... 
+Building fluid mesh... 
