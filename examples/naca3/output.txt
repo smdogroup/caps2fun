@@ -1808,3 +1808,22 @@ cell statistics:  all,  0.31153093E-10,  0.89404042E+02,  172.381500336
      Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.10041887E-13
     3  0.155453754215066E-08  0.17844E-06  0.44807E+01  0.45829E+00 -0.57867E+01
  Current value of function            1  0.000000000000000E+000
+ 
+ Performing linear elasticity adjoint...
+ 
+ loading design ...
+ Solving mesh adjoint equations
+   Mesh Adjoint Convergence, Cost Function : 1
+     Search direction     1  residual =  0.42131696E-04   relative_residual =  0.10000000E+01
+     Search direction    50  residual =  0.13980539E-10   relative_residual =  0.33182947E-06
+     Search direction    84  residual =  0.13134139E-13   relative_residual =  0.31174010E-09
+     Convergence achieved: residual <= tol_rel * initial_residual + tol_abs =  0.14213170E-13
+    4  0.152224692743962E-08  0.93085E-07  0.40994E+01  0.92704E+00 -0.45872E+01
+ Current value of function            1  0.000000000000000E+000
+ 
+ Performing linear elasticity adjoint...
+ 
+ loading design ...
+ Solving mesh adjoint equations
+   Mesh Adjoint Convergence, Cost Function : 1
+     Search direction     1  residual =  0.70976817E-04   relative_residual =  0.10000000E+01
