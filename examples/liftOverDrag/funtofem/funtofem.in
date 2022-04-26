@@ -1,0 +1,13 @@
+area,shape,40.0
+aspect,shape,6.0
+camb0,shape,0.05
+cambf,shape,0.05
+ctwist,shape,5.0
+dihedral,shape,5.0
+lesweep,shape,30.0
+taper,shape,0.5
+tc0,shape,0.1
+tcf,shape,0.1
+thick1,struct,rib,0.001
+thick2,struct,spar,0.001
+thick3,struct,OML,0.001
