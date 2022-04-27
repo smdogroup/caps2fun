@@ -59,7 +59,7 @@ patbeg		ispar		nspar
    rotatey localSweep 0 0
    translate	frac*croot	0	0
    select face
-      attribute capsGroup !$spar
+      attribute capsGroup !$spar+ispar
       attribute spar ispar
 
    #we leave spars un-unioned here
@@ -68,10 +68,10 @@ patend
 #ribs
 patbeg		irib		nrib
    set		dxmax		max(croot,xtip+ctipEff)+2*margin
-   set		zcoord		-(irib)*sspan/(nrib+1)
+   set		zcoord		-irib*sspan/(nrib+1)
    box 0 ybot zcoord dxmax ytop-ybot 0
    select face
-      attribute capsGroup !$rib
+      attribute capsGroup !$rib+irib
 
    union
    patbeg      foo  ifzero(irib-1,nspar-1,0)
