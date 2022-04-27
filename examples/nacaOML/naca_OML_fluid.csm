@@ -3,16 +3,12 @@
 
 #naca airfoil wing with finite differencing for mesh sensitivity
 
-#configuration parameters
-cfgpmtr  nspar  1  -
-cfgpmtr  nrib  1  -
-
 #default design parameters
-despmtr  area  15  len^2
+despmtr  area  40  len^2
 despmtr  aspect  6.0  -
 despmtr  taper  0.5  -
 despmtr  ctwist  0.0  deg
-despmtr  lesweep  30.0 deg
+despmtr  lesweep  0.0 deg
 despmtr  dihedral 5.0  deg
 despmtr tc0 0.1
 despmtr tcf 0.1

@@ -1,0 +1,60 @@
+# autosave.csm written by ocsmSave (v1.21)
+
+# Constant, Design, and Output Parameters:
+CFGPMTR   nspar       1.00000
+CFGPMTR   nrib       1.00000
+DESPMTR   area      15.00000
+DESPMTR   aspect       6.00000
+DESPMTR   taper       0.50000
+DESPMTR   ctwist       0.00000
+DESPMTR   lesweep       0.00000
+DESPMTR   dihedral       5.00000
+DESPMTR   tc0       0.10000
+DESPMTR   tcf       0.10000
+DESPMTR   camb0       0.00000
+DESPMTR   cambf       0.00000
+
+# Global Attributes:
+
+# Branches:
+SET       cmean sqrt(area/aspect)
+SET       span cmean*aspect
+SET       sspan span/2
+SET       croot 2*cmean/(1+taper)
+SET       ctip croot*taper
+SET       xtip sspan*tand(lesweep)
+SET       ytip sspan*tand(dihedral)
+SET       margin 0.02*cmean
+SET       ybot -0.2*croot-margin
+SET       ytop 0.2*croot+ytip+margin
+UDPRIM    naca   thickness   tc0   Camber   camb0
+SCALE     croot   0   0   0
+UDPRIM    naca   thickness   tcf   Camber   cambf
+SCALE     ctip   0   0   0
+ROTATEZ   -ctwist   0   0
+TRANSLATE xtip   ytip   -sspan
+LOFT      0
+ATTRIBUTE OML   0
+SELECT    face
+ATTRIBUTE capsGroup   $OML
+ATTRIBUTE capsMesh   $OML
+ATTRIBUTE capsMeshLength   0.1
+STORE     OML   0   0
+SET       ff 20*cmean
+SET       df 2*ff
+BOX       -ff   -ff   0   df   df   -ff
+SELECT    face
+ATTRIBUTE capsGroup   $Farfield
+ATTRIBUTE capsMesh   $Farfield
+STORE     box   0   0
+RESTORE   box   0
+RESTORE   OML   0
+SUBTRACT  none   1   0
+SELECT    face   3
+ATTRIBUTE capsGroup   $Symmetry
+ATTRIBUTE capsMesh   $Symmetry
+SELECT    body
+ATTRIBUTE capsAIM   $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM;tetgenAIM
+ATTRIBUTE capsMeshLength   1.0
+
+END
