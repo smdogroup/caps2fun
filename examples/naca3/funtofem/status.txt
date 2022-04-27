@@ -1,4 +1,0 @@
-Running Funtofem with ESP/CAPS
---------------------------------------------------------
-Building structure mesh... built structure mesh
-Building fluid mesh... 

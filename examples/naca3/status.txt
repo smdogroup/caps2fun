@@ -1,9 +1,0 @@
-Aerothermoelastic Optimization with FuntoFem and ESP/CAPS
-	Design Problem: NACA Symmetric Wing
-Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy
-	Georgia Tech SMDO Lab April 2022
---------------------------------------------------------
-Global Iteration #1
-	Shape DVs [40.    6.    0.05  0.05  5.    5.   30.    0.5   0.1   0.1 ]
-	Struct DVs [0.001 0.001 0.001]
-	Running F2F... 
