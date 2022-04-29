@@ -1,13 +1,11 @@
-# /p/home/seanfire/git/caps2fun/examples/liftOverDrag/fluid/Scratch/capsRestart.cpc written by ocsmSave (v1.21)
+# /p/home/seanfire/git/caps2fun/examples/nacaOML/fluid/Scratch/capsRestart.cpc written by ocsmSave (v1.21)
 
 # Constant, Design, and Output Parameters:
-cfgpmtr   nspar       1.00000
-cfgpmtr   nrib       1.00000
-despmtr   area      15.00000
+despmtr   area      40.00000
 despmtr   aspect       6.00000
 despmtr   taper       0.50000
 despmtr   ctwist       0.00000
-despmtr   lesweep      30.00000
+despmtr   lesweep       0.00000
 despmtr   dihedral       5.00000
 despmtr   tc0       0.10000
 despmtr   tcf       0.10000

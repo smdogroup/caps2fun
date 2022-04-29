@@ -60,6 +60,7 @@ from tacs import TACS, functions, constitutive, elements, pyTACS, problems
 
 #import normal classes
 import os, shutil, sys
+import time
 import numpy as np
 
 #import other modules
@@ -70,7 +71,7 @@ import pyCAPS
 
 #subclass for tacs steady interface
 class wedgeTACS(TacsSteadyInterface):
-    def __init__(self, comm, tacs_comm, model, n_tacs_procs, datFile):
+    def __init__(self, comm, tacs_comm, model, n_tacs_procs, datFile, structDVs):
         super(wedgeTACS,self).__init__(comm, tacs_comm, model)
 
         assembler = None
@@ -96,7 +97,7 @@ class wedgeTACS(TacsSteadyInterface):
             cte = 24.0e-6
             kappa = 230.0
 
-            tInput = 0.001*np.ones(3)
+            tInput = structDVs
 
             def elemCallBack(dvNum, compID, compDescript, elemDescripts, globalDVs, **kwargs):
                 elemIndex = kwargs['propID'] - 1
@@ -147,7 +148,7 @@ class wedgeTACS(TacsSteadyInterface):
 
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, comm, structCSM, fluidCSM, meshStyle = "tetgen", analysisType = "aerothermoelastic"):
+    def __init__(self, comm, structCSM, fluidCSM, meshStyle = "tetgen", analysisType = "aerothermoelastic", mode="mesh"):
 
         self.comm = comm
         
@@ -160,6 +161,9 @@ class NacaOMLOptimization():
 
         #read input from file
         self.readInput()
+
+        #initialize time
+        self.start_time = time.time()
 
         #clear capslock files
         if (self.comm.Get_rank() == 0): self.clearCapsLock()
@@ -201,6 +205,11 @@ class NacaOMLOptimization():
             #immediately update it to be visibile in the file
             self.status.flush()
 
+    def writeTime(self):
+        dt = time.time() - self.start_time
+        dt = round(dt)
+        self.cwrite(", {} sec\n".format(dt))
+
     def commBarrier(self, location):
         print("proc #{} reached location {}\n".format(self.comm.Get_rank(), location))
         sys.stdout.flush()
@@ -209,6 +218,7 @@ class NacaOMLOptimization():
     def readInput(self):
         #initialize DVdict as none for all procs
         self.DVdict = None
+        self.functionNames = None
 
         if (self.comm.Get_rank() == 0):
             
@@ -219,33 +229,41 @@ class NacaOMLOptimization():
             inputHandle =  open(inputFile, "r")
             lines = inputHandle.readlines()
 
+            self.functionNames = []
+
             #read in the DVdict from funtofem.in
             self.DVdict = []
             for line in lines:
 
                 #read line if not empty
                 if (len(line) > 1):
-                    parts = line.split(",")
-                    name = parts[0]
-                    dvType = parts[1]
-                    if (dvType == "shape"):
-                        value = float(parts[2])
-                        capsGroup = ""
-                    elif (dvType == "struct"):
-                        capsGroup = parts[2]
-                        value = float(parts[3])
-                    
-                    #store DVdict
-                    tempDict = {"name" : name,
-                                "type" : dvType,
-                                "capsGroup" : capsGroup,
-                                "value" : value}
-                    self.DVdict.append(tempDict)
+                    if ("function" in line):
+                        parts = line.split(",")
+                        name = parts[1]
+                        self.functionNames.append(name)
+                    else:
+                        parts = line.split(",")
+                        name = parts[0]
+                        dvType = parts[1]
+                        if (dvType == "shape"):
+                            value = float(parts[2])
+                            capsGroup = ""
+                        elif (dvType == "struct"):
+                            capsGroup = parts[2]
+                            value = float(parts[3])
+                        
+                        #store DVdict
+                        tempDict = {"name" : name,
+                                    "type" : dvType,
+                                    "capsGroup" : capsGroup,
+                                    "value" : value}
+                        self.DVdict.append(tempDict)
 
             inputHandle.close()
 
         #MPI broadcast from root proc
         self.DVdict = self.comm.bcast(self.DVdict, root=0)
+        self.functionNames = self.comm.bcast(self.functionNames, root=0)
 
     def initializeAIMs(self, structCSM, fluidCSM):
         if (self.comm.Get_rank() == 0):
@@ -308,12 +326,12 @@ class NacaOMLOptimization():
         self.tacsAim.input.Proj_Name = self.mesh_style
         
         #Egads Aim section, for mesh
-        self.egadsAim.input.Edge_Point_Min = 5
-        self.egadsAim.input.Edge_Point_Max = 10
+        self.egadsAim.input.Edge_Point_Min = 10
+        self.egadsAim.input.Edge_Point_Max = 20
 
         self.egadsAim.input.Mesh_Elements = "Quad"
 
-        self.egadsAim.input.Tess_Params = [0.25,.01,10]
+        self.egadsAim.input.Tess_Params = [0.1,.01,10]
 
         #increase the precision in the BDF file
         self.tacsAim.input.File_Format = "Large"
@@ -352,9 +370,26 @@ class NacaOMLOptimization():
                     "bendingInertiaRatio" : 1.0, # Default
                     "shearMembraneRatio"  : 5.0/6.0} # Default
 
-        self.tacsAim.input.Property = {"rib": ribshell,
-        "spar" : sparshell,
-        "OML" : OMLshell}
+        propDict = {}
+        for DV in self.DVdict:
+            capsGroup = DV["capsGroup"]
+            if (len(capsGroup) > 0):
+                if ("rib" in capsGroup):
+                    tempShell = ribshell
+                    tempShell["membraneThickness"] = DV["value"]
+                    propDict[capsGroup] = ribshell
+                elif ("spar" in capsGroup):
+                    tempShell = sparshell
+                    tempShell["membraneThickness"] = DV["value"]
+                    propDict[capsGroup] = sparshell
+                elif ("OML" in capsGroup):
+                    tempShell = OMLshell
+                    tempShell["membraneThickness"] = DV["value"]
+                    propDict[capsGroup] = OMLshell
+
+        #self.cwrite("{}".format(propDict))
+
+        self.tacsAim.input.Property = propDict
 
         # constraint section
         constraint1 = {"groupName" : "wingRoot",
@@ -366,26 +401,17 @@ class NacaOMLOptimization():
 
         ##-----------setup DVs and DVRs-----------##
 
-        #list of design variables, with thick1-thickN for thickness DVs
-        desvars = ["area","aspect","taper","ctwist","lesweep","dihedral","thick1", "thick2", "thick3"]
-        nvar = len(desvars)
-
-        #where the thickDVs have thick1 is for "rib", thick2 for "spar" etc.
-        thickness = 0.01
-
         #make initial DV and DVR dict
         DVdict = {}
         DVRdict = {}
 
         #add thickDVs and geomDVs to caps
-        thickCt = 0
         for DV in self.DVdict:
             dvname = DV["name"]
             if (DV["type"] == "struct"):
                 #add thickDV entry into DV_Relations and DV Dicts
                 DVRdict[dvname] = self.makeThicknessDVR(dvname)
-                DVdict[dvname] = self.makeThicknessDV(DV["capsGroup"],thickness)
-                thickCt += 1
+                DVdict[dvname] = self.makeThicknessDV(DV["capsGroup"], DV["value"])
             elif (DV["type"] == "shape"): #geomDV, add empty entry into DV dicts
                 DVdict[dvname] = {}
 
@@ -465,7 +491,7 @@ class NacaOMLOptimization():
                 DVdict[dvname] = {}
 
         #input DVdict and DVRdict into tacsAim
-        self.fun3dAim.input.Design_Variable = DVdict
+        if (len(DVdict) > 0): self.fun3dAim.input.Design_Variable = DVdict
 
         #fun3d design sensitivities settings
         self.fun3dAim.input.Design_SensFile = True
@@ -509,23 +535,22 @@ class NacaOMLOptimization():
 
         self.model.add_body(self.wing)
 
-        steady = Scenario('steady', group=0, steps=25)
-        
-        #types: aerodynamic, structural
-        #available: ksfailure, cl, cd, mass, and more
-        self.functionNames = ["cl","cd"]
+        steady = Scenario('steady', group=0, steps=5)
 
-        function1 = Function('cl',analysis_type='aerodynamic')
-        steady.add_function(function1)
+        #add functions to scenario
+        for functionName in self.functionNames:
+            #strip newline character from function name
+            functionName = functionName.strip()
 
-        function2 = Function('cd', analysis_type='aerodynamic')
-        steady.add_function(function2)
-
-        #function3 = Function('cd', analysis_type='aerodynamic')
-        #steady.add_function(function3)
-
-        #function2 = Function('mass',analysis_type='structural', adjoint=False) #,adjoint=False
-        #steady.add_function(function2)
+            if (functionName in ["cl","cd"]):
+                function = Function(functionName,analysis_type='aerodynamic')
+            elif (functionName in ["ksfailure"]):
+                function = Function(functionName,analysis_type='structural')
+            elif (functionName in ["mass"]):
+                function = Function(functionName,analysis_type='structural',adjoint=False)
+            else:
+                sys.exit("Function name {} not in accepted functions".format(functionName))
+            steady.add_function(function)
 
         self.model.add_scenario(steady)
 
@@ -538,7 +563,7 @@ class NacaOMLOptimization():
         #self.cwrite("setup fun3d interface, ")
 
         datFile = os.path.join(self.curDir,"steady","Flow",self.mesh_style + ".dat")
-        solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile)
+        solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile, structDVs)
         #self.cwrite("setup tacs interface\n")
 
         # L&D transfer options
@@ -573,12 +598,20 @@ class NacaOMLOptimization():
         # self.cwrite("thickDVs {}\n\t{}\nshapeDVs {}\n\t{}\n".format(thickDVstr, x["struct"],shapeDVstr, x["shape"]))
 
         #generate structure mesh with egads and tacs AIMs
+        self.start_time = time.time()
         self.buildStructureMesh()
-        self.cwrite("built structure mesh\n")
+        self.cwrite("built structure mesh")
+        self.writeTime()
 
         #generate fluid mesh with Pointwise
+        self.start_time = time.time()
+
         self.buildFluidMesh()
-        self.cwrite("built fluid mesh\n")
+        self.cwrite("built fluid mesh")
+        self.writeTime()
+
+        
+        self.start_time = time.time()
 
         #initialize fun2fem with new meshes
         #self.cwrite("Initializing funtofem... ")
@@ -593,10 +626,12 @@ class NacaOMLOptimization():
         #get function values from forward analysis
         self.functions = self.model.get_functions()
 
-        self.cwrite("completed F2F forward analysis\n")
+        self.cwrite("completed F2F forward analysis")
+        self.writeTime()
 
     def adjointAnalysis(self):
         #update status
+        self.start_time = time.time()
         self.cwrite("Running F2F adjoint analysis... ")
 
         #run funtofem adjoint analysis, with fun3d
@@ -606,52 +641,71 @@ class NacaOMLOptimization():
 
 
         #update status
-        self.cwrite("finished adjoint analysis\n")
+        self.cwrite("finished adjoint analysis")
+        self.writeTime()
 
         #get the funtofem gradients
         f2fgrads = self.model.get_function_gradients()
         
         #self.commBarrier("function_gradients()")
 
+        self.start_time = time.time()
+
+        #count number of struct DV
+        self.nstruct = 0
+        for DV in self.DVdict:
+            if (DV["type"] == "struct"): self.nstruct += 1
+
         #update gradient for non shape DVs
         nfunc = len(self.functions)
-        structGrad = np.zeros((nfunc, 3))
+        self.structGrad = np.zeros((nfunc, self.nstruct))
         
         for funcInd in range(nfunc):
             ct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
                 if (not(DV["type"] == "shape")): 
-                    structGrad[funcInd, ct] = f2fgrads[funcInd][ct].real
+                    self.structGrad[funcInd, ct] = f2fgrads[funcInd][ct].real
                     ct += 1
+
+        #number of shape DVs
+        self.nshapeDV = 0
+        self.nstructDV = 0
+        for DV in self.DVdict:
+            if (DV["type"] == "shape"): self.nshapeDV += 1
+            if (DV["type"] == "struct"): self.nstructDV += 1
+
+        if (self.nshapeDV > 0):
+            #get aero and struct mesh sensitivities for shape DVs
+            self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
+            self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
+
+            if (self.comm.Get_rank() == 0):
+
+                #if (oneBased): self.aeroIds = self.aeroIds - (min(self.aeroIds) - 1)
+                print("aero ids: {}".format(self.aeroIds))
+                print("aero mesh: {}".format(self.aero_mesh_sens))
+                print("struct ids: {}".format(self.structIds))
+                print("struct mesh: {}".format(self.struct_mesh_sens))
+
+                #compute shape derivatives from aero and struct mesh sensitivities
+                self.shapeGrad = self.computeShapeDerivatives()
+                self.cwrite("computed shape derivative chain rule products")
+                self.writeTime()
+
+            else:
+                self.shapeGrad = None
+
+            #barrier to wait for root proc to finish computing the shape derivatives
+            self.commBarrier("computeShapeDerivatives()")
+
+            self.shapeGrad = self.comm.bcast(self.shapeGrad, root=0)
         
-        #store structGrad
-        self.structGrad = structGrad
+        else: #no shape DVs
+            self.nfunc = len(self.functions)
+            self.shapeGrad = np.zeros((self.nfunc, 0))
 
-
-        #get aero and struct mesh sensitivities for shape DVs
-        self.aeroIds, self.aero_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "aero")
-        self.structIds, self.struct_mesh_sens = self.wing.collect_coordinate_derivatives(self.comm, "struct")
-
-        if (self.comm.Get_rank() == 0):
-
-            #if (oneBased): self.aeroIds = self.aeroIds - (min(self.aeroIds) - 1)
-            print("aero ids: {}".format(self.aeroIds))
-            print("aero mesh: {}".format(self.aero_mesh_sens))
-            print("struct ids: {}".format(self.structIds))
-            print("struct mesh: {}".format(self.struct_mesh_sens))
-
-            #compute shape derivatives from aero and struct mesh sensitivities
-            self.shapeGrad = self.computeShapeDerivatives()
-            self.cwrite("computed shape derivative chain rule products\n")
-
-        else:
-            self.shapeGrad = None
-
-        #barrier to wait for root proc to finish computing the shape derivatives
-        self.commBarrier("computeShapeDerivatives()")
-
-        self.shapeGrad = self.comm.bcast(self.shapeGrad, root=0)
+        
 
         #send or store gradient
         #return structGrad, self.shapeGrad
@@ -818,7 +872,7 @@ class NacaOMLOptimization():
 
             #write number of functions, variables, etc.
             nDV = self.nshapeDV + self.nstructDV
-            outputHandle.write("{},{},{}\n".format(self.nfunc, nDV))
+            outputHandle.write("{},{}\n".format(self.nfunc, nDV))
             ifunc = 0
             for func in self.functions:
 
@@ -850,9 +904,10 @@ class NacaOMLOptimization():
     def computeShapeDerivatives(self):
         self.cwrite("Compute shape derivatives... ")
 
+        #initialize shape gradient again at zero
+        self.initShapeGrad()
+
         if (self.comm.Get_rank() == 0):
-            #initialize shape gradient again at zero
-            self.initShapeGrad()
 
             #add struct_mesh_sens part to shape DV derivatives#struct shape derivatives
             self.applyStructMeshSens()
@@ -998,7 +1053,7 @@ class NacaOMLOptimization():
 comm = MPI.COMM_WORLD
 
 #INIT and read in inputs
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", "pointwise", "aerothermoelastic")
+nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", "pointwise", "aerothermoelastic", "mesh")
 
 #RUN analysis
 nacaOpt.runF2F()
