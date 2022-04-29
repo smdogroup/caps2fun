@@ -1,0 +1,40 @@
+Start Prologue v2.5.3 Fri Apr 29 18:38:55 EDT 2022 
+r4i4n0: MemFree:        184532976 kB
+r4i4n2: MemFree:        184541996 kB
+r4i4n13: MemFree:        184530608 kB
+r4i4n15: MemFree:        184596152 kB
+End Prologue v2.5.3 Fri Apr 29 18:38:59 EDT 2022 
+JOBID  QSTAT_OUT 2157004
+EUID 0
+WORKSPACE /p/work1
+PBS_HOME /var/spool/pbs
+JOB_ID 2157004.pbsserver
+whoami root
+LOG /p/work1/PBS/prologue/2157004.pbsserver
+whoami root
+file workspace /p/work1: directory
+file /p /p: directory
+PBS_REQUESTED_CPH = 192
+PBS_REQUESTED_CPS = 691200
+jobStarter
+Information: Please note that compiler is Intel but /p/app/gnu/7.3.0/bin is now also in PATH
+  
+	Module loaded.
+	If on HPC Portal in a GNOME session, start the application with:
+		 vglrun pointwise
+
+	Copy & Paste server info if using SRD, keyboard mapping is incorrect.
+
+Start Epilogue v2.5.3 Fri Apr 29 18:39:05 EDT 2022 
+Memory usage reported in GB
+                    % of     user     user     user    total    total
+Node               limit      max    limit  current  current     phys
+r4i4n0              0.04     0.07   175.00     0.07     5.63   187.31
+r4i4n2              0.02     0.04   175.00     0.04     5.53   187.31
+r4i4n13             0.02     0.04   175.00     0.04     5.55   187.31
+r4i4n15             0.02     0.04   175.00     0.04     5.58   187.31
+Memory summary:
+		min    0.04 GB
+		max    0.07 GB
+		ave    0.05 GB
+End Epilogue v2.5.3 Fri Apr 29 18:39:10 EDT 2022 
