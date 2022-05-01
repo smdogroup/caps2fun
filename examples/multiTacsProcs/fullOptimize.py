@@ -33,7 +33,7 @@ class WingOptimizer():
         self.cwrite("----------------------------\n")
 
         #aircraft parameters
-        self.nonWingWeight = 
+        #self.nonWingWeight = 
 
     def cwrite(self, msg):
         self.status.write(msg)

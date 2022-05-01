@@ -2,7 +2,7 @@
 set conParams(InitDim)                          11; # Initial connector dimension
 set conParams(MaxDim)                           1024; # Maximum connector dimension
 set conParams(MinDim)                           4; # Minimum connector dimension
-set conParams(TurnAngle)                       10.000000; # Maximum turning angle on connectors for dimensioning (0 - not used)
+set conParams(TurnAngle)                       4.000000; # Maximum turning angle on connectors for dimensioning (0 - not used)
 set conParams(Deviation)                       0.000000; # Maximum deviation on connectors for dimensioning (0 - not used)
 set conParams(SplitAngle)                      0.000000; # Turning angle on connectors to split (0 - not used)
 set conParams(JoinCons)                          0; # Perform joining operation on 2 connectors at one endpoint
@@ -15,12 +15,12 @@ set conParams(TurnAngleHard)                   70.000000; # Hard edge turning an
 set domParams(Algorithm)                    "AdvancingFront"; # Isotropic (Delaunay, AdvancingFront or AdvancingFrontOrtho)
 set domParams(FullLayers)                       0; # Domain full layers (0 for multi-normals, >= 1 for single normal)
 set domParams(MaxLayers)                        15; # Domain maximum layers
-set domParams(GrowthRate)                      1.250000; # Domain growth rate for 2D T-Rex extrusion
+set domParams(GrowthRate)                      1.750000; # Domain growth rate for 2D T-Rex extrusion
 set domParams(IsoType)                      "Triangle"; # Domain iso cell type (Triangle or TriangleQuad)
 set domParams(TRexType)                     "Triangle"; # Domain T-Rex cell type (Triangle or TriangleQuad)
-set domParams(TRexARLimit)                     40.000000; # Domain T-Rex maximum aspect ratio limit (0 - not used)
+set domParams(TRexARLimit)                     20.000000; # Domain T-Rex maximum aspect ratio limit (0 - not used)
 set domParams(TRexAngleBC)                     0.000000; # Domain T-Rex spacing from surface curvature
-set domParams(Decay)                           0.800000; # Domain boundary decay
+set domParams(Decay)                           0.500000; # Domain boundary decay
 set domParams(MinEdge)                         0.000000; # Domain minimum edge length
 set domParams(MaxEdge)                         0.000000; # Domain maximum edge length
 set domParams(Adapt)                            0; # Set up all domains for adaptation (0 - not used) V18.2+ (experimental)
@@ -30,11 +30,11 @@ set domParams(StrDomConvertARTrigger)          0.000000; # Aspect ratio to trigg
 # Block level
 set blkParams(Algorithm)                    "Delaunay"; # Isotropic (Delaunay, Voxel) (V18.3+)
 set blkParams(VoxelLayers)                      3; # Number of Voxel transition layers if Algorithm set to Voxel (V18.3+)
-set blkParams(boundaryDecay)                   0.800000; # Volumetric boundary decay
+set blkParams(boundaryDecay)                   0.500000; # Volumetric boundary decay
 set blkParams(collisionBuffer)                 1.000000; # Collision buffer for colliding T-Rex fronts
 set blkParams(maxSkewAngle)                    160.000000; # Maximum skew angle for T-Rex extrusion
 set blkParams(TRexSkewDelay)                    0; # Number of layers to delay enforcement of skew criteria
-set blkParams(edgeMaxGrowthRate)               1.500000; # Volumetric edge ratio
+set blkParams(edgeMaxGrowthRate)               2.000000; # Volumetric edge ratio
 set blkParams(fullLayers)                       1; # Full layers (0 for multi-normals, >= 1 for single normal)
 set blkParams(maxLayers)                        100; # Maximum layers
 set blkParams(growthRate)                      1.300000; # Growth rate for volume T-Rex extrusion

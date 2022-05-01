@@ -397,8 +397,10 @@ class NacaOMLOptimization():
         self.tacsAim.input.Property = propDict
 
         # constraint section
+        #constraint1 = {"groupName" : "wingRoot",
+        #                "dofConstraint" : 123456}
         constraint1 = {"groupName" : "wingRoot",
-                        "dofConstraint" : 123456}
+                        "dofConstraint" : 123}
 
         self.tacsAim.input.Constraint = {"fixRoot": constraint1}
 
@@ -431,23 +433,23 @@ class NacaOMLOptimization():
             self.pointwiseAim.input.Mesh_Format = "VTK"
 
             # Connector level
-            self.pointwiseAim.input.Connector_Turn_Angle       = 10
+            self.pointwiseAim.input.Connector_Turn_Angle       = 4
             self.pointwiseAim.input.Connector_Prox_Growth_Rate = 1.2
             self.pointwiseAim.input.Connector_Source_Spacing   = True
 
             # Domain level
             self.pointwiseAim.input.Domain_Algorithm    = "AdvancingFront"
             self.pointwiseAim.input.Domain_Max_Layers   = 15
-            self.pointwiseAim.input.Domain_Growth_Rate  = 1.25
-            self.pointwiseAim.input.Domain_TRex_ARLimit = 40.0
-            self.pointwiseAim.input.Domain_Decay        = 0.8
+            self.pointwiseAim.input.Domain_Growth_Rate  = 1.75
+            self.pointwiseAim.input.Domain_TRex_ARLimit = 20.0 #40.0
+            self.pointwiseAim.input.Domain_Decay        = 0.5
             self.pointwiseAim.input.Domain_Iso_Type = "Triangle"
 
             # Block level
-            self.pointwiseAim.input.Block_Boundary_Decay       = 0.8
+            self.pointwiseAim.input.Block_Boundary_Decay       = 0.5
             self.pointwiseAim.input.Block_Collision_Buffer     = 1.0
             self.pointwiseAim.input.Block_Max_Skew_Angle       = 160.0
-            self.pointwiseAim.input.Block_Edge_Max_Growth_Rate = 1.5
+            self.pointwiseAim.input.Block_Edge_Max_Growth_Rate = 2.0
             self.pointwiseAim.input.Block_Full_Layers          = 1
             self.pointwiseAim.input.Block_Max_Layers           = 100
             self.pointwiseAim.input.Block_TRexType = "TetPyramid"
@@ -525,7 +527,7 @@ class NacaOMLOptimization():
         self.wing = Body('wing', analysis_type=self.analysis_type, group=0,boundary=2)
 
         for i in range(num_tacs_dvs):
-            self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 0.01))
+            self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
 
         self.model.add_body(self.wing)
 
@@ -558,6 +560,9 @@ class NacaOMLOptimization():
         grav = 9.81                            # gravity acc. [m/s^2]
         qinf = 0.5 * rho * (v_inf)**2 # dynamic pressure [N/m^2]
         thermal_scale = 0.5 * rho * (v_inf)**3 # heat flux * area [J/s]
+
+        #temporarily lower values
+        #qinf = qinf/10
 
         solvers = {}
         solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0, qinf=qinf, thermal_scale=thermal_scale)
@@ -851,10 +856,10 @@ class NacaOMLOptimization():
         self.forwardAnalysis()        
 
         #run adjoint analysis
-        #self.adjointAnalysis()
+        self.adjointAnalysis()
 
         #write to output
-        #self.writeOutput()
+        self.writeOutput()
 
         #close status file
         if (self.comm.Get_rank() == 0): self.status.close()
@@ -866,6 +871,7 @@ class NacaOMLOptimization():
             funtofemFolder = os.path.join(self.curDir, "funtofem")
 
             outputFile = os.path.join(funtofemFolder, "funtofem.out")
+
             outputHandle =  open(outputFile, "w")
 
             #format of the output file:

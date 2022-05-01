@@ -102,11 +102,11 @@ patbeg    find   3
    select    face   !rootFaces[1,find]
 attribute capsConstraint   $wingRoot
 patend
-patbeg    eind   8
+patbeg    eind   9
    select    edge   !rootEdges[1,eind]
 attribute capsConstraint   $wingRoot
 patend
-patbeg    nind   6
+patbeg    nind   7
    select    node   !rootNodes[1,nind]
 attribute capsConstraint   $wingRoot
 patend

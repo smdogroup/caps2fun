@@ -270,10 +270,13 @@ sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", wing
 
 #thickness in meters
 names2 = DVnames
-lbnds2 = 0.0001 * np.ones(thickCt)
+lbnds2 = 0.0005 * np.ones(thickCt)
 init2 = 0.01*np.ones(thickCt)
 ubnds2 = 1.0*np.ones(thickCt)
 scales2 = 100 * np.ones(thickCt)
+
+init2[0] = 0.1
+scales2[0] = 1
 
 for istruct in range(thickCt):
     name = names2[istruct]
