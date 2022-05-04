@@ -236,7 +236,7 @@ for dvname in ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "
 
 #setup thick DVs
 groups = ["rib","spar","OML"]
-numDVs = [8,2,14]
+numDVs = [14,2,1]
 thickCt = 0
 DVnames = []
 for igroup in range(3):

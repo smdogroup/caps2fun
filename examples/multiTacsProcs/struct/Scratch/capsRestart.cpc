@@ -2,7 +2,7 @@
 
 # Constant, Design, and Output Parameters:
 cfgpmtr   nspar       2.00000
-cfgpmtr   nrib       6.00000
+cfgpmtr   nrib      14.00000
 despmtr   area      40.00000
 despmtr   aspect       6.00000
 despmtr   taper       0.50000
@@ -13,13 +13,11 @@ despmtr   tc0       0.10000
 despmtr   tcf       0.10000
 despmtr   camb0       0.05000
 despmtr   cambf       0.05000
-cfgpmtr   OMLsides      86.00000
-cfgpmtr   OMLfaces      76.00000
-cfgpmtr   rootRib      81.00000
-cfgpmtr   tipRib      29.00000
-cfgpmtr   rootFaces      81.00000
-cfgpmtr   rootEdges     110.00000
-cfgpmtr   rootNodes      52.00000
+dimension zrib   1   15
+despmtr   zrib[1,:]   "     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;"
+cfgpmtr   rootFaces     177.00000
+cfgpmtr   rootEdges     240.00000
+cfgpmtr   rootNodes     112.00000
 
 # Global Attributes:
 
@@ -57,11 +55,14 @@ attribute capsGroup   !$spar+ispar
 attribute capsMesh   !$spar+ispar
 attribute spar   ispar
 patend
+set       zribAdd 0
 patbeg    irib   nrib
    set       dxmax max(croot,xtip+ctipEff)+2*margin
-   set       zcoord -irib*sspan/(nrib+1)
+   set       zribAdd zribAdd+!zrib[1,irib]
+   set       zfrac zribAdd/zrib.sum
+   set       zcoord -zfrac*sspan
    box       -2*margin   ybot   zcoord   dxmax   ytop-ybot   0
-   set       index irib+1
+   set       index irib
    select    face
 attribute capsGroup   !$rib+index
 attribute capsMesh   !$rib+index
@@ -74,30 +75,13 @@ restore   OML   0
 intersect none   1   0
 restore   OML   0
 hollow    0   0   0
+select    face
+attribute capsGroup   $OML1
+attribute capsMesh   $OML1
 union     0   0   0
 select    body
 attribute capsAIM   $egadsTessAIM;tacsAIM;pointwiseAIM;fun3dAIM
 attribute capsMeshLength   1.0
-patbeg    iface   7
-   select    face   !OMLsides[1,iface]
-attribute capsGroup   $OML1
-attribute capsMesh   $OML1
-patend
-patbeg    iOML   14
-   patbeg    iface   3
-      select    face   !OMLfaces[iOML,iface]
-attribute capsGroup   !$OML+iOML
-attribute capsMesh   !$OML+iOML
-   patend
-patend
-patbeg    iface   3
-   select    face   !rootRib[1,iface]
-attribute capsGroup   !$rib1
-attribute capsMesh   !$rib1
-   select    face   !tipRib[1,iface]
-attribute capsGroup   !$rib8
-attribute capsMesh   !$rib8
-patend
 patbeg    find   3
    select    face   !rootFaces[1,find]
 attribute capsConstraint   $wingRoot

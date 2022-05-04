@@ -397,10 +397,8 @@ class NacaOMLOptimization():
         self.tacsAim.input.Property = propDict
 
         # constraint section
-        #constraint1 = {"groupName" : "wingRoot",
-        #                "dofConstraint" : 123456}
         constraint1 = {"groupName" : "wingRoot",
-                        "dofConstraint" : 123}
+                        "dofConstraint" : 123456} #123
 
         self.tacsAim.input.Constraint = {"fixRoot": constraint1}
 
@@ -1067,7 +1065,7 @@ class NacaOMLOptimization():
 comm = MPI.COMM_WORLD
 
 #INIT and read in inputs
-nacaOpt = NacaOMLOptimization(comm, "naca_OML_struct.csm", "naca_OML_fluid.csm", "pointwise", "aerothermoelastic", "mesh")
+nacaOpt = NacaOMLOptimization(comm, "nacaStruct3.csm", "naca_OML_fluid.csm", "pointwise", "aerothermoelastic", "mesh")
 
 #RUN analysis
 nacaOpt.runF2F()
