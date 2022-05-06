@@ -3,7 +3,7 @@
 
 #naca airfoil wing with finite differencing for mesh sensitivity
 
-#configuration parameters
+#struct config
 cfgpmtr  nspar  2  -
 cfgpmtr  nrib  14  -
 
