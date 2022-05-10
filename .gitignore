@@ -2,3 +2,5 @@
 **/*.pw
 **/*.ugrid
 **/*.flow
+**/*.adjoint
+**/*.txt
