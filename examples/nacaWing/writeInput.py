@@ -43,9 +43,9 @@ def writeInput(DVdict, functions):
 
             #make the line strings
             if (dvType == "shape"):
-                line = "{},{},{}\n".format(name, dvType, value)
+                line = "{},{},{:5f}\n".format(name, dvType, value)
             elif (dvType == "struct"):
-                line = "{},{},{},{}\n".format(name, dvType, capsGroup, value)   
+                line = "{},{},{},{:5f}\n".format(name, dvType, capsGroup, value)   
 
             #write the line to the input file
             inputHandle.write(line)
@@ -66,13 +66,16 @@ structActive = True #def: True
 DVdict = []
 inits = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 0.0,  0.5, 0.1, 0.1]
 ct = 0
+DVind = 0
 for dvname in ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "taper","tc0","tcf"]:
     tempDict = {"name" : dvname,
                 "type" : "shape",
                 "value" : inits[ct],
                 "capsGroup" : "",
-                "active" : shapeActive}
+                "active" : shapeActive,
+                "ind" : DVind}
     DVdict.append(tempDict)
+    DVind += 1
     ct += 1
 
 #setup thick DVs
@@ -93,6 +96,8 @@ DVnames = []
 numThick = sum(numDVs)
 numMaxDigits = len(str(numThick))
 
+DVind = 0
+
 for igroup in range(3):
     group = groups[igroup]
     numDV = numDVs[igroup]
@@ -101,19 +106,56 @@ for igroup in range(3):
     for iDV in range(numDV):
         capsGroup = group + str(iDV+1)
         thickIndex = thickCt + 1
+        
         numDigits = len(str(thickIndex))
         numZeros = numMaxDigits - numDigits
         zeroStr = zeroString(numZeros)
+
+        thickness = 0.001 * thickIndex #0.01
+
         DVname = "thick" + zeroStr + str(thickIndex)
         DVnames.append(DVname)
+
         tempDict = {"name" : DVname,
                     "type" : "struct",
-                    "value" : 0.01,
+                    "value" : thickness,
                     "capsGroup" : capsGroup,
-                    "active" : structActive}
+                    "active" : structActive,
+                    "ind" : DVind}
+        DVind += 1
         thickCt += 1
         DVdict.append(tempDict)
 
 functions = ["ksfailure","cl","cd","mass"]
+
+print(DVdict)
+
+sorted = False
+
+if (sorted):
+
+    def capsCompare(elem):
+        return elem["capsGroup"]
+
+
+    structDVnames = []
+    #make list of DV values and names
+    for DV in DVdict:
+        if (DV["type"] == "struct"):
+            structDVnames.append(DV["name"])
+
+    #sort the names and values based on ESP/CAPS sorting
+    DVdict.sort(key=capsCompare)
+
+    #get the sorted structDVs
+    structDVs = []
+    capsGroups = []
+    for DV in DVdict:
+        if (DV["type"] == "struct"):
+            structDVs.append(DV["value"])
+            capsGroups.append(DV["capsGroup"])
+
+    print(capsGroups)
+    print(structDVs)
 
 writeInput(DVdict, functions)

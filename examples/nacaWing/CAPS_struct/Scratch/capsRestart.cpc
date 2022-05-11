@@ -4,12 +4,12 @@
 cfgpmtr   cfdOn       0.00000
 cfgpmtr   nspar       2.00000
 cfgpmtr   nrib      16.00000
-despmtr   area      40.00000
-despmtr   aspect       6.00000
+despmtr   area     120.00000
+despmtr   aspect       8.00000
 despmtr   taper       0.50000
 despmtr   ctwist       0.00000
 despmtr   lesweep       0.00000
-despmtr   dihedral       5.00000
+despmtr   dihedral       0.00000
 despmtr   tc0       0.10000
 despmtr   tcf       0.10000
 despmtr   camb0       0.05000

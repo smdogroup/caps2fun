@@ -14,6 +14,9 @@ rm -f steady/Flow/*.ugrid
 #fun3d outputs
 rm -f steady/Flow/core*
 rm -f steady/Flow/*.vtk
+rm -f steady/Flow/*.nml
+rm -f steady/Flow/*.mapbc
+rm -f steady/Flow/*.input
 rm -f steady/Flow/*tec_boundary*
 rm -f steady/Flow/*.grid_info
 rm -f steady/Flow/*.flow
