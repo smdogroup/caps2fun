@@ -65,6 +65,7 @@ import numpy as np
 
 #import other modules
 import pyCAPS
+import f90nml
 
 
 
@@ -99,6 +100,7 @@ class wedgeTACS(TacsSteadyInterface):
             tInput = structDVs
 
             def elemCallBack(dvNum, compID, compDescript, elemDescripts, globalDVs, **kwargs):
+                #we need to investigate ordering here, because propID does not match this
                 elemIndex = kwargs['propID'] - 1
                 t = tInput[elemIndex]
                 prop = constitutive.MaterialProperties(rho=rho, specific_heat=specific_heat,
@@ -161,11 +163,13 @@ class NacaOMLOptimization():
 
         self.n_tacs_procs = 20
 
-        self.nsteps = 100
+        self.nsteps = 5
 
-        self.scenarioName = "fun3d"
+        self.scenario_name = "fun3d"
 
-        self.curDir = os.getcwd()
+        self.csmFile = csmFile
+
+        self.parent_dir = os.getcwd()
 
         #read input from file
         self.readInput()
@@ -231,7 +235,7 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0):
             
             #print(curDir)
-            funtofemFolder = os.path.join(self.curDir, "funtofem")
+            funtofemFolder = os.path.join(self.parent_dir, "funtofem")
 
             inputFile = os.path.join(funtofemFolder, "funtofem.in")
             inputHandle =  open(inputFile, "r")
@@ -250,6 +254,7 @@ class NacaOMLOptimization():
                         name = parts[1]
                         name = name.strip()
                         self.functionNames.append(name)
+                        DVind = 0
                     else:
                         parts = line.split(",")
                         name = parts[0]
@@ -265,7 +270,9 @@ class NacaOMLOptimization():
                         tempDict = {"name" : name,
                                     "type" : dvType,
                                     "capsGroup" : capsGroup,
-                                    "value" : value}
+                                    "value" : value,
+                                    "ind" : DVind}
+                        DVind += 1
                         self.DVdict.append(tempDict)
 
             inputHandle.close()
@@ -499,15 +506,121 @@ class NacaOMLOptimization():
         self.fun3dAim.input.Design_SensFile = True
         self.fun3dAim.input.Design_Sensitivity = True
 
+        #############################
+        # namelist and mapbc settings
+        self.capsFluid.analysis["fun3d"].input.Overwrite_NML = False
+        self.fun3dnml = f90nml.Namelist()
+        
+        #project section
+        self.fun3dnml["project"] = f90nml.Namelist()
+        self.fun3dnml["project"]["project_rootname"] = self.mesh_style
+        #self.fun3dAim.input.Proj_Name = self.mesh_style
+
+        #governing equation section
+        self.fun3dnml["governing_equations"] = f90nml.Namelist()
+        self.fun3dnml["governing_equations"]["viscous_terms"] = "inviscid"
+        #self.capsFluid.analysis["fun3d"].input.Viscous = "inviscid"
+        #self.fun3dAim.input.Equation_Type = "compressible"
+        
+
+        #raw grid section
+        self.fun3dnml["raw_grid"] = f90nml.Namelist()
+        #self.fun3dAim.input.Mesh_ASCII_Flag = False
+        self.fun3dnml["raw_grid"]["grid_format"] = "aflr3"
+        self.fun3dnml["raw_grid"]["data_format"] = "default"
+        self.fun3dnml["raw_grid"]["swap_yz_axes"] = False
+
+        #reference physical properties section
+        self.fun3dnml["reference_physical_properties"] = f90nml.Namelist()
+        self.fun3dnml["reference_physical_properties"]["mach_number"] = 0.5
+        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = 0.0
+        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = 35.0e6
+        #self.capsFluid.analysis["fun3d"].input.Alpha = 1.0
+        #self.capsFluid.analysis["fun3d"].input.Mach = 0.5
+        #self.capsFluid.analysis["fun3d"].input.Re = 35e6
+        
+        #inviscid flux method section
+        self.fun3dnml["inviscid_flux_method"] = f90nml.Namelist()
+        self.fun3dnml["inviscid_flux_method"]["flux_construction"] = "roe"
+        self.fun3dnml["inviscid_flux_method"]["flux_limiter"] = "hminmod"
+        self.fun3dnml["inviscid_flux_method"]["smooth_limiter_coeff"] = 1.0
+        self.fun3dnml["inviscid_flux_method"]["freeze_limiter_iteration"] = 3
+
+        #nonlinear solver parameters section
+        self.fun3dnml["nonlinear_solver_parameters"] = f90nml.Namelist()
+        self.fun3dnml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 100]
+        self.fun3dnml["nonlinear_solver_parameters"]["schedule_cfl"] = [0.5, 3.0]
+        #self.capsFluid.analysis["fun3d"].input.CFL_Schedule_Iter = [1, 100]
+        #self.capsFluid.analysis["fun3d"].input.CFL_Schedule = [0.5, 3.0]
+
+        #code run and control section
+        self.fun3dnml["code_run_control"] = f90nml.Namelist()
+        self.fun3dnml["code_run_control"]["steps"] = self.nsteps
+        self.fun3dnml["code_run_control"]["stopping_tolerance"] = 1.0e-15
+        self.fun3dnml["code_run_control"]["restart_write_freq"] = 1000
+        self.fun3dnml["code_run_control"]["restart_read"] = "off"
+        #self.capsFluid.analysis["fun3d"].input.Num_Iter = self.nsteps
+        #self.fun3dAim.input.Restart_Read = "off"
+        #self.capsFluid.analysis["fun3d"].input.Overwrite_NML = True
+
+        #global settings
+        self.fun3dnml["global"] = f90nml.Namelist()
+        self.fun3dnml["global"]["moving_grid"] = True
+        self.fun3dnml["global"]["volume_animation_freq"] = -1
+        self.fun3dnml["global"]["boundary_animation_freq"] = -1
+
+        #mesh elasticity settings
+        self.fun3dnml["elasticity_gmres"] = f90nml.Namelist()
+        self.fun3dnml["elasticity_gmres"]["nsearch"] = 200
+        self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-10
+
+        #massoud output settings
+        self.fun3dnml["massoud_output"] = f90nml.Namelist()
+        self.fun3dnml["massoud_output"]["funtofem_include_skin_friction"] = False
+
+        #volume output variables
+        self.fun3dnml["volume_output_variables"] = f90nml.Namelist()
+        self.fun3dnml["volume_output_variables"]["export_to"] = "vtk"
+        self.fun3dnml["volume_output_variables"]["x"] = False
+        self.fun3dnml["volume_output_variables"]["y"] = False
+        self.fun3dnml["volume_output_variables"]["z"] = False
+        self.fun3dnml["volume_output_variables"]["temperature"] = True
+        self.fun3dnml["volume_output_variables"]["mach"] = True
+        self.fun3dnml["volume_output_variables"]["p"] = True
+
+        #boundary output variables
+        self.fun3dnml["boundary_output_variables"] = f90nml.Namelist()
+        #boundary list indexes probably auto set from fun3dAim
+        self.fun3dnml["boundary_output_variables"]["number_of_boundaries"] = -1
+        self.fun3dnml["boundary_output_variables"]["boundary_list"] = "1-2"
+        self.fun3dnml["boundary_output_variables"]["temperature"] = True
+        self.fun3dnml["boundary_output_variables"]["mach"] = True
+        self.fun3dnml["boundary_output_variables"]["p"] = True
+
+        ##############################
+        # fun3d settings for moving_body.input file
+        self.moving_body_input = f90nml.Namelist()
+
+        #moving body settings for funtofem to fun3d
+        bodyName = self.csmFile.split(".")[0]
+        nBodies = 1
+        nBoundaries = 1
+        bndryArray = [[2]]
+        bndryArray = list(bndryArray)
+
+        #body definitions
+        self.moving_body_input["body_definitions"] = f90nml.Namelist()
+        self.moving_body_input["body_definitions"]["n_moving_bodies"] = nBodies
+        self.moving_body_input["body_definitions"]["body_name"] = [bodyName]
+        self.moving_body_input["body_definitions"]["parent_name"] = [""] # '' means motion relative to inertial ref frame
+        self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
+        self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
+        self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
+        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
+
     def initF2F(self):
-        #clear F2F from previous run
-        if (self.iteration > 1): self.clearF2F()
-
-
-        structDVs = []
-        for DV in self.DVdict:
-            if (DV["type"] == "struct"):
-                structDVs.append(DV["value"])
+        #sort struct DVs to match alphabetic, numeric sorting of ESP/CAPS
+        structDVs = self.sortStructDVs()
         
         maximum_mass = 40.0 
         num_tacs_dvs = len(structDVs)
@@ -538,7 +651,7 @@ class NacaOMLOptimization():
 
         self.model.add_body(self.wing)
 
-        myscenario = Scenario(self.scenarioName, group=0, steady=True, steps=self.nsteps)
+        myscenario = Scenario(self.scenario_name, group=0, steady=True, steps=self.nsteps)
 
         #add functions to scenario
         for functionName in self.functionNames:
@@ -576,7 +689,7 @@ class NacaOMLOptimization():
         
         #self.cwrite("setup fun3d interface, ")
 
-        datFile = os.path.join(self.curDir,self.scenarioName,"Flow",self.mesh_style + ".dat")
+        datFile = os.path.join(self.parent_dir,self.scenario_name,"Flow",self.mesh_style + ".dat")
         solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile, structDVs)
         #self.cwrite("setup tacs interface\n")
 
@@ -592,12 +705,27 @@ class NacaOMLOptimization():
         #section to update funtofem DV values for next fun3d run
         self.model.set_variables(structDVs)
 
-    def clearF2F(self):
-        #clear previous funtofem data and destroy it
-        if (self.comm.Get_rank() == 0):
-            delattr(self, "model")
-            delattr(self, "driver")
-            delattr(self, "wing")
+    def sortStructDVs(self):
+        def capsCompare(elem):
+            return elem["capsGroup"]
+
+
+        structDVnames = []
+        #make list of DV values and names
+        for DV in self.DVdict:
+            if (DV["type"] == "struct"):
+                structDVnames.append(DV["name"])
+        
+        #sort the names and values based on ESP/CAPS sorting
+        self.DVdict.sort(key=capsCompare)
+
+        #get the sorted structDVs
+        structDVs = []
+        for DV in self.DVdict:
+            if (DV["type"] == "struct"):
+                structDVs.append(DV["value"])
+
+        return structDVs
 
     def forwardAnalysis(self):
         #update status
@@ -624,20 +752,17 @@ class NacaOMLOptimization():
         self.cwrite("built fluid mesh")
         self.writeTime()
 
-        
+
         self.start_time = time.time()
+        #prepare fun3d config files such as mapbc, nml
+        self.runFun3dConfig()        
 
         #initialize fun2fem with new meshes
-        #self.cwrite("Initializing funtofem... ")
         self.initF2F()
-        #self.cwrite("initialized funtofem\n")
 
         #run FUNtoFEM forward analysis
-        #run funtofem forward analysis, including fun3d
         self.cwrite("Running F2F forward analysis... ")
         self.driver.solve_forward()
-
-        #get function values from forward analysis
         self.functions = self.model.get_functions()
 
         self.cwrite("completed F2F forward analysis")
@@ -682,8 +807,9 @@ class NacaOMLOptimization():
             ct = 0
             for DV in self.DVdict:
                 dvname = DV["name"]
+                dvind = DV["ind"]
                 if (not(DV["type"] == "shape")): 
-                    self.structGrad[funcInd, ct] = f2fgrads[funcInd][ct].real
+                    self.structGrad[funcInd, dvind] = f2fgrads[funcInd][ct].real
                     ct += 1
 
         #number of shape DVs
@@ -795,7 +921,7 @@ class NacaOMLOptimization():
             #move struct mesh files to flow directory 
             for extension in [".bdf",".dat"]:
                 src = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+extension)
-                dest = os.path.join(self.curDir,self.scenarioName,"Flow",self.tacsAim.input.Proj_Name+extension)
+                dest = os.path.join(self.parent_dir,self.scenario_name,"Flow",self.tacsAim.input.Proj_Name+extension)
                 shutil.copy(src, dest)
 
     def buildFluidMesh(self):
@@ -829,21 +955,51 @@ class NacaOMLOptimization():
                         destFile = "tetgen" + ext
                         src = os.path.join(self.fun3dAim.analysisDir, "Flow", srcFile)
                 
-                dest = os.path.join(self.curDir, self.scenarioName, "Flow", destFile)
+                dest = os.path.join(self.parent_dir, self.scenario_name, "Flow", destFile)
                 shutil.copy(src, dest)
 
             #if tetgen also move the mapbc file
             if (self.mesh_style == "tetgen"):
                 src = os.path.join(self.fun3dAim.analysisDir, "Flow", "fun3d_CAPS.mapbc")
-                dest = os.path.join(self.curDir, self.scenarioName, "Flow", "tetgen.mapbc")
+                dest = os.path.join(self.parent_dir, self.scenario_name, "Flow", "tetgen.mapbc")
                 shutil.copy(src, dest)
+
+    def runFun3dConfig(self):
+        #build fun3d config files, mapbc and nml
+        if (self.comm.Get_rank() == 0):
+            #set caps and funtofem flow folders for fun3d
+            caps_flow_dir = os.path.join(self.fun3dAim.analysisDir, "Flow")
+            funtofem_flow_dir = os.path.join(self.parent_dir, self.scenario_name, "Flow")
+
+            #run the namelist generator, and fun3d aim preanalysis to build fun3d.nml file
+            self.fun3dnml.write(os.path.join(funtofem_flow_dir, "fun3d.nml"), force=True)
+
+            #write the moving_body.input file
+            self.moving_body_input.write(os.path.join(funtofem_flow_dir, "moving_body.input"), force=True)
+
+            #don't run preanalysis since getting data_transfer error
+            #self.fun3dAim.preAnalysis()
+
+            
+            #move mapbc and nml files from CAPS_fluid folder to fun3d Flow folder
+            for ext in [".mapbc"]:
+
+                #make the filename of each filetype
+                filename = "fun3d_CAPS" + ext
+                filename2 = self.mesh_style + ext
+                
+                #move the files from caps to funtofem flow directories
+                src = os.path.join(caps_flow_dir, filename)
+                dest = os.path.join(funtofem_flow_dir, filename)
+                shutil.copy(src, dest)
+
 
     def runPointwise(self):
         #run AIM pre-analysis
         self.pointwiseAim.preAnalysis()
 
         #move to test directory
-        self.curDir = os.getcwd()
+        self.parent_dir = os.getcwd()
         os.chdir(self.pointwiseAim.analysisDir)
 
         CAPS_GLYPH = os.environ["CAPS_GLYPH"]
@@ -851,7 +1007,7 @@ class NacaOMLOptimization():
                 os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
             #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
 
-        os.chdir(self.curDir)
+        os.chdir(self.parent_dir)
 
         #run AIM postanalysis, files in self.pointwiseAim.analysisDir
         self.pointwiseAim.postAnalysis()      
@@ -875,7 +1031,7 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0):
 
             #...write the output functions, gradients, etc
-            funtofemFolder = os.path.join(self.curDir, "funtofem")
+            funtofemFolder = os.path.join(self.parent_dir, "funtofem")
 
             outputFile = os.path.join(funtofemFolder, "funtofem.out")
 
@@ -904,17 +1060,14 @@ class NacaOMLOptimization():
                 outputHandle.write("func,{},{}\n".format(name,value))
 
                 #write shape gradients
-                ishape = 0
-                istruct = 0
                 for DV in self.DVdict:
                     name = DV["name"]
+                    ind = DV["ind"]
                     if (DV["type"] == "shape"):
-                        deriv = self.shapeGrad[ifunc, ishape]
-                        ishape += 1
+                        deriv = self.shapeGrad[ifunc, ind]
                         outputHandle.write("grad,{},{}\n".format(name,deriv))
                     elif (DV["type"] == "struct"):
-                        deriv = self.structGrad[ifunc, istruct]
-                        istruct += 1
+                        deriv = self.structGrad[ifunc, ind]
                         outputHandle.write("grad,{},{}\n".format(name,deriv))
 
                 #update function counter

@@ -151,7 +151,12 @@ class WingOptimizer():
                 parts = line.split(",")
                 dvname = parts[1]
                 deriv = float(parts[2])
-                self.gradients[functionName][iDV] = deriv
+
+                #find the DVind of that design variable (assuming out of order)
+                for DV in self.DVdict:
+                    if (DV["name"] == dvname):
+                        ind = DV["opt_ind"]
+                self.gradients[functionName][ind] = deriv
                 iDV += 1
 
             elif (firstLine):
@@ -259,13 +264,17 @@ if (optimizationMode == "full"): shapeActive = True
 DVdict = []
 inits = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 0.0,  0.5, 0.1, 0.1]
 ct = 0
+DVind = 0
 for dvname in ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "taper","tc0","tcf"]:
     tempDict = {"name" : dvname,
                 "type" : "shape",
                 "value" : inits[ct],
                 "capsGroup" : "",
-                "active" : shapeActive}
+                "active" : shapeActive,
+                "opt_ind" : DVind}
+    DVind += 1
     DVdict.append(tempDict)
+
     ct += 1
 
 #setup thick DVs
@@ -306,7 +315,9 @@ for igroup in range(3):
                     "type" : "struct",
                     "value" : initThickness,
                     "capsGroup" : capsGroup,
-                    "active" : structActive}
+                    "active" : structActive,
+                    "opt_ind" : DVind}
+        DVind += 1
         thickCt += 1
         DVdict.append(tempDict)
 
