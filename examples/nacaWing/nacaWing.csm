@@ -4,6 +4,7 @@ cfgpmtr cfdOn 0
 #configuration parameters
 cfgpmtr  nspar  2  -
 cfgpmtr  nrib  16  -
+cfgpmtr sharpTE  0
 
 #default design parameters
 despmtr  area  120.0  m^2
@@ -16,6 +17,8 @@ despmtr tc0 0.1
 despmtr tcf 0.1
 despmtr camb0 0.05
 despmtr cambf 0.05
+despmtr ml0 0.4
+despmtr mlf 0.4
 
 dimension zrib 1 nrib-1
 despmtr zrib "1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1"
@@ -38,9 +41,9 @@ set  ytop 0.2*croot+ytip+margin
 set 	ctipEff		ctip*cosd(ctwist)
 
 #make parameters for wing loft
-udprim  naca thickness tc0 Camber camb0
+udprim  naca thickness tc0 Camber camb0 maxloc ml0 sharpte sharpTE
 scale  croot
-udprim  naca thickness tcf Camber cambf
+udprim  naca thickness tcf Camber cambf maxloc mlf sharpte sharpTE
 scale   ctip
 rotatez		-ctwist	0		0
 translate	xtip	ytip	-sspan

@@ -4,6 +4,7 @@
 cfgpmtr   cfdOn       0.00000
 cfgpmtr   nspar       2.00000
 cfgpmtr   nrib      16.00000
+cfgpmtr   sharpTE       0.00000
 despmtr   area     120.00000
 despmtr   aspect       8.00000
 despmtr   taper       0.50000
@@ -14,6 +15,8 @@ despmtr   tc0       0.10000
 despmtr   tcf       0.10000
 despmtr   camb0       0.05000
 despmtr   cambf       0.05000
+despmtr   ml0       0.40000
+despmtr   mlf       0.40000
 dimension zrib   1   15
 despmtr   zrib[1,:]   "     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;"
 dimension xspar   1   3
@@ -33,9 +36,9 @@ set       margin 0.05*cmean
 set       ybot -0.2*croot-margin
 set       ytop 0.2*croot+ytip+margin
 set       ctipEff ctip*cosd(ctwist)
-udprim    naca   thickness   tc0   Camber   camb0
+udprim    naca   thickness   tc0   Camber   camb0   maxloc   ml0   sharpte   sharpTE
 scale     croot   0   0   0
-udprim    naca   thickness   tcf   Camber   cambf
+udprim    naca   thickness   tcf   Camber   cambf   maxloc   mlf   sharpte   sharpTE
 scale     ctip   0   0   0
 rotatez   -ctwist   0   0
 translate xtip   ytip   -sspan

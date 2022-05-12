@@ -67,91 +67,6 @@ import numpy as np
 import pyCAPS
 import f90nml
 
-
-
-#subclass for tacs steady interface
-class wedgeTACS(TacsSteadyInterface):
-    def __init__(self, comm, tacs_comm, model, n_tacs_procs, datFile, structDVs):
-        super(wedgeTACS,self).__init__(comm, tacs_comm, model)
-
-        assembler = None
-        nodes = None
-        self.tacs_proc = False
-        if comm.Get_rank() < n_tacs_procs:
-            self.tacs_proc = True
-
-            # Instantiate FEASolver
-            structOptions = {
-                'printtiming':True,
-            }
-
-            FEASolver = pyTACS(datFile, options=structOptions, comm=tacs_comm)
-
-            # Material properties
-            rho = 2780.0        # density kg/m^3
-            E = 73.1e9          # Young's modulus (Pa)
-            nu = 0.33           # Poisson's ratio
-            kcorr = 5.0/6.0     # shear correction factor
-            ys = 324.0e6        # yield stress
-            specific_heat = 920.096
-            cte = 24.0e-6
-            kappa = 230.0
-
-            tInput = structDVs
-
-            def elemCallBack(dvNum, compID, compDescript, elemDescripts, globalDVs, **kwargs):
-                #we need to investigate ordering here, because propID does not match this
-                elemIndex = kwargs['propID'] - 1
-                t = tInput[elemIndex]
-                prop = constitutive.MaterialProperties(rho=rho, specific_heat=specific_heat,
-                                                       E=E, nu=nu, ys=ys, cte=cte, kappa=kappa)
-                con = constitutive.IsoShellConstitutive(prop, t=t, tNum=dvNum)
-
-                elemList = []
-                transform = None
-                for elemDescript in elemDescripts:
-                    if elemDescript in ['CQUAD4', 'CQUADR']:
-                        elem = elements.Quad4ThermalShell(transform, con)
-                    else:
-                        print("Uh oh, '%s' not recognized" % (elemDescript))
-                    elemList.append(elem)
-
-                # Add scale for thickness dv
-                scale = [1.0]
-                return elemList, scale
-
-            # Set up elements and TACS assembler
-            FEASolver.initialize(elemCallBack)
-            assembler = FEASolver.assembler
-
-
-            #Tim's fix, based on tacs/pyMeshloader.py
-            #print("n_tacs_procs={}\n".format(n_tacs_procs),flush=True)
-            if (n_tacs_procs > 1):
-                ownerRange = assembler.getOwnerRange()
-                minNodes = ownerRange[tacs_comm.rank]+1
-                maxNodes = ownerRange[tacs_comm.rank+1]+1
-                nodes = np.arange(minNodes, maxNodes, dtype=int)
-                #print("TACS proc rank {} with nodes={},{}".format(tacs_comm.Get_rank(),minNodes,maxNodes),flush=True)
-            else:
-                origNodePositions = FEASolver.getOrigNodes()
-                nnodes = origNodePositions.shape[0]//3
-                nodes = np.arange(1,nnodes+1, dtype=int)
-
-        self._initialize_variables(assembler, struct_id=nodes, thermal_index=6) #
-        self.initialize(model.scenarios[0],model.bodies)
-
-    def post_export_f5(self):
-        flag = (TACS.OUTPUT_CONNECTIVITY |
-                TACS.OUTPUT_NODES |
-                TACS.OUTPUT_DISPLACEMENTS |
-                TACS.OUTPUT_STRAINS |
-                TACS.OUTPUT_STRESSES |
-                TACS.OUTPUT_EXTRAS)
-        f5 = TACS.ToFH5(self.assembler, TACS.BEAM_OR_SHELL_ELEMENT, flag)
-        tacsOutFile = os.path.join(os.getcwd(), "funtofem","TACSoutput.f5")
-        f5.writeToFile(tacsOutFile)
-
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
     def __init__(self, comm, csmFile, meshStyle = "pointwise", analysisType = "aerothermoelastic"):
@@ -163,13 +78,13 @@ class NacaOMLOptimization():
 
         self.n_tacs_procs = 20
 
-        self.nsteps = 5
+        self.nsteps = 100
 
         self.scenario_name = "fun3d"
 
         self.csmFile = csmFile
 
-        self.parent_dir = os.getcwd()
+        self.root_dir = os.getcwd()
 
         #read input from file
         self.readInput()
@@ -235,7 +150,7 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0):
             
             #print(curDir)
-            funtofemFolder = os.path.join(self.parent_dir, "funtofem")
+            funtofemFolder = os.path.join(self.root_dir, "funtofem")
 
             inputFile = os.path.join(funtofemFolder, "funtofem.in")
             inputHandle =  open(inputFile, "r")
@@ -340,6 +255,7 @@ class NacaOMLOptimization():
             #set fun3d settings
             self.fun3dSettings()
             #self.cwrite("Set fun3d settings\n")
+
 
     def structureMeshSettings(self):
         #names the bdf and dat files as pointwise.ext or tetgen.ext
@@ -513,7 +429,7 @@ class NacaOMLOptimization():
         
         #project section
         self.fun3dnml["project"] = f90nml.Namelist()
-        self.fun3dnml["project"]["project_rootname"] = self.mesh_style
+        self.fun3dnml["project"]["project_rootname"] = self.fun3dAim.input.Proj_Name
         #self.fun3dAim.input.Proj_Name = self.mesh_style
 
         #governing equation section
@@ -627,7 +543,6 @@ class NacaOMLOptimization():
 
         # Set up the communicators
         n_procs = self.comm.Get_size()
-        print("n_procs={},n_tacs_procs={}".format(n_procs,self.n_tacs_procs))
         if (self.n_tacs_procs > n_procs): self.n_tacs_procs = n_procs
 
         world_rank = self.comm.Get_rank()
@@ -670,8 +585,6 @@ class NacaOMLOptimization():
 
         self.model.add_scenario(myscenario)
 
-        #self.cwrite("setup model, ")
-
         #==================================================================================================#
 
         #set units for forces
@@ -681,17 +594,18 @@ class NacaOMLOptimization():
         qinf = 0.5 * rho * (v_inf)**2 # dynamic pressure [N/m^2]
         thermal_scale = 0.5 * rho * (v_inf)**3 # heat flux * area [J/s]
 
-        #temporarily lower values
-        #qinf = qinf/10
+        #broadcast directories and datFile to rest of procs
+        fun3d_parent_dir = None
+        datFile = None
+        if (self.comm.Get_rank() == 0):
+            fun3d_parent_dir = os.path.join(self.fun3dAim.analysisDir, "..")
+            datFile = os.path.join(self.tacsAim.analysisDir, self.mesh_style + ".dat")
+        fun3d_parent_dir = self.comm.bcast(fun3d_dir, root=0)
+        datFile = self.comm.bcast(datFile, root=0)
 
         solvers = {}
-        solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0, qinf=qinf, thermal_scale=thermal_scale)
-        
-        #self.cwrite("setup fun3d interface, ")
-
-        datFile = os.path.join(self.parent_dir,self.scenario_name,"Flow",self.mesh_style + ".dat")
-        solvers['structural'] = wedgeTACS(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile, structDVs)
-        #self.cwrite("setup tacs interface\n")
+        solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0, qinf=qinf, thermal_scale=thermal_scale, fun3d_dir=fun3d_parent_dir)
+        solvers['structural'] = TACSinterface(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile, structDVs)
 
         # L&D transfer options
         transfer_options = {'analysis_type': self.analysis_type,
@@ -699,8 +613,6 @@ class NacaOMLOptimization():
 
         # instantiate the driver
         self.driver = FUNtoFEMnlbgs(solvers,self.comm,tacs_comm,0,self.comm,0,transfer_options,model=self.model)
-        struct_tacs = solvers['structural'].assembler
-        #self.cwrite("\t setup adjoint driver, ")
 
         #section to update funtofem DV values for next fun3d run
         self.model.set_variables(structDVs)
@@ -731,13 +643,9 @@ class NacaOMLOptimization():
         #update status
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
-        #self.cwrite("Iteration #{}\n".format(self.iteration))
 
         #set design variables from desvarDict
         self.updateDesign()
-        # thickDVstr = "[rib,spar,OML]"
-        # shapeDVstr = "[area,aspect,camb0,cambf,ctwist,dihedral,lesweep,taper,tc0,tcf]"
-        # self.cwrite("thickDVs {}\n\t{}\nshapeDVs {}\n\t{}\n".format(thickDVstr, x["struct"],shapeDVstr, x["shape"]))
 
         #generate structure mesh with egads and tacs AIMs
         self.start_time = time.time()
@@ -779,7 +687,6 @@ class NacaOMLOptimization():
         #run funtofem adjoint analysis, with fun3d
         self.driver.solve_adjoint()
 
-
         #update status
         self.cwrite("finished adjoint analysis")
         dt = time.time() - self.start_time
@@ -789,19 +696,18 @@ class NacaOMLOptimization():
 
         #get the funtofem gradients
         f2fgrads = self.model.get_function_gradients()
-        
-        #self.commBarrier("function_gradients()")
-
         self.start_time = time.time()
 
-        #count number of struct DV
-        self.nstruct = 0
+        #number of shape DVs
+        self.nshapeDV = 0
+        self.nstructDV = 0
         for DV in self.DVdict:
-            if (DV["type"] == "struct"): self.nstruct += 1
+            if (DV["type"] == "shape"): self.nshapeDV += 1
+            if (DV["type"] == "struct"): self.nstructDV += 1
 
         #update gradient for non shape DVs
         nfunc = len(self.functions)
-        self.structGrad = np.zeros((nfunc, self.nstruct))
+        self.structGrad = np.zeros((nfunc, self.nstructDV))
         
         for funcInd in range(nfunc):
             ct = 0
@@ -810,14 +716,7 @@ class NacaOMLOptimization():
                 dvind = DV["ind"]
                 if (not(DV["type"] == "shape")): 
                     self.structGrad[funcInd, dvind] = f2fgrads[funcInd][ct].real
-                    ct += 1
-
-        #number of shape DVs
-        self.nshapeDV = 0
-        self.nstructDV = 0
-        for DV in self.DVdict:
-            if (DV["type"] == "shape"): self.nshapeDV += 1
-            if (DV["type"] == "struct"): self.nstructDV += 1
+                    ct += 1        
 
         if (self.nshapeDV > 0):
             #get aero and struct mesh sensitivities for shape DVs
@@ -827,12 +726,6 @@ class NacaOMLOptimization():
             self.commBarrier("collected coordinate derivatives")
 
             if (self.comm.Get_rank() == 0):
-
-                #if (oneBased): self.aeroIds = self.aeroIds - (min(self.aeroIds) - 1)
-                #print("aero ids: {}".format(self.aeroIds))
-                #print("aero mesh: {}".format(self.aero_mesh_sens))
-                #print("struct ids: {}".format(self.structIds))
-                #print("struct mesh: {}".format(self.struct_mesh_sens))
 
                 #compute shape derivatives from aero and struct mesh sensitivities
                 self.shapeGrad = self.computeShapeDerivatives()
@@ -918,12 +811,6 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0):
             self.tacsAim.preAnalysis()
 
-            #move struct mesh files to flow directory 
-            for extension in [".bdf",".dat"]:
-                src = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+extension)
-                dest = os.path.join(self.parent_dir,self.scenario_name,"Flow",self.tacsAim.input.Proj_Name+extension)
-                shutil.copy(src, dest)
-
     def buildFluidMesh(self):
         self.cwrite("Building fluid mesh... ")
 
@@ -933,7 +820,6 @@ class NacaOMLOptimization():
                 self.runPointwise()
                 self.cwrite("ran pointwise, ")
 
-
             #update fun3d with current mesh so it knows mesh sensitivity
             if (self.mesh_style == "pointwise"):
                 self.fun3dAim.input["Mesh"].link(self.pointwiseAim.output["Volume_Mesh"])
@@ -942,56 +828,17 @@ class NacaOMLOptimization():
             self.fun3dAim.preAnalysis()
             self.cwrite("linked to fun3d, ")
 
-            #move ugrid file to fun3d run directory steady/Flow
-            for ext in [".ugrid", ".lb8.ugrid"]:
-                if (self.mesh_style == "pointwise"):
-                    srcFile = "caps.GeomToMesh" + ext
-                    destFile = "pointwise" + ext
-                    src = os.path.join(self.pointwiseAim.analysisDir, srcFile)
-                elif (self.mesh_style == "tetgen"):
-                    if (".lb8" in ext):
-                        #might also need to move the fun3d.mapbc file for this one
-                        srcFile = "fun3d_CAPS" + ext
-                        destFile = "tetgen" + ext
-                        src = os.path.join(self.fun3dAim.analysisDir, "Flow", srcFile)
-                
-                dest = os.path.join(self.parent_dir, self.scenario_name, "Flow", destFile)
-                shutil.copy(src, dest)
-
-            #if tetgen also move the mapbc file
-            if (self.mesh_style == "tetgen"):
-                src = os.path.join(self.fun3dAim.analysisDir, "Flow", "fun3d_CAPS.mapbc")
-                dest = os.path.join(self.parent_dir, self.scenario_name, "Flow", "tetgen.mapbc")
-                shutil.copy(src, dest)
-
     def runFun3dConfig(self):
         #build fun3d config files, mapbc and nml
         if (self.comm.Get_rank() == 0):
             #set caps and funtofem flow folders for fun3d
             caps_flow_dir = os.path.join(self.fun3dAim.analysisDir, "Flow")
-            funtofem_flow_dir = os.path.join(self.parent_dir, self.scenario_name, "Flow")
 
             #run the namelist generator, and fun3d aim preanalysis to build fun3d.nml file
-            self.fun3dnml.write(os.path.join(funtofem_flow_dir, "fun3d.nml"), force=True)
+            self.fun3dnml.write(os.path.join(caps_flow_dir, "fun3d.nml"), force=True)
 
             #write the moving_body.input file
-            self.moving_body_input.write(os.path.join(funtofem_flow_dir, "moving_body.input"), force=True)
-
-            #don't run preanalysis since getting data_transfer error
-            #self.fun3dAim.preAnalysis()
-
-            
-            #move mapbc and nml files from CAPS_fluid folder to fun3d Flow folder
-            for ext in [".mapbc"]:
-
-                #make the filename of each filetype
-                filename = "fun3d_CAPS" + ext
-                filename2 = self.mesh_style + ext
-                
-                #move the files from caps to funtofem flow directories
-                src = os.path.join(caps_flow_dir, filename)
-                dest = os.path.join(funtofem_flow_dir, filename)
-                shutil.copy(src, dest)
+            self.moving_body_input.write(os.path.join(caps_flow_dir, "moving_body.input"), force=True)
 
 
     def runPointwise(self):
@@ -999,7 +846,6 @@ class NacaOMLOptimization():
         self.pointwiseAim.preAnalysis()
 
         #move to test directory
-        self.parent_dir = os.getcwd()
         os.chdir(self.pointwiseAim.analysisDir)
 
         CAPS_GLYPH = os.environ["CAPS_GLYPH"]
@@ -1007,7 +853,7 @@ class NacaOMLOptimization():
                 os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
             #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
 
-        os.chdir(self.parent_dir)
+        os.chdir(self.root_dir)
 
         #run AIM postanalysis, files in self.pointwiseAim.analysisDir
         self.pointwiseAim.postAnalysis()      
@@ -1031,7 +877,7 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0):
 
             #...write the output functions, gradients, etc
-            funtofemFolder = os.path.join(self.parent_dir, "funtofem")
+            funtofemFolder = os.path.join(self.root_dir, "funtofem")
 
             outputFile = os.path.join(funtofemFolder, "funtofem.out")
 
@@ -1220,6 +1066,89 @@ class NacaOMLOptimization():
         #update status
         self.cwrite("finished aero mesh contribution to shape DVs\n")
 
+
+#subclass for tacs steady interface
+class TACSinterface(TacsSteadyInterface):
+    def __init__(self, comm, tacs_comm, model, n_tacs_procs, datFile, structDVs):
+        super(TACSinterface,self).__init__(comm, tacs_comm, model)
+
+        assembler = None
+        nodes = None
+        self.tacs_proc = False
+        if comm.Get_rank() < n_tacs_procs:
+            self.tacs_proc = True
+
+            # Instantiate FEASolver
+            structOptions = {
+                'printtiming':True,
+            }
+
+            FEASolver = pyTACS(datFile, options=structOptions, comm=tacs_comm)
+
+            # Material properties
+            rho = 2780.0        # density kg/m^3
+            E = 73.1e9          # Young's modulus (Pa)
+            nu = 0.33           # Poisson's ratio
+            kcorr = 5.0/6.0     # shear correction factor
+            ys = 324.0e6        # yield stress
+            specific_heat = 920.096
+            cte = 24.0e-6
+            kappa = 230.0
+
+            tInput = structDVs
+
+            def elemCallBack(dvNum, compID, compDescript, elemDescripts, globalDVs, **kwargs):
+                #we need to investigate ordering here, because propID does not match this
+                elemIndex = kwargs['propID'] - 1
+                t = tInput[elemIndex]
+                prop = constitutive.MaterialProperties(rho=rho, specific_heat=specific_heat,
+                                                       E=E, nu=nu, ys=ys, cte=cte, kappa=kappa)
+                con = constitutive.IsoShellConstitutive(prop, t=t, tNum=dvNum)
+
+                elemList = []
+                transform = None
+                for elemDescript in elemDescripts:
+                    if elemDescript in ['CQUAD4', 'CQUADR']:
+                        elem = elements.Quad4ThermalShell(transform, con)
+                    else:
+                        print("Uh oh, '%s' not recognized" % (elemDescript))
+                    elemList.append(elem)
+
+                # Add scale for thickness dv
+                scale = [1.0]
+                return elemList, scale
+
+            # Set up elements and TACS assembler
+            FEASolver.initialize(elemCallBack)
+            assembler = FEASolver.assembler
+
+
+            #Tim's fix, based on tacs/pyMeshloader.py
+            #print("n_tacs_procs={}\n".format(n_tacs_procs),flush=True)
+            if (n_tacs_procs > 1):
+                ownerRange = assembler.getOwnerRange()
+                minNodes = ownerRange[tacs_comm.rank]+1
+                maxNodes = ownerRange[tacs_comm.rank+1]+1
+                nodes = np.arange(minNodes, maxNodes, dtype=int)
+                #print("TACS proc rank {} with nodes={},{}".format(tacs_comm.Get_rank(),minNodes,maxNodes),flush=True)
+            else:
+                origNodePositions = FEASolver.getOrigNodes()
+                nnodes = origNodePositions.shape[0]//3
+                nodes = np.arange(1,nnodes+1, dtype=int)
+
+        self._initialize_variables(assembler, struct_id=nodes, thermal_index=6) #
+        self.initialize(model.scenarios[0],model.bodies)
+
+    def post_export_f5(self):
+        flag = (TACS.OUTPUT_CONNECTIVITY |
+                TACS.OUTPUT_NODES |
+                TACS.OUTPUT_DISPLACEMENTS |
+                TACS.OUTPUT_STRAINS |
+                TACS.OUTPUT_STRESSES |
+                TACS.OUTPUT_EXTRAS)
+        f5 = TACS.ToFH5(self.assembler, TACS.BEAM_OR_SHELL_ELEMENT, flag)
+        tacsOutFile = os.path.join(os.getcwd(), "funtofem","TACSoutput.f5")
+        f5.writeToFile(tacsOutFile)
 
 ##----------Outside of class, run cases------------------##
 

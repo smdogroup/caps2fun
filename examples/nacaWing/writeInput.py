@@ -111,7 +111,8 @@ for igroup in range(3):
         numZeros = numMaxDigits - numDigits
         zeroStr = zeroString(numZeros)
 
-        thickness = 0.001 * thickIndex #0.01
+        #thickness = 0.001 * thickIndex #0.01
+        thickness = 0.01
 
         DVname = "thick" + zeroStr + str(thickIndex)
         DVnames.append(DVname)
@@ -128,7 +129,7 @@ for igroup in range(3):
 
 functions = ["ksfailure","cl","cd","mass"]
 
-print(DVdict)
+#print(DVdict)
 
 sorted = False
 
