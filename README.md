@@ -1,2 +1,2 @@
 # caps2fun
-CAPS is 2 fun
+Interface between CAPS and FUNtoFEM to enable parameterization of design variables and automatically generate coupled structure and fluid meshes.
