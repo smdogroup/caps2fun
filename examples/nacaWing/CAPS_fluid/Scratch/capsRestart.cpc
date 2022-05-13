@@ -5,6 +5,7 @@ cfgpmtr   cfdOn       0.00000
 cfgpmtr   nspar       2.00000
 cfgpmtr   nrib      16.00000
 cfgpmtr   sharpTE       0.00000
+cfgpmtr   TEfaceOn       1.00000
 despmtr   area     120.00000
 despmtr   aspect       8.00000
 despmtr   taper       0.50000
@@ -62,9 +63,19 @@ attribute compGroup   $rib
    select    face   @nbody   3
    select    add   @nbody   4
 attribute compGroup   $OML
+   patbeg    foo   ifzero(TEfaceOn-1,1,0)
+      select    add   @nbody   5
+attribute compGroup   $OML
+   patend
    select    add   @nbody   1
    select    add   @nbody   2
-   extract   @sellist
+   patbeg    foo   ifzero(TEfaceOn,1,0)
+      extract   @sellist
+   patend
+   patbeg    foo   ifzero(TEfaceOn-1,1,0)
+      hollow    0   0   0
+   patend
+   select    face
 attribute comp   $wing
    store     wing   0   0
    set       sparsum 0

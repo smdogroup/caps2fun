@@ -5,6 +5,7 @@ cfgpmtr cfdOn 0
 cfgpmtr  nspar  2  -
 cfgpmtr  nrib  16  -
 cfgpmtr sharpTE  0
+cfgpmtr TEfaceOn 1
 
 #default design parameters
 despmtr  area  120.0  m^2
@@ -73,10 +74,22 @@ patbeg foo ifzero(cfdOn,1,0)
 	select face @nbody 3
 	select add @nbody 4
 		attribute compGroup $OML
+	#if want trailing edge face there (which you usually do), put it back
+    patbeg foo ifzero(TEfaceOn-1,1,0)
+        select add @nbody 5
+       		attribute compGroup $OML
+    patend
+		
 	select add @nbody 1
 	select add @nbody 2
-	extract @sellist
+	patbeg foo ifzero(TEfaceOn,1,0)
+       extract @sellist
+    patend
+	patbeg foo ifzero(TEfaceOn-1,1,0)
+       hollow 0
+    patend
 
+	select face
 	attribute	comp $wing
     store wing 0
 

@@ -92,11 +92,7 @@ class NacaOMLOptimization():
         #initialize time
         self.start_time = time.time()
 
-        #clear capslock files
-        if (self.comm.Get_rank() == 0): self.clearCapsLock()
-
         #status file
-
         if (self.comm.Get_rank() == 0):
             statusFile = os.path.join(os.getcwd(), "funtofem", "status.txt")
             self.status =  open(statusFile, "w")
@@ -104,10 +100,6 @@ class NacaOMLOptimization():
 
         #into status
         self.cwrite("Running Funtofem with ESP/CAPS\n")
-
-
-        #iteration counter for optimizer
-        self.iteration = 1
 
         #type of analysis
         self.analysis_type = analysisType
@@ -119,11 +111,6 @@ class NacaOMLOptimization():
         #initialize AIMS
         if (self.comm.Get_rank() == 0): self.initializeAIMs(csmFile)
 
-    def clearCapsLock(self):
-        #delete capsLock files for next run
-        if (os.path.exists("struct/Scratch/capsLock")): os.system("rm struct/Scratch/capsLock")
-        if (os.path.exists("fluid/Scratch/capsLock")): os.system("rm fluid/Scratch/capsLock")
-
     def cwrite(self, text):
         if (self.comm.Get_rank() == 0):
             #write to the status file
@@ -131,7 +118,6 @@ class NacaOMLOptimization():
         
             #immediately update it to be visibile in the file
             self.status.flush()
-
     def writeTime(self):
         dt = time.time() - self.start_time
         dt = round(dt)
@@ -460,12 +446,13 @@ class NacaOMLOptimization():
         self.fun3dnml["inviscid_flux_method"]["flux_construction"] = "roe"
         self.fun3dnml["inviscid_flux_method"]["flux_limiter"] = "hminmod"
         self.fun3dnml["inviscid_flux_method"]["smooth_limiter_coeff"] = 1.0
-        self.fun3dnml["inviscid_flux_method"]["freeze_limiter_iteration"] = 3
+        self.fun3dnml["inviscid_flux_method"]["freeze_limiter_iteration"] = int(5.0/6 * self.nsteps)
 
         #nonlinear solver parameters section
         self.fun3dnml["nonlinear_solver_parameters"] = f90nml.Namelist()
-        self.fun3dnml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 100]
-        self.fun3dnml["nonlinear_solver_parameters"]["schedule_cfl"] = [0.5, 3.0]
+        #schedule = [5, 80]   cfl = [2, 100]
+        self.fun3dnml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 80]
+        self.fun3dnml["nonlinear_solver_parameters"]["schedule_cfl"] = [2, 100]
         #self.capsFluid.analysis["fun3d"].input.CFL_Schedule_Iter = [1, 100]
         #self.capsFluid.analysis["fun3d"].input.CFL_Schedule = [0.5, 3.0]
 
@@ -600,7 +587,7 @@ class NacaOMLOptimization():
         if (self.comm.Get_rank() == 0):
             fun3d_parent_dir = os.path.join(self.fun3dAim.analysisDir, "..")
             datFile = os.path.join(self.tacsAim.analysisDir, self.mesh_style + ".dat")
-        fun3d_parent_dir = self.comm.bcast(fun3d_dir, root=0)
+        fun3d_parent_dir = self.comm.bcast(fun3d_parent_dir, root=0)
         datFile = self.comm.bcast(datFile, root=0)
 
         solvers = {}
