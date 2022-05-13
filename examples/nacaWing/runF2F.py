@@ -435,7 +435,7 @@ class NacaOMLOptimization():
         #reference physical properties section
         self.fun3dnml["reference_physical_properties"] = f90nml.Namelist()
         self.fun3dnml["reference_physical_properties"]["mach_number"] = 0.5
-        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = 0.0
+        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = 3.0
         self.fun3dnml["reference_physical_properties"]["reynolds_number"] = 35.0e6
         #self.capsFluid.analysis["fun3d"].input.Alpha = 1.0
         #self.capsFluid.analysis["fun3d"].input.Mach = 0.5
@@ -455,6 +455,9 @@ class NacaOMLOptimization():
         self.fun3dnml["nonlinear_solver_parameters"]["schedule_cfl"] = [2, 100]
         #self.capsFluid.analysis["fun3d"].input.CFL_Schedule_Iter = [1, 100]
         #self.capsFluid.analysis["fun3d"].input.CFL_Schedule = [0.5, 3.0]
+
+        self.fun3dnml["force_moment_integ_properties"] = f90nml.Namelist()
+        self.fun3dnml["force_moment_integ_properties"]["area_reference"] = self.capsStruct.geometry.despmtr["area"].value / 2
 
         #code run and control section
         self.fun3dnml["code_run_control"] = f90nml.Namelist()
@@ -499,6 +502,27 @@ class NacaOMLOptimization():
         self.fun3dnml["boundary_output_variables"]["temperature"] = True
         self.fun3dnml["boundary_output_variables"]["mach"] = True
         self.fun3dnml["boundary_output_variables"]["p"] = True
+
+        ##############################
+        # fun3d settings for moving_body.input file
+        self.moving_body_input = f90nml.Namelist()
+
+        #moving body settings for funtofem to fun3d
+        bodyName = self.csmFile.split(".")[0]
+        nBodies = 1
+        nBoundaries = 1
+        bndryArray = [[2]]
+        bndryArray = list(bndryArray)
+
+        #body definitions
+        self.moving_body_input["body_definitions"] = f90nml.Namelist()
+        self.moving_body_input["body_definitions"]["n_moving_bodies"] = nBodies
+        self.moving_body_input["body_definitions"]["body_name"] = [bodyName]
+        self.moving_body_input["body_definitions"]["parent_name"] = [""] # '' means motion relative to inertial ref frame
+        self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
+        self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
+        self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
+        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
         ##############################
         # fun3d settings for moving_body.input file

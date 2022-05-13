@@ -20,6 +20,7 @@ despmtr camb0 0.05
 despmtr cambf 0.05
 despmtr ml0 0.4
 despmtr mlf 0.4
+despmtr ribSpaceFr 0.05
 
 dimension zrib 1 nrib-1
 despmtr zrib "1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1"
@@ -122,10 +123,15 @@ patbeg foo ifzero(cfdOn,1,0)
         set index irib+1
 		set zribAdd zribAdd+!zrib[1,irib]
         set zfrac zribAdd/zrib.sum
+       set xleft zfrac*xtip
+       set clocal croot*(1-zfrac)+ctip*zfrac
+       set xright clocal+xleft
        #make sheet box at position of rib
-        set		dxmax		max(croot,xtip+ctipEff)+2*margin
+        set		dx  xright-xleft+margin
+       set ribSpace dx*ribSpaceFr
+       set   dx   dx-ribSpace
         set		zcoord		-zfrac*sspan
-        box -2*margin ybot zcoord dxmax ytop-ybot 0
+        box xleft-margin ybot zcoord dx ytop-ybot 0
 
         select face
             attribute capsGroup !$rib+index
