@@ -1,0 +1,24 @@
+func,ksfailure
+	adjoint func      = 45.83503472890095
+	complex_step func = 1.5804619932482948
+	adjoint dderiv     = 41.142465325497966
+	complex_step dderiv = 46.21278993564361
+	absolute error      = 5.070324610145647
+func,cl
+	adjoint func      = 0.0030538880236535056
+	complex_step func = 0.00012603659249915645
+	adjoint dderiv     = -0.044664864917993735
+	complex_step dderiv = 0.0
+	absolute error      = 0.044664864917993735
+func,cd
+	adjoint func      = 0.03440518363036412
+	complex_step func = 0.028776242982864866
+	adjoint dderiv     = -0.08846225250944878
+	complex_step dderiv = 0.0
+	absolute error      = 0.08846225250944878
+func,mass
+	adjoint func      = 4176.593650708874
+	complex_step func = 4176.593650708874
+	adjoint dderiv     = 50763.00437261965
+	complex_step dderiv = 50763.004372619616
+	absolute error      = 3.637978807091713e-11

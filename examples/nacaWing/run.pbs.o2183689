@@ -1,0 +1,48 @@
+Start Prologue v2.5.3 Sun May 15 12:43:01 EDT 2022 
+r2i4n12: MemFree:        184451804 kB
+r2i4n13: MemFree:        184482168 kB
+r2i4n14: MemFree:        184472864 kB
+r2i4n16: MemFree:        184427772 kB
+End Prologue v2.5.3 Sun May 15 12:43:05 EDT 2022 
+JOBID  QSTAT_OUT 2183689
+EUID 0
+WORKSPACE /p/work1
+PBS_HOME /var/spool/pbs
+JOB_ID 2183689.pbsserver
+whoami root
+LOG /p/work1/PBS/prologue/2183689.pbsserver
+whoami root
+file workspace /p/work1: directory
+file /p /p: directory
+PBS_REQUESTED_CPH = 576
+PBS_REQUESTED_CPS = 2073600
+jobStarter
+Information: Please note that compiler is Intel but /p/app/gnu/7.3.0/bin is now also in PATH
+  
+	Module loaded.
+	If on HPC Portal in a GNOME session, start the application with:
+		 vglrun pointwise
+
+	Copy & Paste server info if using SRD, keyboard mapping is incorrect.
+
+  File "/p/home/seanfire/git/caps2fun/examples/nacaWing/derivativeTest.py", line 117
+    relativeError = absoluteError / abs(complex_dderiv[function])
+    ^
+IndentationError: expected an indented block
+
+real	0m0.052s
+user	0m0.027s
+sys	0m0.017s
+Start Epilogue v2.5.3 Sun May 15 12:43:10 EDT 2022 
+Memory usage reported in GB
+                    % of     user     user     user    total    total
+Node               limit      max    limit  current  current     phys
+r2i4n12             0.03     0.06   175.00     0.05     5.60   187.31
+r2i4n13             0.01     0.01   175.00     0.01     5.55   187.31
+r2i4n14             0.01     0.01   175.00     0.01     5.56   187.31
+r2i4n16             0.01     0.01   175.00     0.01     5.58   187.31
+Memory summary:
+		min    0.01 GB
+		max    0.06 GB
+		ave    0.02 GB
+End Epilogue v2.5.3 Sun May 15 12:43:14 EDT 2022 

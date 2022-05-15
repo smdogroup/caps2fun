@@ -24,7 +24,7 @@ set domParams(Decay)                           0.500000; # Domain boundary decay
 set domParams(MinEdge)                         0.000000; # Domain minimum edge length
 set domParams(MaxEdge)                         0.000000; # Domain maximum edge length
 set domParams(Adapt)                            0; # Set up all domains for adaptation (0 - not used) V18.2+ (experimental)
-set domParams(WallSpacing)                     0.030000; # defined spacing when geometry attributed with $wall
+set domParams(WallSpacing)                     0.100000; # defined spacing when geometry attributed with $wall
 set domParams(StrDomConvertARTrigger)          0.000000; # Aspect ratio to trigger converting domains to structured
 
 # Block level

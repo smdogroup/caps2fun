@@ -62,14 +62,32 @@ from tacs import TACS, functions, constitutive, elements, pyTACS, problems
 import os, shutil, sys
 import time
 import numpy as np
-
-#import other modules
 import pyCAPS
 import f90nml
 
+#import other modules
+from fileIO import writeInput, makeDVdict, readOutput
+
+#turn on complex mode if sent in through input file
+f2fin = os.path.join(os.getcwd(), "funtofem","funtofem.in")
+hdl = open(f2fin,"r")
+lines = hdl.readlines()
+isComplex = False
+for line in lines:
+    chunks = line.split(",")
+    if ("mode" in line):
+        isComplex = "complex_step" in line
+hdl.close()
+
+#turn on complex mode if using complex step
+if (isComplex): 
+    os.environ['CMPLX_MODE'] = "1"
+else:
+    os.environ['CMPLX_MODE'] = "0"
+
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, comm, csmFile, meshStyle = "pointwise", analysisType = "aerothermoelastic"):
+    def __init__(self, comm, csmFile, meshStyle = "pointwise"):
 
         self.comm = comm
         
@@ -78,7 +96,7 @@ class NacaOMLOptimization():
 
         self.n_tacs_procs = 20
 
-        self.nsteps = 100
+        self.nsteps = 200
 
         self.scenario_name = "fun3d"
 
@@ -132,6 +150,12 @@ class NacaOMLOptimization():
         #initialize DVdict as none for all procs
         self.DVdict = None
         self.functionNames = None
+        self.mode = None
+        self.eps = None
+        self.x_dir = None
+
+        #assume complex_step not used first
+        self.complex = False
 
         if (self.comm.Get_rank() == 0):
             
@@ -155,7 +179,42 @@ class NacaOMLOptimization():
                         name = parts[1]
                         name = name.strip()
                         self.functionNames.append(name)
-                        DVind = 0
+                        ishape = 0
+                        istruct = 0
+                    elif ("mode" in line):
+                        chunks = line.split(",")
+                        mode = chunks[1].strip()
+                        self.mode = mode
+                        #if complex step mode, then turn on complex mode
+                        if (self.mode == "complex_step"): 
+                            self.complex = True
+                            self.eps = 0
+                            self.x_dir = []
+                        else:
+                            self.complex = False
+                    elif ("analysis" in line):
+
+                        #read in the analysis type such as aerothermal, aeroelastic, aerothermoelastic
+                        chunks = line.split(",")
+                        self.f2f_analysis_type = chunks[1]
+                        self.fun3d_analysis_type = chunks[2].strip()
+                    elif ("eps" in line):
+
+                        #read the epsilon from complex step run
+                        chunks = line.split(",")
+                        self.eps = float(chunks[1].strip())
+
+                    elif ("x_dir" in line):
+
+                        #read the x_direction for complex step run
+                        chunks = line.split(",")
+                        self.x_dir = np.zeros(len(chunks))
+                        ct = 0
+                        for chunk in chunks:
+                            gatekeeper_chunk = "x_dir" in chunk
+                            if (not(gatekeeper_chunk)):
+                                self.x_dir[ct] = float(chunk)
+                                ct += 1
                     else:
                         parts = line.split(",")
                         name = parts[0]
@@ -163,9 +222,11 @@ class NacaOMLOptimization():
                         if (dvType == "shape"):
                             value = float(parts[2])
                             capsGroup = ""
+                            DVind = ishape
                         elif (dvType == "struct"):
                             capsGroup = parts[2]
                             value = float(parts[3])
+                            DVind = istruct
                         
                         #store DVdict
                         tempDict = {"name" : name,
@@ -173,14 +234,32 @@ class NacaOMLOptimization():
                                     "capsGroup" : capsGroup,
                                     "value" : value,
                                     "ind" : DVind}
-                        DVind += 1
+                        if (dvType == "shape"):
+                            ishape += 1
+                        elif (dvType == "struct"):
+                            istruct += 1
                         self.DVdict.append(tempDict)
+
 
             inputHandle.close()
 
         #MPI broadcast from root proc
         self.DVdict = self.comm.bcast(self.DVdict, root=0)
         self.functionNames = self.comm.bcast(self.functionNames, root=0)
+        self.mode = self.comm.bcast(self.mode, root=0)
+
+        if (self.mode == "adjoint"):
+            #self.cwrite("Running in real mode\n")
+            pass
+
+        if (self.mode == "complex_step"):
+            #self.cwrite("Running in complex mode\n")
+
+            self.eps = self.comm.bcast(self.eps, root=0)
+            self.x_dir = self.comm.bcast(self.x_dir,root=0)
+
+            #turn on complex mode environment
+            #os.environ['CMPLX_MODE'] = "1"
 
     def initializeAIMs(self, csmFile):
         if (self.comm.Get_rank() == 0):
@@ -360,7 +439,7 @@ class NacaOMLOptimization():
             self.pointwiseAim.input.Domain_TRex_ARLimit = 40.0 #def 40.0, lower inc mesh size
             self.pointwiseAim.input.Domain_Decay        = 0.5
             self.pointwiseAim.input.Domain_Iso_Type = "Triangle" #"TriangleQuad"
-            self.pointwiseAim.input.Domain_Wall_Spacing = 0.03
+            self.pointwiseAim.input.Domain_Wall_Spacing = 0.10
 
             # Block level
             self.pointwiseAim.input.Block_Boundary_Decay       = 0.5
@@ -420,9 +499,15 @@ class NacaOMLOptimization():
 
         #governing equation section
         self.fun3dnml["governing_equations"] = f90nml.Namelist()
-        self.fun3dnml["governing_equations"]["viscous_terms"] = "inviscid"
-        #self.capsFluid.analysis["fun3d"].input.Viscous = "inviscid"
-        #self.fun3dAim.input.Equation_Type = "compressible"
+
+        #apply fun3d analysis type
+        #options = "inviscid", "laminar", "turbulent"
+        if (self.fun3d_analysis_type == "inviscid"):
+            self.fun3dnml["governing_equations"]["viscous_terms"] = "inviscid"
+        elif (self.fun3d_analysis_type == "laminar"):
+            self.fun3dnml["governing_equations"]["eqn_type"] = "compressible"
+            self.fun3dnml["governing_equations"]["viscous_terms"] = "laminar"
+        elif (self.fun3d_analysis_type == "turbulent"):
         
 
         #raw grid section
@@ -437,6 +522,8 @@ class NacaOMLOptimization():
         self.fun3dnml["reference_physical_properties"]["mach_number"] = 0.5
         self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = 3.0
         self.fun3dnml["reference_physical_properties"]["reynolds_number"] = 35.0e6
+        self.fun3dnml["reference_physical_properties"]["temperature"] = 300.0
+        self.fun3dnml["reference_physical_properties"]["temperature_units"] = "Kelvin"
         #self.capsFluid.analysis["fun3d"].input.Alpha = 1.0
         #self.capsFluid.analysis["fun3d"].input.Mach = 0.5
         #self.capsFluid.analysis["fun3d"].input.Re = 35e6
@@ -450,12 +537,16 @@ class NacaOMLOptimization():
 
         #nonlinear solver parameters section
         self.fun3dnml["nonlinear_solver_parameters"] = f90nml.Namelist()
-        #schedule = [5, 80]   cfl = [2, 100]
         self.fun3dnml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 80]
         self.fun3dnml["nonlinear_solver_parameters"]["schedule_cfl"] = [2, 100]
-        #self.capsFluid.analysis["fun3d"].input.CFL_Schedule_Iter = [1, 100]
-        #self.capsFluid.analysis["fun3d"].input.CFL_Schedule = [0.5, 3.0]
+        if (not(self.fun3d_analysis_type == "inviscid")):
+            self.fun3dnml["nonlinear_solver_parameters"]["time_accuracy"] = "steady"
+            self.fun3dnml["nonlinear_solver_parameters"]["time_step_nondim"] = 0.1
+            self.fun3dnml["nonlinear_solver_parameters"]["subiterations"] = 0
+            self.fun3dnml["nonlinear_solver_parameters"]["schedule_cflturb"] = [50.0,50.0]
 
+
+        #force moment integ properties section
         self.fun3dnml["force_moment_integ_properties"] = f90nml.Namelist()
         self.fun3dnml["force_moment_integ_properties"]["area_reference"] = self.capsStruct.geometry.despmtr["area"].value / 2
 
@@ -465,9 +556,6 @@ class NacaOMLOptimization():
         self.fun3dnml["code_run_control"]["stopping_tolerance"] = 1.0e-15
         self.fun3dnml["code_run_control"]["restart_write_freq"] = 1000
         self.fun3dnml["code_run_control"]["restart_read"] = "off"
-        #self.capsFluid.analysis["fun3d"].input.Num_Iter = self.nsteps
-        #self.fun3dAim.input.Restart_Read = "off"
-        #self.capsFluid.analysis["fun3d"].input.Overwrite_NML = True
 
         #global settings
         self.fun3dnml["global"] = f90nml.Namelist()
@@ -570,7 +658,7 @@ class NacaOMLOptimization():
 
         # Build the model
         self.model = FUNtoFEMmodel('NACA Wing Simulation')
-        self.wing = Body('wing', analysis_type=self.analysis_type, group=0,boundary=2)
+        self.wing = Body('wing', analysis_type=self.f2f_analysis_type, group=0,boundary=2)
 
         for i in range(num_tacs_dvs):
             self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
@@ -619,7 +707,7 @@ class NacaOMLOptimization():
         solvers['structural'] = TACSinterface(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile, structDVs)
 
         # L&D transfer options
-        transfer_options = {'analysis_type': self.analysis_type,
+        transfer_options = {'analysis_type': self.f2f_analysis_type,
                             'scheme': 'meld', 'thermal_scheme': 'meld'}
 
         # instantiate the driver
@@ -644,9 +732,17 @@ class NacaOMLOptimization():
 
         #get the sorted structDVs
         structDVs = []
+        inds = []
         for DV in self.DVdict:
             if (DV["type"] == "struct"):
                 structDVs.append(DV["value"])
+                inds.append(DV["ind"])
+
+        #if complex step mode add perturbation
+        if (self.complex):
+            for i in range(len(structDVs)):
+                #ith struct DV has original index ind, thus from x_dir
+                structDVs[i] += 1j * self.eps * self.x_dir[inds[i]]
 
         return structDVs
 
@@ -851,6 +947,12 @@ class NacaOMLOptimization():
             #write the moving_body.input file
             self.moving_body_input.write(os.path.join(caps_flow_dir, "moving_body.input"), force=True)
 
+            #move perturb.input from archive folder if complex mode
+            if (self.complex):
+                src = os.path.join(self.root_dir,"archive","perturb.input")
+                dest = os.path.join(caps_flow_dir, "perturb.input")
+                shutil.copy(src, dest)
+
 
     def runPointwise(self):
         #run AIM pre-analysis
@@ -876,7 +978,8 @@ class NacaOMLOptimization():
         self.forwardAnalysis()        
 
         #run adjoint analysis
-        self.adjointAnalysis()
+        if (self.mode == "adjoint"):
+            self.adjointAnalysis()
 
         #write to output
         self.writeOutput()
@@ -894,42 +997,82 @@ class NacaOMLOptimization():
 
             outputHandle =  open(outputFile, "w")
 
-            #format of the output file:
-            #nfunc,nDV
-            #func,name,value
-            #grad,DVname,deriv1
-            #grad,DVname,deriv2
-            #grad,DVname,deriv3
-            #...
-            #grad,DVname,derivN
-            #... for each function
+            if (self.mode == "adjoint"):
 
-            #write number of functions, variables, etc.
-            nDV = self.nshapeDV + self.nstructDV
-            outputHandle.write("{},{}\n".format(self.nfunc, nDV))
-            ifunc = 0
-            for func in self.functions:
+                #format of the output file:
+                #nfunc,nDV
+                #func,name,value
+                #grad,DVname,deriv1
+                #grad,DVname,deriv2
+                #grad,DVname,deriv3
+                #...
+                #grad,DVname,derivN
+                #... for each function
 
-                name = self.functionNames[ifunc]
-                value = self.functions[ifunc].value.real
+                #write number of functions, variables, etc.
+                nDV = self.nshapeDV + self.nstructDV
+                outputHandle.write("{},{}\n".format(self.nfunc, nDV))
+                ifunc = 0
+                for func in self.functions:
 
-                #write function name and value
-                outputHandle.write("func,{},{}\n".format(name,value))
+                    name = self.functionNames[ifunc]
+                    value = self.functions[ifunc].value.real
 
-                #write shape gradients
-                for DV in self.DVdict:
-                    name = DV["name"]
-                    ind = DV["ind"]
-                    if (DV["type"] == "shape"):
-                        deriv = self.shapeGrad[ifunc, ind]
-                        outputHandle.write("grad,{},{}\n".format(name,deriv))
-                    elif (DV["type"] == "struct"):
-                        deriv = self.structGrad[ifunc, ind]
-                        outputHandle.write("grad,{},{}\n".format(name,deriv))
+                    #write function name and value
+                    outputHandle.write("func,{},{}\n".format(name,value))
 
-                #update function counter
-                ifunc += 1
+                    #write shape gradient
+                    for ishape in range(self.nshapeDV):
+                        #find that shape variable
+                        for DV in self.DVdict:
+                            isShape = DV["type"] == "shape"
+                            matchingInd = DV["ind"] == ishape
+                            if (isShape and matchingInd):
+                                name = DV["name"]
+                                deriv = self.shapeGrad[ifunc, ishape]
+                                outputHandle.write("grad,{},{}\n".format(name,deriv))
+                    #write struct gradient
+                    for istruct in range(self.nstructDV):
+                        #find each struct variable if out of order
+                        for DV in self.DVdict:
+                            isStruct = DV["type"] == "struct"
+                            matchingInd = DV["ind"] == istruct
+                            if (isStruct and matchingInd):
+                                name = DV["name"]
+                                deriv = self.structGrad[ifunc, istruct]
+                                outputHandle.write("grad,{},{}\n".format(name,deriv))
 
+                    #update function counter
+                    ifunc += 1
+
+            elif (self.mode == "complex_step"):
+
+                #write the following
+                #nfunc
+                #func,fname,real,value,imag,value
+                #for each function
+
+                #write the number of functions
+                nfunc = len(self.functions)
+                outputHandle.write("{}\n".format(nfunc))
+
+                #write the value of each function
+                ifunc = 0
+                for function in self.functions:
+
+                    #get function name
+                    name = self.functionNames[ifunc]
+                    ifunc += 1
+
+                    #get real and imaginary parts, with imaginary part normalized by epsilon
+                    real_part = function.value.real
+                    imag_part = function.value.imag/self.eps
+
+                    #write the line to the output file
+                    line = "func,{},real,{},imag,{}\n".format(name,real_part,imag_part)
+                    outputHandle.write(line)
+
+            #close the output file
             outputHandle.close()
 
     def computeShapeDerivatives(self):
@@ -1169,8 +1312,7 @@ comm = MPI.COMM_WORLD
 #INIT and read in inputs
 csmFile = "nacaWing.csm"
 meshStyle = "pointwise" #"pointwise", "tetgen" (pointwise is much better)
-analysisType = "aerothermoelastic" #"aerothermoelastic", "aeroelastic", "aerothermal"
-nacaOpt = NacaOMLOptimization(comm, csmFile, meshStyle, analysisType)
+nacaOpt = NacaOMLOptimization(comm, csmFile, meshStyle)
 
 #RUN analysis
 nacaOpt.runF2F()

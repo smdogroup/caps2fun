@@ -2,8 +2,8 @@
 cfgpmtr cfdOn 0
 
 #configuration parameters
-cfgpmtr  nspar  2  -
-cfgpmtr  nrib  16  -
+cfgpmtr  nspar  2
+cfgpmtr  nrib  16
 cfgpmtr sharpTE  0
 cfgpmtr TEfaceOn 1
 

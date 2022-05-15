@@ -22,7 +22,7 @@
     flux_construction = 'roe'
     flux_limiter = 'hminmod'
     smooth_limiter_coeff = 1.0
-    freeze_limiter_iteration = 83
+    freeze_limiter_iteration = 166
 /
 
 &nonlinear_solver_parameters
@@ -35,7 +35,7 @@
 /
 
 &code_run_control
-    steps = 100
+    steps = 200
     stopping_tolerance = 1e-15
     restart_write_freq = 1000
     restart_read = 'off'

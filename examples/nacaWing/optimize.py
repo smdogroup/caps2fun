@@ -18,7 +18,7 @@ class WingOptimizer():
         self.n_procs = 192
 
         #make status file
-        statusFile = os.path.join(os.getcwd(), "status.txt")
+        statusFile = os.path.join(os.getcwd(), "opt_status.out")
         self.status = open(statusFile, "w")
 
         #iterations
@@ -50,6 +50,10 @@ class WingOptimizer():
         self.inputFile = os.path.join(funtofemFolder, "funtofem.in")
         inputHandle =  open(self.inputFile, "w")
 
+        #write the type of analysis to be done, in this case adjoint
+        line = "mode,{}\n".format("adjoint")
+
+        #write the analysis functions to be performed
         if (self.optimizationMode == "structural"):
             functions = ["ksfailure","mass"]
         elif (self.optimizationMode == "full"):
@@ -96,8 +100,7 @@ class WingOptimizer():
         self.cwrite("----------------------------\n")
         self.cwrite("Global Iteration #{}\n".format(self.iteration))
         self.cwrite("\tDV names {}\n".format(names))
-        self.cwrite("\tDV values {}\n".format(values)) 
-        self.iteration += 1           
+        self.cwrite("\tDV values {}\n".format(values))       
 
     def callFuntoFem(self):
         #call funtofem via a system call (os.system)
@@ -115,7 +118,7 @@ class WingOptimizer():
         self.cwrite("finished F2F!\n")
         #struct DV settings
 
-    def readOutput(self, x):
+    def readOutput(self):
         #read functions, gradients from funtofem call
         #make sure funtofem folder exists
         funtofemFolder = os.path.join(os.getcwd(), "funtofem")
@@ -123,54 +126,76 @@ class WingOptimizer():
 
         #make funtofem input file
         self.outputFile = os.path.join(funtofemFolder, "funtofem.out")
-        outputHandle =  open(self.outputFile, "r")
+        if (os.path.exists(self.outputFile)):
+            #if the output file was written, the analysis ran successfully
+            self.success = True
 
-        lines = outputHandle.readlines()
-        
+            #so read in the outputs
+            outputHandle =  open(self.outputFile, "r")
 
-        self.functions = {}
-        self.gradients = {}
+            lines = outputHandle.readlines()
+            
 
-        #read function values and gradients
-        ifunc = -1
-        firstLine = True
-        for line in lines:
-            if ("func" in line):
-                #func, name, value
-                ifunc += 1
-                parts = line.split(",")
-                functionName = parts[1]
-                value = float(parts[2])
+            self.functions = {}
+            self.gradients = {}
 
-                self.functions[functionName] = value
-                self.gradients[functionName] = np.zeros((nDV))
-                iDV = 0
+            #read function values and gradients
+            ifunc = -1
+            firstLine = True
+            for line in lines:
+                if ("func" in line):
+                    #func, name, value
+                    ifunc += 1
+                    parts = line.split(",")
+                    functionName = parts[1]
+                    value = float(parts[2])
 
-            elif ("grad" in line):
-                #grad,dvname,deriv_i
-                parts = line.split(",")
-                dvname = parts[1]
-                deriv = float(parts[2])
+                    self.functions[functionName] = value
+                    self.gradients[functionName] = np.zeros((nDV))
+                    iDV = 0
 
-                #find the DVind of that design variable (assuming out of order)
-                for DV in self.DVdict:
-                    if (DV["name"] == dvname):
-                        ind = DV["opt_ind"]
-                self.gradients[functionName][ind] = deriv
-                iDV += 1
+                elif ("grad" in line):
+                    #grad,dvname,deriv_i
+                    parts = line.split(",")
+                    dvname = parts[1]
+                    deriv = float(parts[2])
 
-            elif (firstLine):
-                firstLine = False
-                #it's the first line
-                parts = line.split(",")
-                nfunc = int(parts[0])
-                nDV = int(parts[1])
+                    #find the DVind of that design variable (assuming out of order)
+                    for DV in self.DVdict:
+                        if (DV["name"] == dvname):
+                            ind = DV["opt_ind"]
+                    self.gradients[functionName][ind] = deriv
+                    iDV += 1
 
-        #close the file
-        outputHandle.close()
+                elif (firstLine):
+                    firstLine = False
+                    #it's the first line
+                    parts = line.split(",")
+                    nfunc = int(parts[0])
+                    nDV = int(parts[1])
 
-        #update status
-        self.cwrite("\tRead output files for func, sens\n")
+            #close the file
+            outputHandle.close()
+
+            #delete output file
+            os.remove(self.outputFile)
+
+            #update status
+            self.cwrite("\tRead output files for func, sens\n")
+
+            #since didn't fail update iteration count
+            self.iteration += 1
+            self.fail = 0
+
+        else:
+            #otherwise if the output file was not written, it failed
+            #possibly due to negative volume or something
+            #can try and change parameters here or pass information to change settings and rerun
+            self.success = False
+            self.cwrite("\tAnalysis Failed\n")
+            self.fail = 1
+
+        return self.fail
 
     def deleteF2Ffiles(self):
         os.remove(self.inputFile)
@@ -182,7 +207,7 @@ class WingOptimizer():
         #write input, call funtofem, and get results
         self.writeInput(x)
         self.callFuntoFem()
-        self.readOutput(x)
+        self.readOutput()
 
         self.deleteF2Ffiles()
 
@@ -205,9 +230,7 @@ class WingOptimizer():
         self.cwrite("\t{} Obj = {}\n".format(objname,funcs["obj"]))
         self.cwrite("\t{} Con = {}\n".format(conname,funcs["con"]))
 
-        fail = False
-
-        return funcs, fail
+        return funcs, self.fail
 
     def objGrad(self, x, funcs):
         #pyoptsparse gradient function
@@ -228,9 +251,6 @@ class WingOptimizer():
         self.cwrite("\t {} Obj grad = {}\n".format(objname,objGrad))
         self.cwrite("\t{} Con grad = {}\n".format(conname,conGrad))
 
-        #assume funtofem and esp/caps grid generation already done in objCon call
-        fail = False
-
         sens = {}
         iDV = 0
         objSens = {}
@@ -245,10 +265,7 @@ class WingOptimizer():
         sens["obj"] = objSens
         sens["con"] = conSens
 
-        return sens, fail
-
-    
-
+        return sens, self.fail
 
 
 
@@ -265,14 +282,18 @@ DVdict = []
 inits = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 0.0,  0.5, 0.1, 0.1]
 ct = 0
 DVind = 0
+ishape = 0
+istruct = 0
 for dvname in ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "taper","tc0","tcf"]:
     tempDict = {"name" : dvname,
                 "type" : "shape",
                 "value" : inits[ct],
                 "capsGroup" : "",
                 "active" : shapeActive,
-                "opt_ind" : DVind}
-    DVind += 1
+                "opt_ind" : DVind,
+                "group_ind" : ishape}
+    if (shapeActive): DVind += 1
+    ishape += 1
     DVdict.append(tempDict)
 
     ct += 1
@@ -286,9 +307,20 @@ def zeroString(nzeros):
     for i in range(nzeros):
         string += str(0)
     return string
-
-nribs = 16
-nspars = 2
+ 
+#read the number of ribs and spars from the file
+f = open("nacaWing.csm","r")
+lines = f.readlines()
+nribs = 0
+nspars = 0
+for line in lines:
+    isConfig = "cfgpmtr" in line
+    chunks = line.split(" ")
+    if (isConfig and "nrib" in line):
+        nribs = int(chunks[-1].strip())
+    if (isConfig and "nspar" in line):
+        nspars = int(chunks[-1].strip())
+f.close()
 nOML = nribs-1
 
 groups = ["rib","spar","OML"]
@@ -316,9 +348,11 @@ for igroup in range(3):
                     "value" : initThickness,
                     "capsGroup" : capsGroup,
                     "active" : structActive,
-                    "opt_ind" : DVind}
-        DVind += 1
+                    "opt_ind" : DVind,
+                    "group_ind" : istruct}
+        if (structActive): DVind += 1
         thickCt += 1
+        istruct += 1
         DVdict.append(tempDict)
 
 #end of design variable initialization section
