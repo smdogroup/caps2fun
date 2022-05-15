@@ -3,8 +3,7 @@
 /
 
 &governing_equations
-    eqn_type = 'compressible'
-    viscous_terms = 'laminar'
+    viscous_terms = 'inviscid'
 /
 
 &raw_grid
@@ -31,10 +30,6 @@
 &nonlinear_solver_parameters
     schedule_iteration = 1, 80
     schedule_cfl = 2, 100
-    time_accuracy = 'steady'
-    time_step_nondim = 0.1
-    subiterations = 0
-    schedule_cflturb = 50.0, 50.0
 /
 
 &force_moment_integ_properties

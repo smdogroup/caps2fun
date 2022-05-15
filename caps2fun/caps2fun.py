@@ -54,19 +54,19 @@ import numpy as np
 import pyCAPS
 import f90nml
 
-#import other modules
-from fileIO import writeInput, makeDVdict, readOutput
-
 #read whether to use complex mode or not from input file
 f2fin = os.path.join(os.getcwd(), "funtofem","funtofem.in")
-hdl = open(f2fin,"r")
-lines = hdl.readlines()
 isComplex = False
-for line in lines:
-    chunks = line.split(",")
-    if ("mode" in line):
-        isComplex = "complex_step" in line
-hdl.close()
+inputExists = os.path.exists(f2fin)
+if (inputExists):
+    hdl = open(f2fin,"r")
+    lines = hdl.readlines()
+
+    for line in lines:
+        chunks = line.split(",")
+        if ("mode" in line):
+            isComplex = "complex_step" in line
+    hdl.close()
 
 #turn on complex mode if sent in through input file
 #need to do this before importing pyfuntofem otherwise fun3d will import real flow solvers instead
@@ -86,34 +86,115 @@ from tacs.pytacs import pyTACS
 from tacs import functions
 from tacs import TACS, functions, constitutive, elements, pyTACS, problems
 
+#class to run Funtofem with full aerothermoelastic optimization, with parametric geometries from Engineering Sketch Pad
+class Caps2Fun():
+    def __init__(self):
 
-
-#class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
-class NacaOMLOptimization():
-    def __init__(self, comm, csmFile, meshStyle="pointwise"):
-
+        #initialize MPI
+        comm = MPI.COMM_WORLD
         self.comm = comm
-        
-        #mesh style setting - pointwise or tetgen
-        self.mesh_style = meshStyle #"pointwise", "tetgen"
 
-        self.n_tacs_procs = 20
-
-        self.nsteps = 5
-
-        self.scenario_name = "fun3d"
-
-        self.csmFile = csmFile
-
+        #set root directory
         self.root_dir = os.getcwd()
 
-        #default analysis types
-        self.fun3d_analysis_type = None
-        self.f2f_analysis_type = None
+        #read the config file
+        self.readConfig()
 
         #read input from file
         self.readInput()
 
+        #make the status file
+        self.makeStatusFile()
+
+        #load pointwise
+        #module load pointwise/18.5R1
+        #need to run module load pointwise/18.5R1 in terminal for it to work
+
+        #initialize AIMS
+        if (self.comm.Get_rank() == 0): self.initializeAIMs()
+
+    def readConfig(self):
+        #read the config files
+
+        #initial values of each setting
+        self.mesh_style = None
+        self.n_tacs_procs = None
+        self.nsteps = None
+        self.scenario_name = None
+        self.csmFile = None
+        self.capsConstraint = None
+        self.constraintType = None
+        self.f2f_analysis_type = None
+        self.fun3d_analysis_type = None
+
+        #subfunction to parse the config file, used for each case
+        def parseFile(file):
+            handle = open(file, "r")
+            lines = handle.readlines()
+            for line in lines:
+                chunks = line.split(" = ")
+                #print("chunks",chunks)
+                if (len(chunks) > 1):
+                    chunk = chunks[1].strip()
+                else:
+                    chunk = None
+                if ("mesh_style" in line):
+                    self.mesh_style = chunk
+                elif ("n_tacs_procs" in line):
+                    self.n_tacs_procs = int(chunk)
+                elif ("n_steps" in line):
+                    self.nsteps = int(chunk)
+                elif ("scenario_name" in line):
+                    self.scenario_name = chunk
+                elif ("csm_file" in line):
+                    self.csmFile = chunk
+                elif ("caps_constraint" in line):
+                    self.capsConstraint = chunk
+                elif ("constraint_type" in line):
+                    self.constraintType = chunk
+                elif ("f2f_analysis" in line):
+                    self.f2f_analysis_type = chunk
+                elif ("fun3d_analysis" in line):
+                    self.fun3d_analysis_type = chunk
+            print(self.mesh_style, self.n_tacs_procs, self.nsteps, self.scenario_name)
+            handle.close()
+
+
+        #get the caps2fun directory
+        self.caps2fun_dir = None
+        self.src_dir = None
+        for path in sys.path:
+            if ("caps2fun/caps2fun" in path):
+                self.src_dir = path
+            elif ("caps2fun" in path):
+                self.caps2fun_dir = path
+
+        #read config on root proc
+        if (self.comm.Get_rank() == 0):
+            #default config file
+            cfg_file = os.path.join(self.src_dir, "default.cfg")
+            parseFile(cfg_file)
+
+            local_cfg = False
+            for myfile in os.listdir(self.root_dir):
+                if (".cfg" in myfile): 
+                    local_cfg = True
+                    cfg_file = os.path.join(self.root_dir, myfile)
+            if (local_cfg): parseFile(cfg_file)
+
+        #now broadcast results from reading the config file
+        self.mesh_style = self.comm.bcast(self.mesh_style, root=0)
+        self.n_tacs_procs = self.comm.bcast(self.n_tacs_procs, root=0)
+        self.nsteps = self.comm.bcast(self.nsteps, root=0)
+        self.scenario_name = self.comm.bcast(self.scenario_name, root=0)
+        self.csmFile = self.comm.bcast(self.csmFile, root=0)
+        self.capsConstraint = self.comm.bcast(self.capsConstraint, root=0)
+        self.constraintType = self.comm.bcast(self.constraintType, root=0)    
+        self.f2f_analysis_type = self.comm.bcast(self.f2f_analysis_type, root=0)
+        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)     
+        
+
+    def makeStatusFile(self):
         #initialize time
         self.start_time = time.time()
 
@@ -125,13 +206,6 @@ class NacaOMLOptimization():
         #into status
         self.cwrite("Running Funtofem with ESP/CAPS\n")
 
-        #load pointwise
-        #module load pointwise/18.5R1
-        #need to run module load pointwise/18.5R1 in terminal for it to work
-
-        #initialize AIMS
-        if (self.comm.Get_rank() == 0): self.initializeAIMs(csmFile)
-
     def cwrite(self, text):
         if (self.comm.Get_rank() == 0):
             #write to the status file
@@ -139,6 +213,7 @@ class NacaOMLOptimization():
         
             #immediately update it to be visibile in the file
             self.status.flush()
+
     def writeTime(self):
         dt = time.time() - self.start_time
         dt = round(dt)
@@ -195,12 +270,6 @@ class NacaOMLOptimization():
                             self.x_dir = []
                         else:
                             self.complex = False
-                    elif ("analysis" in line):
-
-                        #read in the analysis type such as aerothermal, aeroelastic, aerothermoelastic
-                        chunks = line.split(",")
-                        self.f2f_analysis_type = chunks[1]
-                        self.fun3d_analysis_type = chunks[2].strip()
                     elif ("eps" in line):
 
                         #read the epsilon from complex step run
@@ -267,13 +336,13 @@ class NacaOMLOptimization():
             #turn on complex mode environment
             #os.environ['CMPLX_MODE'] = "1"
 
-    def initializeAIMs(self, csmFile):
+    def initializeAIMs(self):
         if (self.comm.Get_rank() == 0):
             #initialize all 6 ESP/CAPS AIMs used for the fluid and structural analysis
 
             #initialize pyCAPS structural problem
             self.capsStruct = pyCAPS.Problem(problemName = "CAPS_struct",
-                        capsFile = csmFile,
+                        capsFile = self.csmFile,
                         outLevel = 1)
 
             self.capsStruct.geometry.cfgpmtr["cfdOn"].value = 0
@@ -282,7 +351,7 @@ class NacaOMLOptimization():
 
             #initialize pyCAPS fluid problem
             self.capsFluid = pyCAPS.Problem(problemName = "CAPS_fluid",
-                        capsFile = csmFile,
+                        capsFile = self.csmFile,
                         outLevel = 1)
             self.capsFluid.geometry.cfgpmtr["cfdOn"].value = 1
             #self.cwrite("Initialized caps fluid AIM\n")
@@ -375,8 +444,8 @@ class NacaOMLOptimization():
         self.tacsAim.input.Property = propDict
 
         # constraint section
-        constraint1 = {"groupName" : "wingRoot",
-                        "dofConstraint" : 123456} #123
+        constraint1 = {"groupName" : self.capsConstraint,
+                        "dofConstraint" : self.constraintType} #123
 
         self.tacsAim.input.Constraint = {"fixRoot": constraint1}
 
@@ -1284,15 +1353,174 @@ class TACSinterface(TacsSteadyInterface):
         tacsOutFile = os.path.join(os.getcwd(), "funtofem","TACSoutput.f5")
         f5.writeToFile(tacsOutFile)
 
+##----------Supporting Methods and Classes --------------##
+def writeInput(DVdict, functions, mode="adjoint", eps=None, x_direction=None):
+    # script to write the design variables to funtofem
+    # sends them in the file funtofem.in
+    # also tells which kind of analysis to perform, etc.
+
+    #make sure funtofem folder exists
+    funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+    if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+
+    #make funtofem input file
+    inputFile = os.path.join(funtofemFolder, "funtofem.in")
+    inputHandle =  open(inputFile, "w")
+
+    #write the real or complex mode, aka adjoint or complex_step
+    line = "mode,{}\n".format(mode)
+    inputHandle.write(line)
+
+    #write the analysis functions to be requested
+    for function in functions:
+        line = "function,{}\n".format(function)
+        inputHandle.write(line)
+
+    #overwrite values in dict with the input x
+    names = []
+    values = []
+
+    nDV = 0
+    for DV in DVdict:
+        #get attributes
+        name = DV["name"]
+        dvType = DV["type"]
+        capsGroup = DV["capsGroup"]
+
+        #get value
+        if (DV["active"]):
+            nDV += 1
+
+            value = DV["value"]
+            #value = round(value, 5)
+
+            #append values and names
+            names.append(name)
+            values.append(value)
+
+            #make the line strings
+            if (dvType == "shape"):
+                line = "{},{},{:5f}\n".format(name, dvType, value)
+            elif (dvType == "struct"):
+                line = "{},{},{},{:5f}\n".format(name, dvType, capsGroup, value)   
+
+            #write the line to the input file
+            inputHandle.write(line)
+
+
+    #if mode is complex_step then also write the direction of complex step
+    if (mode == "complex_step"):
+        #if epsilon and direction are unspecified make default values
+        if (eps is None): eps = 1.0e-30
+        if (x_direction is None):
+            x_direction = np.random.rand(nDV)
+            x_direction = x_direction / np.linalg.norm(x_direction)
+
+        #write the epsilon
+        line = "epsilon,{}\n".format(eps)
+        inputHandle.write(line)
+
+        #write the direction vector
+        inputHandle.write("x_dir,")
+        for i in range(len(x_direction)):
+            inputHandle.write("{}".format(x_direction[i]))
+            if (i < len(x_direction)-1):
+                inputHandle.write(",")
+
+    #close the input file
+    inputHandle.close()     
+
+def readOutput(DVdict,mode="adjoint"):
+    
+    #read functions, gradients from funtofem call
+    #make sure funtofem folder exists
+    funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+    if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+
+    #make funtofem input file
+    outputFile = os.path.join(funtofemFolder, "funtofem.out")
+    if (os.path.exists(outputFile)):
+        #if the output file was written, the analysis ran successfully
+        success = True
+
+        #so read in the outputs
+        outputHandle =  open(outputFile, "r")
+
+        lines = outputHandle.readlines()
+            
+        if (mode == "adjoint"):
+
+            functions = {}
+            gradients = {}
+
+            #read function values and gradients
+            ifunc = -1
+            firstLine = True
+            for line in lines:
+                if ("func" in line):
+                    #func, name, value
+                    ifunc += 1
+                    parts = line.split(",")
+                    functionName = parts[1]
+                    value = float(parts[2])
+
+                    functions[functionName] = value
+                    gradients[functionName] = np.zeros((nDV))
+                    iDV = 0
+
+                elif ("grad" in line):
+                    #grad,dvname,deriv_i
+                    parts = line.split(",")
+                    dvname = parts[1]
+                    deriv = float(parts[2])
+
+                    #find the DVind of that design variable (assuming out of order)
+                    for DV in DVdict:
+                        if (DV["name"] == dvname): ind = DV["opt_ind"]
+                    #store the gradient at that index
+                    gradients[functionName][ind] = deriv
+
+                elif (firstLine):
+                    firstLine = False
+                    #it's the first line
+                    parts = line.split(",")
+                    nfunc = int(parts[0])
+                    nDV = int(parts[1])
+
+            #close the file
+            outputHandle.close()
+
+            #return the functions and gradients
+            return functions, gradients
+
+        elif (mode == "complex_step"):
+            
+            #read the funtofem.out with the following format
+            #nfunc
+            #func,fname,real,value,imag,value
+            functions = {}
+
+            for line in lines:
+                chunks = line.split(",")
+                if (len(chunks) == 1):
+                    nfunc = chunks[0].strip()
+                elif ("func" in line):
+                    name = chunks[1]
+                    real_part = float(chunks[3])
+                    imag_part = float(chunks[5].strip())
+
+                    functions[name] = real_part + imag_part * 1j
+
+            #return the function values
+            return functions
+
+
+    else:
+        sys.exit("Error: Funtofem Analysis failed, no funtofem.out file was created\n")
+
 ##----------Outside of class, run cases------------------##
 
-#call the class and initialize it
-comm = MPI.COMM_WORLD
-
-#INIT and read in inputs
-csmFile = "nacaWing.csm"
-meshStyle = "pointwise" #"pointwise", "tetgen" (pointwise is much better)
-nacaOpt = NacaOMLOptimization(comm, csmFile, meshStyle)
-
-#RUN analysis
-nacaOpt.runF2F()
+if (inputExists):
+    #run Caps2fun
+    myrun = Caps2Fun()
+    myrun.runF2F()
