@@ -147,16 +147,16 @@ class Caps2Fun():
                 elif ("scenario_name" in line):
                     self.scenario_name = chunk
                 elif ("csm_file" in line):
-                    self.csmFile = chunk
+                    self.csmFile = chunk + ".csm"
                 elif ("caps_constraint" in line):
                     self.capsConstraint = chunk
                 elif ("constraint_type" in line):
-                    self.constraintType = chunk
+                    self.constraintType = int(chunk)
                 elif ("f2f_analysis" in line):
                     self.f2f_analysis_type = chunk
                 elif ("fun3d_analysis" in line):
                     self.fun3d_analysis_type = chunk
-            print(self.mesh_style, self.n_tacs_procs, self.nsteps, self.scenario_name)
+            print(self.capsConstraint, self.constraintType)
             handle.close()
 
 
@@ -173,14 +173,14 @@ class Caps2Fun():
         if (self.comm.Get_rank() == 0):
             #default config file
             cfg_file = os.path.join(self.src_dir, "default.cfg")
-            parseFile(cfg_file)
 
-            local_cfg = False
-            for myfile in os.listdir(self.root_dir):
-                if (".cfg" in myfile): 
-                    local_cfg = True
-                    cfg_file = os.path.join(self.root_dir, myfile)
-            if (local_cfg): parseFile(cfg_file)
+            funtofem_folder = os.path.join(self.root_dir, "funtofem")
+            if (not(os.path.exists(funtofem_folder))): os.mkdir(funtofem_folder)
+            funtofem_cfg = os.path.join(funtofem_folder, "funtofem.cfg")
+            if (not(os.path.exists(funtofem_cfg))): 
+                shutil.copy(cfg_file, funtofem_cfg)
+                sys.exit("The funtofem/funtofem.cfg file was missing. A copy has been created - edit and then run it again.\n")
+            parseFile(funtofem_cfg)
 
         #now broadcast results from reading the config file
         self.mesh_style = self.comm.bcast(self.mesh_style, root=0)
@@ -1033,10 +1033,16 @@ class Caps2Fun():
         #write to output
         self.writeOutput()
 
+        #write that you finished the run
+        self.cwrite("Finished the funtofem call\n")
+
         #close status file
         if (self.comm.Get_rank() == 0): self.status.close()
 
     def writeOutput(self):
+        #write output file, funtofem.out
+        #for modes: adjoint, complex_step, or forward
+
         if (self.comm.Get_rank() == 0):
 
             #...write the output functions, gradients, etc
@@ -1093,6 +1099,26 @@ class Caps2Fun():
 
                     #update function counter
                     ifunc += 1
+
+            elif (self.mode == "forward"):
+                #format of the output file:
+                #nfunc,nDV
+                #func,name,value
+                #write number of functions, variables, etc.
+                nDV = self.nshapeDV + self.nstructDV
+                outputHandle.write("{},{}\n".format(self.nfunc, nDV))
+                ifunc = 0
+                for func in self.functions:
+
+                    name = self.functionNames[ifunc]
+                    value = self.functions[ifunc].value.real
+
+                    #write function name and value
+                    outputHandle.write("func,{},{}\n".format(name,value))
+
+                    #update function counter
+                    ifunc += 1
+
 
             elif (self.mode == "complex_step"):
 
@@ -1517,6 +1543,389 @@ def readOutput(DVdict,mode="adjoint"):
 
     else:
         sys.exit("Error: Funtofem Analysis failed, no funtofem.out file was created\n")
+
+
+class Optimize():
+    #class to run pyoptsparse optimize on the outside of funtofem
+
+    def __init__(self, DVdict, optimizationMode):
+        #set the DV dict here
+        self.DVdict = DVdict
+
+        #option: "structural", "full"
+        self.optimizationMode = optimizationMode
+
+        #other information such as analysis type, mesher type is  setup in funtofem.py
+        self.n_procs = 192
+
+        #make status file
+        statusFile = os.path.join(os.getcwd(), "opt_status.out")
+        self.status = open(statusFile, "w")
+
+        #iterations
+        self.iteration = 1
+
+        #used DVs
+
+        self.cwrite("Aerothermoelastic Optimization with FuntoFem and ESP/CAPS\n")
+        self.cwrite("\tDesign Problem: NACA Symmetric Wing\n")
+        self.cwrite("Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy\n")
+        self.cwrite("\tGeorgia Tech SMDO Lab April 2022\n")
+        self.cwrite("----------------------------")
+        self.cwrite("----------------------------\n")
+
+    def cwrite(self, msg):
+        self.status.write(msg)
+        self.status.flush()
+
+    def writeInput(self, x):
+        #update design variable dict
+        self.updateDVdict(x)
+
+        if (self.optimizationMode == "structural"):
+            funcs = ["ksfailure", "mass"]
+        elif (self.optimizationMode == "full"):
+            funcs = ["ksfailure","cl","cd","mass"]
+
+        writeInput(self.DVdict, funcs)
+
+        #update status to the inputs that were run
+        self.cwrite("----------------------------")
+        self.cwrite("----------------------------\n")
+        self.cwrite("Global Iteration #{}\n".format(self.iteration))
+        self.cwrite("\tDV names {}\n".format(names))
+        self.cwrite("\tDV values {}\n".format(values))              
+
+    def updateDVdict(self,x):
+        tempDict = []
+        for DV in self.DVdict:
+
+            #overwrite the value
+            if (DV["active"]):
+                name = DV["name"]
+                DV["value"] = float(x[name])
+
+            tempDict.append(DV)
+        
+        #overwrite DVdict
+        self.DVdict = tempDict
+
+    def callFuntoFem(self):
+        #call funtofem via a system call (os.system)
+        #the reason for this is fun3d can't be run twice in the system python script
+        #this gets around that issue
+
+        #update status
+        self.cwrite("\tRunning F2F... ")
+
+        #instead of bash, do system call inside of this python script
+        callMessage = "mpiexec_mpt -n {} python runF2F.py 2>&1 > output.txt".format(self.n_procs)
+        os.system(callMessage)
+
+        #update status that F2F finished
+        self.cwrite("finished F2F!\n")
+        #struct DV settings
+
+    def readOutput(self):
+        #read functions, gradients from funtofem call
+        #make sure funtofem folder exists
+        funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+        if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+
+        #make funtofem input file
+        self.outputFile = os.path.join(funtofemFolder, "funtofem.out")
+        if (os.path.exists(self.outputFile)):
+            #if the output file was written, the analysis ran successfully
+            self.success = True
+
+            #so read in the outputs
+            outputHandle =  open(self.outputFile, "r")
+
+            lines = outputHandle.readlines()
+            
+
+            self.functions = {}
+            self.gradients = {}
+
+            #read function values and gradients
+            ifunc = -1
+            firstLine = True
+            for line in lines:
+                if ("func" in line):
+                    #func, name, value
+                    ifunc += 1
+                    parts = line.split(",")
+                    functionName = parts[1]
+                    value = float(parts[2])
+
+                    self.functions[functionName] = value
+                    self.gradients[functionName] = np.zeros((nDV))
+                    iDV = 0
+
+                elif ("grad" in line):
+                    #grad,dvname,deriv_i
+                    parts = line.split(",")
+                    dvname = parts[1]
+                    deriv = float(parts[2])
+
+                    #find the DVind of that design variable (assuming out of order)
+                    for DV in self.DVdict:
+                        if (DV["name"] == dvname):
+                            ind = DV["opt_ind"]
+                    self.gradients[functionName][ind] = deriv
+                    iDV += 1
+
+                elif (firstLine):
+                    firstLine = False
+                    #it's the first line
+                    parts = line.split(",")
+                    nfunc = int(parts[0])
+                    nDV = int(parts[1])
+
+            #close the file
+            outputHandle.close()
+
+            #delete output file
+            os.remove(self.outputFile)
+
+            #update status
+            self.cwrite("\tRead output files for func, sens\n")
+
+            #since didn't fail update iteration count
+            self.iteration += 1
+            self.fail = 0
+
+        else:
+            #otherwise if the output file was not written, it failed
+            #possibly due to negative volume or something
+            #can try and change parameters here or pass information to change settings and rerun
+            self.success = False
+            self.cwrite("\tAnalysis Failed\n")
+            self.fail = 1
+
+        return self.fail
+
+    def deleteF2Ffiles(self):
+        os.remove(self.inputFile)
+        os.remove(self.outputFile)
+
+    def objCon(self, x):
+        #py opt sparse function evaluator
+
+        #write input, call funtofem, and get results
+        self.writeInput(x)
+        self.callFuntoFem()
+        self.readOutput()
+
+        #self.deleteF2Ffiles()
+
+        #objective, constraint functions
+        funcs = {}
+
+        if (self.optimizationMode == "structural"):
+            funcs["obj"] = self.functions["mass"]
+            funcs["con"] = self.functions["ksfailure"]
+            objname = "mass"
+            conname = "ksfailure"
+        elif (self.optimizationMode == "full"):
+            #TBD some kind of min fuel burn thing
+            funcs["obj"] = 1
+            funcs["con"] = 1
+            objname = ""
+            conname = ""
+
+        #write objective function
+        self.cwrite("\t{} Obj = {}\n".format(objname,funcs["obj"]))
+        self.cwrite("\t{} Con = {}\n".format(conname,funcs["con"]))
+
+        return funcs, self.fail
+
+    def objGrad(self, x, funcs):
+        #pyoptsparse gradient function
+
+        if (self.optimizationMode == "structural"):
+            objGrad = self.gradients["mass"]
+            conGrad = self.gradients["ksfailure"]
+            objname = "mass"
+            conname = "ksfailure"
+        elif (self.optimizationMode == "full"):
+            #TBD some kind of min fuel burn thing
+            #objGrad = self.gradients["mass"]
+            #conGrad = self.gradients["ksfailure"]
+            objname = ""
+            conname = ""
+        
+
+        self.cwrite("\t {} Obj grad = {}\n".format(objname,objGrad))
+        self.cwrite("\t{} Con grad = {}\n".format(conname,conGrad))
+
+        sens = {}
+        iDV = 0
+        objSens = {}
+        conSens = {}
+        for DV in self.DVdict:
+            name = DV["name"]
+            if (DV["active"]):
+                objSens[name] = objGrad[iDV]
+                conSens[name] = conGrad[iDV]
+                iDV += 1
+
+        sens["obj"] = objSens
+        sens["con"] = conSens
+
+        return sens, self.fail
+
+class Test():
+    def __init__(self, DVdict, n_procs=192, functions=None):
+
+        #copy the DV dict
+        self.DVdict = DVdict
+
+        #set the num procs
+        self.n_procs = n_procs
+
+        #set the functions to check
+        self.functions = functions
+        if (functions is None): 
+            self.functions = ["ksfailure","cl","cd","mass"]
+
+        #count the number of active DV
+        self.nDV = 0
+        for DV in DVdict:
+            if (DV["active"]): self.nDV += 1
+
+    def derivativeTest(self):
+
+        #run the adjoint
+        self.runAdjoint()
+
+        #run the complex step
+        self.runComplexStep()
+
+        #compare the directional derivatives and write to file
+        self.writeResults()
+
+    def callCaps2fun(self):
+        #call caps2fun through funtofem analysis
+
+        #run funtofem analysis
+        callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/output.txt".format(self.n_procs)
+        os.system(callMessage)
+
+    def runForward(self):
+        #write the F2F input file for adjoint mode
+        writeInput(self.DVdict, self.functions, mode="forward")
+
+        #turnoff complex mode, this prob doesn't work
+        #os.system("export CMPLX_MODE=0")
+
+        #run funtofem
+        self.callCaps2fun()
+
+    def runAdjoint(self):
+        #run the adjoint mode
+
+        #write the F2F input file for adjoint mode
+        writeInput(self.DVdict, self.functions, mode="adjoint")
+
+        #turnoff complex mode, this prob doesn't work
+        #os.system("export CMPLX_MODE=0")
+
+        #run funtofem
+        self.callCaps2fun()
+
+        #read the output file
+        self.adjoint_funcs, self.adjoint_grads = readOutput(self.DVdict, mode="adjoint")
+
+    def runComplexStep(self,h=1e-30):
+        #run funtofem in complex step mode
+
+        #generate random perturbation for complex_step check
+        x_dir = np.random.rand(self.nDV)
+        x_dir = x_dir / np.linalg.norm(x_dir)
+
+        #write the F2F input file for complex mode
+        writeInput(self.DVdict, self.functions, mode="complex_step", eps=h, x_direction=x_dir)
+
+        #setup complex mode, this prob doesn't work
+        os.system("export CMPLX_MODE=1")
+
+        #run funtofem
+        self.callCaps2fun()
+
+        #read the output file in complex mode, complex_step.out
+        self.complex_funcs = readOutput(self.DVdict,mode="complex_step")
+
+    def writeResults(self):
+        #compare directional derivatives of adjoint vs complex step
+
+        #make a derivative_check.out file in funtofem folder
+        funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+        deriv_file = os.path.join(funtofemFolder, "derivative_check.out")
+
+        deriv_handle = open(deriv_file, "w")
+
+        fileExists = os.path.exists(deriv_file)
+
+        #write a an introductory line to the file
+        if (not(fileExists)):
+            deriv_handle.write("Funtofem Derivative Check, Adjoint vs Complex Step\n")
+            deriv_handle.write("----------------------------")
+            deriv_handle.write("----------------------------\n")
+
+        adjoint_dderiv = {}
+        complex_dderiv = {}
+
+        #for each function in the analysis
+        for function in self.functions:
+            
+            #write the function name "func,name"
+            deriv_handle.write("func,{}\n".format(function))
+
+            #write the adjoint and complex_step functions (real part) to the file
+            deriv_handle.write("\tadjoint func      = {}\n".format(self.adjoint_funcs[function]))
+            deriv_handle.write("\tcomplex_step func = {}\n".format(self.complex_funcs[function].real))
+
+            #initialize directional derivative, and get this adjoint_grad
+            adjoint_dderiv[function] = 0
+            adjoint_grad = self.adjoint_grads[function]
+
+            #loop over each design variable and dot product the perturbation and gradient to get directional derivative
+            for i in range(self.nDV):
+                adjoint_dderiv[function] += x_dir[i] * adjoint_grad[i]
+
+            #write the adjoint directional derivative to the file
+            line = "\tadjoint dderiv     = {}\n".format(adjoint_dderiv[function])
+            deriv_handle.write(line)
+
+            #compute complex step derivative, which is also for that direction
+            #f(x+hp*1j)/h is the complex step
+            complex_dderiv[function] = self.complex_funcs[function].imag
+
+            #write the complex step directional derivative to the file
+            line = "\tcomplex_step dderiv = {}\n".format(complex_dderiv[function])
+            deriv_handle.write(line)
+
+            #compute the absolute error
+            absoluteError = abs( complex_dderiv[function] - adjoint_dderiv[function] )
+
+            #write the absolute error to the file
+            line = "\tabsolute error      = {}\n".format(absoluteError)
+            deriv_handle.write(line)
+
+            #compute the relative error
+            if (abs(complex_dderiv[function]) < 1.0e-15):
+                relativeError = None
+            else:
+                relativeError = absoluteError / abs(complex_dderiv[function])
+
+            #write relative error to a file
+            line = "\relative error       = {}\n".format(relativeError)
+            deriv_handle.write(line)
+
+
+        #close the derivative_check.out file
+        deriv_handle.close()
 
 ##----------Outside of class, run cases------------------##
 

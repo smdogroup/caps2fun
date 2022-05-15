@@ -1,4 +1,4 @@
-from tests import Test
+from caps2fun import Test
 
 #main script to run
 def makeDVdict():
@@ -107,6 +107,8 @@ def makeDVdict():
         print(structDVs)
 
     return DVdict
+
+#-----------  Main Section, Run the Test -------------------#
 
 #make a DV dict
 DVdict = makeDVdict()

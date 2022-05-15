@@ -3,7 +3,7 @@ script to run funtofem from design variable inputs, funtofem.input file and .csm
 returns function, gradient information in funtofem.out file
 '''
 from pyoptsparse import PSQP, Optimization
-from optimization import Optimize
+from caps2fun import Optimize as CapsOptimize
 
 optimizationMode = "structural"
 
@@ -91,13 +91,10 @@ for igroup in range(3):
         DVdict.append(tempDict)
 
 #initialize wing optimization class
-wingOpt = Optimize(DVdict, optimizationMode)
+capsOpt = CapsOptimize(DVdict, optimizationMode)
 
 #setup pyOptSparse
-sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", wingOpt.objCon)
-
-thickCt
-for DV in self.DVdict:
+sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", capsOpt.objCon)
 
 #thickness in meters
 names2 = DVnames
@@ -123,14 +120,14 @@ sparseProb.addConGroup("con", 1,upper=0.267)
 #setup SLSQP optimizer
 optOptions = {"IPRINT": -1}
 opt = PSQP(options=optOptions)
-sol = opt(sparseProb, sens=wingOpt.objGrad)
+sol = opt(sparseProb, sens=capsOpt.objGrad)
 
 
 #after done with optimization
 #print final solution to sol.out
-wingOpt.cwrite("----------------------------")
-wingOpt.cwrite("----------------------------\n")
-wingOpt.cwrite("Opt Solution:  \n")
-wingOpt.cwrite("\t{}".format(sol))
+capsOpt.cwrite("----------------------------")
+capsOpt.cwrite("----------------------------\n")
+capsOpt.cwrite("Opt Solution:  \n")
+capsOpt.cwrite("\t{}".format(sol))
 
-wingOpt.close()
+capsOpt.close()
