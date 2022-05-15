@@ -7,14 +7,15 @@ from fileIO import writeInput, makeDVdict, readOutput
 n_procs = 192
 
 #analysis type, "aerothermal", "aeroelastic", "aerothermoelastic"
-analysis = "aeroelastic"
+f2fanalysis = "aeroelastic"
+
+#fun3d analysis, "inviscid", "laminar", "turbulent"
+fun3danalysis = "inviscid"
 
 #set the functions to check
 functions = ["ksfailure","cl","cd","mass"]
 
-
 #----------------------------------------------------------------------#
-
 
 #generate variables and functions from writeInput.py
 DVdict = makeDVdict()
@@ -24,20 +25,7 @@ nDV = 0
 for DV in DVdict:
     if (DV["active"]): nDV += 1
 
-#-----------------  Run FUNtoFEM with Adjoint mode --------------------#
-
-#write the F2F input file for adjoint mode
-writeInput(DVdict, functions, analysis=analysis, mode="adjoint")
-
-#turnoff complex mode
-os.system("export CMPLX_MODE=0")
-
-#run funtofem
-callMessage = "mpiexec_mpt -n {} python runF2F.py 2>&1 > output.txt".format(n_procs)
-os.system(callMessage)
-
-#read the output file
-adjoint_funcs, adjoint_grads = readOutput(DVdict, mode="adjoint")
+print("Initialized DV dicts\n", flush=True)
 
 #----------------   Run FUNtoFEM in Complex mode ----------------------#
 
@@ -45,20 +33,39 @@ adjoint_funcs, adjoint_grads = readOutput(DVdict, mode="adjoint")
 h = 1.0e-30
 x_dir = np.random.rand(nDV)
 x_dir = x_dir / np.linalg.norm(x_dir)
+print("Generated perturbation\n", flush=True)
 
 #write the F2F input file for complex mode
-writeInput(DVdict, functions, analysis=analysis, mode="complex_step", eps=h, x_direction=x_dir)
+print("Trying to write input...", flush=True)
+writeInput(DVdict, functions, f2fanalysis=f2fanalysis, fun3danalysis=fun3danalysis, mode="complex_step", eps=h, x_direction=x_dir)
+print("Wrote input\n", flush=True)
 
-#setup complex mode
+#setup complex mode, this prob doesn't work
 os.system("export CMPLX_MODE=1")
 
 #run funtofem
-callMessage2 = "mpiexec_mpt -n {} python runF2F.py 2>&1 > output.txt".format(n_procs)
+print("Trying to run F2F in complex mode...", flush=True)
+callMessage2 = "mpiexec_mpt -n {} python runF2F.py 2>&1 > ./funtofem/output.txt".format(n_procs)
 os.system(callMessage2)
+print("Ran F2F in complex mode\n", flush=True)
 
 #read the output file in complex mode, complex_step.out
 complex_funcs = readOutput(DVdict,mode="complex_step")
 
+#-----------------  Run FUNtoFEM with Adjoint mode --------------------#
+
+#write the F2F input file for adjoint mode
+writeInput(DVdict, functions, f2fanalysis=f2fanalysis, fun3danalysis=fun3danalysis,  mode="adjoint")
+
+#turnoff complex mode, this prob doesn't work
+os.system("export CMPLX_MODE=0")
+
+#run funtofem
+callMessage = "mpiexec_mpt -n {} python runF2F.py 2>&1 > ./funtofem/output.txt".format(n_procs)
+os.system(callMessage)
+
+#read the output file
+adjoint_funcs, adjoint_grads = readOutput(DVdict, mode="adjoint")
 
 #----------------  Compare Results of Adjoint and Complex Step -------------------------------------#
 

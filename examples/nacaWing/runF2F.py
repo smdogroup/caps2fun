@@ -47,6 +47,34 @@ Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy
 
 from __future__ import print_function
 
+#import normal classes
+import os, shutil, sys
+import time
+import numpy as np
+import pyCAPS
+import f90nml
+
+#import other modules
+from fileIO import writeInput, makeDVdict, readOutput
+
+#read whether to use complex mode or not from input file
+f2fin = os.path.join(os.getcwd(), "funtofem","funtofem.in")
+hdl = open(f2fin,"r")
+lines = hdl.readlines()
+isComplex = False
+for line in lines:
+    chunks = line.split(",")
+    if ("mode" in line):
+        isComplex = "complex_step" in line
+hdl.close()
+
+#turn on complex mode if sent in through input file
+#need to do this before importing pyfuntofem otherwise fun3d will import real flow solvers instead
+if (isComplex): 
+    os.environ['CMPLX_MODE'] = "1"
+else: #otherwise set it to empty which means off
+    os.environ["CMPLX_MODE"] = ""
+
 #import funtofem classes and functions
 from pyfuntofem.model  import *
 from pyfuntofem.driver import *
@@ -58,36 +86,11 @@ from tacs.pytacs import pyTACS
 from tacs import functions
 from tacs import TACS, functions, constitutive, elements, pyTACS, problems
 
-#import normal classes
-import os, shutil, sys
-import time
-import numpy as np
-import pyCAPS
-import f90nml
 
-#import other modules
-from fileIO import writeInput, makeDVdict, readOutput
-
-#turn on complex mode if sent in through input file
-f2fin = os.path.join(os.getcwd(), "funtofem","funtofem.in")
-hdl = open(f2fin,"r")
-lines = hdl.readlines()
-isComplex = False
-for line in lines:
-    chunks = line.split(",")
-    if ("mode" in line):
-        isComplex = "complex_step" in line
-hdl.close()
-
-#turn on complex mode if using complex step
-if (isComplex): 
-    os.environ['CMPLX_MODE'] = "1"
-else:
-    os.environ['CMPLX_MODE'] = "0"
 
 #class for NACA OML optimization, full aerothermoelastic, with ESP/CAPS parametric geometries
 class NacaOMLOptimization():
-    def __init__(self, comm, csmFile, meshStyle = "pointwise"):
+    def __init__(self, comm, csmFile, meshStyle="pointwise"):
 
         self.comm = comm
         
@@ -96,13 +99,17 @@ class NacaOMLOptimization():
 
         self.n_tacs_procs = 20
 
-        self.nsteps = 200
+        self.nsteps = 5
 
         self.scenario_name = "fun3d"
 
         self.csmFile = csmFile
 
         self.root_dir = os.getcwd()
+
+        #default analysis types
+        self.fun3d_analysis_type = None
+        self.f2f_analysis_type = None
 
         #read input from file
         self.readInput()
@@ -112,15 +119,11 @@ class NacaOMLOptimization():
 
         #status file
         if (self.comm.Get_rank() == 0):
-            statusFile = os.path.join(os.getcwd(), "funtofem", "status.txt")
+            statusFile = os.path.join(self.root_dir, "funtofem", "status.txt")
             self.status =  open(statusFile, "w")
             
-
         #into status
         self.cwrite("Running Funtofem with ESP/CAPS\n")
-
-        #type of analysis
-        self.analysis_type = analysisType
 
         #load pointwise
         #module load pointwise/18.5R1
@@ -247,6 +250,9 @@ class NacaOMLOptimization():
         self.DVdict = self.comm.bcast(self.DVdict, root=0)
         self.functionNames = self.comm.bcast(self.functionNames, root=0)
         self.mode = self.comm.bcast(self.mode, root=0)
+        self.f2f_analysis_type = self.comm.bcast(self.f2f_analysis_type, root=0)
+        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)
+        self.complex = self.comm.bcast(self.complex,root=0)
 
         if (self.mode == "adjoint"):
             #self.cwrite("Running in real mode\n")
@@ -354,42 +360,17 @@ class NacaOMLOptimization():
         self.tacsAim.input.Material = {"madeupium": madeupium}
 
         # Material properties section
-        OMLshell = {"propertyType" : "Shell",
-                    "membraneThickness" : 0.01,
-                    "material"        : "madeupium",
-                    "bendingInertiaRatio" : 1.0, # Default
-                    "shearMembraneRatio"  : 5.0/6.0} # Default
-        ribshell  = {"propertyType" : "Shell",
-                    "membraneThickness" : 0.02,
-                    "material"        : "madeupium",
-                    "bendingInertiaRatio" : 1.0, # Default
-                    "shearMembraneRatio"  : 5.0/6.0} # Default
-
-        sparshell = {"propertyType" : "Shell",
-                    "membraneThickness" : 0.05,
-                    "material"        : "madeupium",
-                    "bendingInertiaRatio" : 1.0, # Default
-                    "shearMembraneRatio"  : 5.0/6.0} # Default
-
         propDict = {}
         for DV in self.DVdict:
             if (DV["type"] == "struct"):
                 capsGroup = DV["capsGroup"]
                 if (len(capsGroup) > 0):
-                    if ("rib" in capsGroup):
-                        tempShell = ribshell
-                        tempShell["membraneThickness"] = DV["value"]
-                        propDict[capsGroup] = ribshell
-                    elif ("spar" in capsGroup):
-                        tempShell = sparshell
-                        tempShell["membraneThickness"] = DV["value"]
-                        propDict[capsGroup] = sparshell
-                    elif ("OML" in capsGroup):
-                        tempShell = OMLshell
-                        tempShell["membraneThickness"] = DV["value"]
-                        propDict[capsGroup] = OMLshell
-
-        #self.cwrite("{}".format(propDict))
+                    shell = {"propertyType" : "Shell",
+                        "membraneThickness" : DV["value"],
+                        "material"        : "madeupium",
+                        "bendingInertiaRatio" : 1.0, # Default
+                        "shearMembraneRatio"  : 5.0/6.0} # Default
+                    propDict[capsGroup] = shell
 
         self.tacsAim.input.Property = propDict
 
@@ -508,7 +489,7 @@ class NacaOMLOptimization():
             self.fun3dnml["governing_equations"]["eqn_type"] = "compressible"
             self.fun3dnml["governing_equations"]["viscous_terms"] = "laminar"
         elif (self.fun3d_analysis_type == "turbulent"):
-        
+            pass
 
         #raw grid section
         self.fun3dnml["raw_grid"] = f90nml.Namelist()
@@ -879,7 +860,6 @@ class NacaOMLOptimization():
                         aim.geometry.despmtr[dvname].value = value
 
                 elif (DV["type"] == "struct"):
-
                     #update the thickness DV in its tacsAim dictionaries
                     DVRdict[dvname] = self.makeThicknessDVR(dvname)
                     capsGroup = DVdict[dvname]["groupName"]

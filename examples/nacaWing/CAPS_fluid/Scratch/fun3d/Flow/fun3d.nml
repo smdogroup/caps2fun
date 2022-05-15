@@ -3,7 +3,8 @@
 /
 
 &governing_equations
-    viscous_terms = 'inviscid'
+    eqn_type = 'compressible'
+    viscous_terms = 'laminar'
 /
 
 &raw_grid
@@ -16,18 +17,24 @@
     mach_number = 0.5
     angle_of_attack = 3.0
     reynolds_number = 35000000.0
+    temperature = 300.0
+    temperature_units = 'Kelvin'
 /
 
 &inviscid_flux_method
     flux_construction = 'roe'
     flux_limiter = 'hminmod'
     smooth_limiter_coeff = 1.0
-    freeze_limiter_iteration = 166
+    freeze_limiter_iteration = 4
 /
 
 &nonlinear_solver_parameters
     schedule_iteration = 1, 80
     schedule_cfl = 2, 100
+    time_accuracy = 'steady'
+    time_step_nondim = 0.1
+    subiterations = 0
+    schedule_cflturb = 50.0, 50.0
 /
 
 &force_moment_integ_properties
@@ -35,7 +42,7 @@
 /
 
 &code_run_control
-    steps = 200
+    steps = 5
     stopping_tolerance = 1e-15
     restart_write_freq = 1000
     restart_read = 'off'

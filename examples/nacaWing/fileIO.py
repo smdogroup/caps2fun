@@ -5,7 +5,7 @@ returns function, gradient information in funtofem.out file
 import os, sys
 import numpy as np
 
-def writeInput(DVdict, functions, f2fanalysis = "aerothermoelastic", fun3danalysis="laminar", mode = "adjoint", x_direction=None, eps=None):
+def writeInput(DVdict, functions, f2fanalysis, fun3danalysis, mode, eps=None, x_direction=None):
     # script to write the design variables to funtofem
     # sends them in the file funtofem.in
     # also tells which kind of analysis to perform, etc.
@@ -21,9 +21,10 @@ def writeInput(DVdict, functions, f2fanalysis = "aerothermoelastic", fun3danalys
     #write the type of analysis to be done, "aerothermal","aerothermoelastic", "aeroelastic"
     #fun3d analysis : "inviscid", "laminar", "turbulent"
     line = "analysis,{},{}\n".format(f2fanalysis, fun3danalysis)
+    inputHandle.write(line)
 
     #write the real or complex mode, aka adjoint or complex_step
-    line = "F2F_mode,{}\n".format(mode)
+    line = "mode,{}\n".format(mode)
     inputHandle.write(line)
 
     #write the analysis functions to be requested
@@ -280,15 +281,3 @@ def readOutput(DVdict,mode="adjoint"):
 
     else:
         sys.exit("Error: Funtofem Analysis failed, no funtofem.out file was created\n")
-
-        
-
-        
-
-
-    
-
-#run the functions
-functions = ["ksfailure","cl","cd","mass"]
-DVdict = makeDVdict()
-writeInput(DVdict, functions, mode="adjoint")

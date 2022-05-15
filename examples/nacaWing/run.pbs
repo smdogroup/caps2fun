@@ -1,9 +1,9 @@
 #!/bin/bash
 ## Required PBS Directives --------------------------------------
 #PBS -A AFVAW00262F03
-#PBS -q standard
+#PBS -q debug
 #PBS -l select=4:ncpus=48:mpiprocs=48
-#PBS -l walltime=03:00:00
+#PBS -l walltime=01:00:00
 #PBS -j oe
 #
 ## Optional Directives ------------------------------------
@@ -15,4 +15,4 @@ source $HOME/.profile
 bash clean.sh
 #time mpiexec_mpt -n 192 python runF2F.py 2>&1 > output.txt
 #time python optimize.py
-time python derivativeTest.py
+time python derivativeTest.py > run.txt
