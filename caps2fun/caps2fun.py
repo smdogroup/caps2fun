@@ -1026,6 +1026,9 @@ class Caps2Fun():
         #run forward analysis
         self.forwardAnalysis()        
 
+         #count the number of design variables and functions
+        self.countDV()
+
         #run adjoint analysis
         if (self.mode == "adjoint"):
             self.adjointAnalysis()
@@ -1166,7 +1169,7 @@ class Caps2Fun():
 
         return self.shapeGrad
 
-    def initShapeGrad(self):
+    def countDV(self):
         self.nfunc = len(self.functions)
 
         #determine number of shapeDV
@@ -1175,6 +1178,9 @@ class Caps2Fun():
         for DV in self.DVdict:
             if (DV["type"] == "shape"): self.nshapeDV += 1
             if (DV["type"] == "struct"): self.nstructDV += 1
+
+    def initShapeGrad(self):
+        self.countDV()
 
         self.shapeGrad = np.zeros((self.nfunc, self.nshapeDV))
 
@@ -1619,7 +1625,7 @@ class Optimize():
         self.cwrite("\tRunning F2F... ")
 
         #instead of bash, do system call inside of this python script
-        callMessage = "mpiexec_mpt -n {} python runF2F.py 2>&1 > output.txt".format(self.n_procs)
+        callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/output.txt".format(self.n_procs)
         os.system(callMessage)
 
         #update status that F2F finished
