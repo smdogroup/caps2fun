@@ -2,8 +2,8 @@
 cfgpmtr cfdOn 0
 
 #configuration parameters
-cfgpmtr  nspar  2  -
-cfgpmtr  nrib  16  -
+cfgpmtr  nspar  2
+cfgpmtr  nrib  16
 cfgpmtr sharpTE  0
 cfgpmtr TEfaceOn 1
 
@@ -20,6 +20,7 @@ despmtr camb0 0.05
 despmtr cambf 0.05
 despmtr ml0 0.4
 despmtr mlf 0.4
+despmtr ribSpaceFr 0.05
 
 dimension zrib 1 nrib-1
 despmtr zrib "1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1"
@@ -122,10 +123,21 @@ patbeg foo ifzero(cfdOn,1,0)
         set index irib+1
 		set zribAdd zribAdd+!zrib[1,irib]
         set zfrac zribAdd/zrib.sum
+       set xleft zfrac*xtip
+       set clocal croot*(1-zfrac)+ctip*zfrac
+       set xright clocal+xleft
        #make sheet box at position of rib
-        set		dxmax		max(croot,xtip+ctipEff)+2*margin
+        set		dx  xright-xleft+margin
+       set ribSpace dx*ribSpaceFr
+       set   dx   dx-ribSpace
         set		zcoord		-zfrac*sspan
-        box -2*margin ybot zcoord dxmax ytop-ybot 0
+        box xleft-margin ybot zcoord dx ytop-ybot 0
+       box xright-ribSpace ybot zcoord ribSpace*1.1 ytop-ybot 0
+       select face
+       	 attribute extractGroup $chipRib
+       union
+       #select face @nbody 2
+       #extract @sellist
 
         select face
             attribute capsGroup !$rib+index
@@ -146,6 +158,9 @@ patbeg foo ifzero(cfdOn,1,0)
 	#restore OML and union with ribs and spars
 	restore wing 0
 	union
+
+	#select face extractGroup=$chipRib
+	#hollow 0
 	
 	#restore wing
 
@@ -160,8 +175,10 @@ patbeg foo ifzero(cfdOn,1,0)
 		PATBEG  iOML nOML
            FACE  ADJ2FACE  comp=!$rib+iOML
            AND ADJ2FACE   comp=!$rib+(iOML+1)
+           AND HAS compGroup=OML
            SET    comp=!$OML+iOML
            SET    capsGroup=!$OML+iOML
+           SET    capsMesh=!$OML+iOML
            SET    _color=!OMLcolor
         PATEND
 
@@ -172,14 +189,18 @@ patbeg foo ifzero(cfdOn,1,0)
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=rib2
+		AND HAS compGroup=OML
 		SET  comp=OML1
 		SET  capsGroup=OML1
+		SET capsMesh=OML1
 		SET _color=!OMLcolor
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=!$rib+(nrib-1)
+		AND HAS compGroup=OML
 		SET comp=!$OML+nOML
 		SET capsGroup=!$OML+nOML
+		SET capsMesh=!$OML+nOML
 		SET _color=!OMLcolor
 
 		FACE HAS compGroup=spar
@@ -191,8 +212,6 @@ patbeg foo ifzero(cfdOn,1,0)
 		EDGE ADJ2FACE  compGroup=OML
 		SET _color=black
 	>>
-
-	#extract @sellist
 
 	select body
         attribute capsAIM $egadsTessAIM;tacsAIM

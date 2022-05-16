@@ -18,6 +18,7 @@ despmtr   camb0       0.05000
 despmtr   cambf       0.05000
 despmtr   ml0       0.40000
 despmtr   mlf       0.40000
+despmtr   ribSpaceFr       0.05000
 dimension zrib   1   15
 despmtr   zrib[1,:]   "     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;"
 dimension xspar   1   3
@@ -103,9 +104,18 @@ attribute compGroup   $spar
       set       index irib+1
       set       zribAdd zribAdd+!zrib[1,irib]
       set       zfrac zribAdd/zrib.sum
-      set       dxmax max(croot,xtip+ctipEff)+2*margin
+      set       xleft zfrac*xtip
+      set       clocal croot*(1-zfrac)+ctip*zfrac
+      set       xright clocal+xleft
+      set       dx xright-xleft+margin
+      set       ribSpace dx*ribSpaceFr
+      set       dx dx-ribSpace
       set       zcoord -zfrac*sspan
-      box       -2*margin   ybot   zcoord   dxmax   ytop-ybot   0
+      box       xleft-margin   ybot   zcoord   dx   ytop-ybot   0
+      box       xright-ribSpace   ybot   zcoord   ribSpace*1.1   ytop-ybot   0
+      select    face
+attribute extractGroup   $chipRib
+      union     0   0   0
       select    face
 attribute capsGroup   !$rib+index
 attribute capsMesh   !$rib+index
@@ -130,8 +140,10 @@ attribute compGroup   $rib
 		PATBEG  iOML nOML
            FACE  ADJ2FACE  comp=!$rib+iOML
            AND ADJ2FACE   comp=!$rib+(iOML+1)
+           AND HAS compGroup=OML
            SET    comp=!$OML+iOML
            SET    capsGroup=!$OML+iOML
+           SET    capsMesh=!$OML+iOML
            SET    _color=!OMLcolor
         PATEND
 
@@ -142,14 +154,18 @@ attribute compGroup   $rib
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=rib2
+		AND HAS compGroup=OML
 		SET  comp=OML1
 		SET  capsGroup=OML1
+		SET capsMesh=OML1
 		SET _color=!OMLcolor
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=!$rib+(nrib-1)
+		AND HAS compGroup=OML
 		SET comp=!$OML+nOML
 		SET capsGroup=!$OML+nOML
+		SET capsMesh=!$OML+nOML
 		SET _color=!OMLcolor
 
 		FACE HAS compGroup=spar
