@@ -6,6 +6,8 @@ cfgpmtr   nspar       2.00000
 cfgpmtr   nrib      16.00000
 cfgpmtr   sharpTE       0.00000
 cfgpmtr   TEfaceOn       1.00000
+cfgpmtr   stringerOn       0.00000
+cfgpmtr   nstringer       3.00000
 despmtr   area     120.00000
 despmtr   aspect       8.00000
 despmtr   taper       0.50000
@@ -19,6 +21,7 @@ despmtr   cambf       0.05000
 despmtr   ml0       0.40000
 despmtr   mlf       0.40000
 despmtr   ribSpaceFr       0.05000
+despmtr   stringerFr       0.08000
 dimension zrib   1   15
 despmtr   zrib[1,:]   "     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;"
 dimension xspar   1   3
@@ -46,6 +49,16 @@ rotatez   -ctwist   0   0
 translate xtip   ytip   -sspan
 loft      0
 store     wingloft   0   0
+set       smalltc0 tc0*(1-stringerFr)
+set       smalltcf tcf*(1-stringerFr)
+udprim    naca   thickness   smalltc0   Camber   camb0   maxloc   ml0   sharpte   sharpTE
+scale     croot   0   0   0
+udprim    naca   thickness   smalltcf   Camber   cambf   maxloc   mlf   sharpte   sharpTE
+scale     ctip   0   0   0
+rotatez   -ctwist   0   0
+translate xtip   ytip   -sspan
+loft      0
+store     smallWing   0   0
 patbeg    foo   ifzero(cfdOn,1,0)
    udprim    naca   thickness   tc0   Camber   camb0
    scale     croot   0   0   0
@@ -129,13 +142,81 @@ attribute compGroup   $rib
    intersect none   1   0
    restore   wing   0
    union     0   0   0
+   patbeg    foo   ifzero(stringerOn-1,1,0)
+      store     mainwing   0   0
+      box       -croot   -1   0   2*croot   2   0
+      select    face
+attribute capsGroup   $rib1
+attribute capsMesh   $rib1
+attribute comp   $rib
+attribute compGroup   $rib
+      box       -ctip   -1   0   2*ctip   2   0
+      translate xtip   ytip   -sspan
+      select    face
+attribute capsGroup   !$rib+nrib
+attribute capsMesh   !$rib+nrib
+attribute comp   $rib
+attribute compGroup   $rib
+      set       sparsum 0
+      set       sparfrac 0
+      patbeg    ispar   nspar
+         set       sparsum sparsum+!xspar[1,ispar]
+         set       sparsum2 sparsum+!xspar[1,ispar+1]
+         set       sparfrac sparsum/xspar.sum
+         set       sparfrac2 sparsum2/xspar.sum
+         patbeg    istringer   nstringer
+            set       newfrac sparfrac+istringer/(nstringer+1)*(sparfrac2-sparfrac)
+            set       dx newfrac*(croot-ctipEff)-xtip
+            set       hyp sqrt(sspan*sspan+dx*dx)
+            box       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
+            set       localSweep atand(dx/sspan)
+            rotatey   localSweep   0   0
+            translate newfrac*croot   0   0
+            select    face
+attribute capsGroup   $stringer
+attribute capsMesh   $stringer
+attribute stringer   istringer
+attribute comp   $stringer
+attribute compGroup   $stringer
+            patbeg    foo   ifzero(ispar+istringer-2,2,1)
+               union     0   0   0
+            patend
+         patend
+      patend
+      store     stringerspars   0   0
+      restore   stringerspars   0
+      restore   smallWing   0
+      subtract  none   1   0
+      restore   wingloft   0
+      intersect none   1   0
+      store     bottomStringers   0   0
+      restore   stringerspars   0
+      restore   wingloft   0
+      intersect none   1   0
+      restore   smallWing   0
+      subtract  none   1   0
+      store     topStringers   0   0
+      restore   mainwing   0
+      restore   topStringers   0
+      union     0   0   0
+      restore   bottomStringers   0
+      union     0   0   0
+      select    face
+attribute isface   $true
+   patend
    set       nOML nrib-1
    set       OMLcolor $blue
    set       ribColor $green
    set       sparColor $red
+   set       stringerColor $red
    udprim    editAttr   filename   <<
-		FACE   HAS   compGroup=OML
+
+		FACE HAS isface=true
+		SET colored=false
+
+		FACE HAS compGroup=OML
 		SET _color=red
+		SET colored=true
 
 		PATBEG  iOML nOML
            FACE  ADJ2FACE  comp=!$rib+iOML
@@ -145,12 +226,8 @@ attribute compGroup   $rib
            SET    capsGroup=!$OML+iOML
            SET    capsMesh=!$OML+iOML
            SET    _color=!OMLcolor
+           SET    colored=true
         PATEND
-
-		EDGE  ADJ2FACE  capsConstraint=wingRoot
-		SET   capsConstraint=wingRoot
-		NODE  ADJ2FACE  capsConstraint=wingRoot
-		SET   capsConstraint=wingRoot
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=rib2
@@ -159,6 +236,7 @@ attribute compGroup   $rib
 		SET  capsGroup=OML1
 		SET capsMesh=OML1
 		SET _color=!OMLcolor
+		SET colored=true
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=!$rib+(nrib-1)
@@ -167,15 +245,47 @@ attribute compGroup   $rib
 		SET capsGroup=!$OML+nOML
 		SET capsMesh=!$OML+nOML
 		SET _color=!OMLcolor
+		SET colored=true
 
 		FACE HAS compGroup=spar
 		SET _color=!sparColor
+		SET colored=true
 		
 		FACE HAS compGroup=rib
 		SET _color=!ribColor
+		SET colored=true
 
 		EDGE ADJ2FACE  compGroup=OML
 		SET _color=black
+
+		FACE HAS comp=stringer
+		SET _color=!stringerColor
+		SET colored=true
+
+		EDGE ADJ2FACE comp=stringer
+		SET _color=red
+		SET _adj=stringer
+
+		FACE HAS colored=false
+		AND ADJ2FACE capsGroup=rib1
+		SET comp=!$rib
+		SET capsGroup=!$rib1
+		SET capsMesh=!$rib1
+		SET _color=!ribColor
+		SET capsConstraint=wingRoot
+
+		FACE HAS colored=false
+		AND ADJ2FACE capsGroup=!$rib+nrib
+		SET comp=!$rib
+		SET capsGroup=!$rib+nrib
+		SET capsMesh=!$rib+nrib
+		SET _color=!ribColor
+
+		EDGE  ADJ2FACE  capsConstraint=wingRoot
+		SET   capsConstraint=wingRoot
+		NODE  ADJ2FACE  capsConstraint=wingRoot
+		SET   capsConstraint=wingRoot
+		
 >>
    select    body
 attribute capsAIM   $egadsTessAIM;tacsAIM
