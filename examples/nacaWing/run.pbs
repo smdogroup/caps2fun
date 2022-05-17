@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Required PBS Directives --------------------------------------
 #PBS -A AFVAW00262F03
+##PBS -A NAWCP25632006
 #PBS -q debug
 #PBS -l select=4:ncpus=48:mpiprocs=48
 #PBS -l walltime=01:00:00
@@ -12,6 +13,9 @@
 cd $PBS_O_WORKDIR
 source $HOME/.bashrc
 source $HOME/.profile
+
+module load pointwise/18.5R1
+
 bash clean.sh
 module load pointwise/18.5R1
 time python tester.py
