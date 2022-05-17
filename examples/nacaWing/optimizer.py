@@ -115,7 +115,7 @@ for istruct in range(thickCt):
 #add functions, obj and constraint
 sparseProb.addObj("obj")
 #stress constraint upper bound 1/1.5/2.5 = 0.267
-sparseProb.addConGroup("con", 1,upper=0.267)
+sparseProb.addConGroup("con", 1,upper=15.0)
 
 #setup SLSQP optimizer
 optOptions = {"IPRINT": -1}

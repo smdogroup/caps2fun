@@ -76,7 +76,31 @@ def makeDVdict():
             structind += 1
             DVdict.append(tempDict)
 
-    #print(DVdict)
+    thickIndex = thickCt + 1
+            
+    numDigits = len(str(thickIndex))
+    numZeros = numMaxDigits - numDigits
+    zeroStr = zeroString(numZeros)
+
+    #thickness = 0.001 * thickIndex #0.01
+    thickness = 0.01
+
+    DVname = "thick" + zeroStr + str(thickIndex)
+    DVnames.append(DVname)
+
+    #tempDict for stringers
+    tempDict = {"name" : DVname,
+                "type" : "struct",
+                "value" : thickness,
+                "capsGroup" : "stringer",
+                "active" : structActive,
+                "opt_ind" : DVind,
+                "group_ind" : structind}
+
+    if (structActive): DVind += 1
+    thickCt += 1
+    structind += 1
+    DVdict.append(tempDict)
 
     sorted = False
 
