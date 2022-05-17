@@ -1,3 +1,4 @@
+import os
 from caps2fun import Test, readnprocs
 
 # #design parameters for airfoil
@@ -19,11 +20,11 @@ def makeDVdict():
 
     #--------------Make initial design variable dicts-----------------------#
     DVdict = []
-    inits = [1.0, 10.0, 10.0, 6.0, 1.0]
+    inits = [40.0, 1.0, 10.0, 10.0, 1.0]
     ct = 0
     DVind = 0
     shapeind = 0
-    for dvname in ["chord0","diamAngle0","diamAnglef","span","taper"]:
+    for dvname in ["area", "chord0","diamAngle0","diamAnglef","taper"]:
         tempDict = {"name" : dvname,
                     "type" : "shape",
                     "value" : inits[shapeind],
@@ -64,7 +65,7 @@ def makeDVdict():
     nOML = nribs-1
     nspars = 1
 
-    print(nribs,nspars,stringerOn,nOML)
+    print(nribs,nspars,nOML)
     def zeroString(nzeros):
         string = ""
         for i in range(nzeros):

@@ -347,6 +347,9 @@ class Caps2Fun():
 
             self.capsStruct.geometry.cfgpmtr["cfdOn"].value = 0
 
+            #print the structure mesh deskeys
+            print("Design keys... {}".format(self.capsStruct.geometry.despmtr.keys())
+
             #self.cwrite("Initialized caps Struct AIM\n")
 
             #initialize pyCAPS fluid problem
@@ -481,6 +484,20 @@ class Caps2Fun():
 
     def fluidMeshSettings(self):
         if (self.mesh_style == "pointwise"):
+
+            #wall bc settings (wall is the OML)
+            if (self.fun3d_analysis_type == "inviscid"):
+                self.wallBC = {"bcType" : "inviscid"}
+                wallSpacing = 0.1
+            elif (self.fun3d_analysis_type == "laminar"):
+                wallSpacing = 0.01
+                self.wallBC = {"bcType" : "viscous",
+                "boundaryLayerSpacing" : wallSpacing}
+            elif (self.fun3d_analysis_type == "turbulent"):
+                wallSpacing = 0.01
+                self.wallBC = {"bcType" : "viscous",
+                "boundaryLayerSpacing" : wallSpacing}
+
             # Dump VTK files for visualization
             self.pointwiseAim.input.Proj_Name   = "TransportWing"
             self.pointwiseAim.input.Mesh_Format = "VTK"
@@ -497,7 +514,7 @@ class Caps2Fun():
             self.pointwiseAim.input.Domain_TRex_ARLimit = 40.0 #def 40.0, lower inc mesh size
             self.pointwiseAim.input.Domain_Decay        = 0.5
             self.pointwiseAim.input.Domain_Iso_Type = "Triangle" #"TriangleQuad"
-            self.pointwiseAim.input.Domain_Wall_Spacing = 0.10
+            self.pointwiseAim.input.Domain_Wall_Spacing = wallSpacing
 
             # Block level
             self.pointwiseAim.input.Block_Boundary_Decay       = 0.5
@@ -507,12 +524,11 @@ class Caps2Fun():
             self.pointwiseAim.input.Block_Full_Layers          = 1
             self.pointwiseAim.input.Block_Max_Layers           = 100
             self.pointwiseAim.input.Block_TRexType = "TetPyramid"
-            #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms).
+            #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms)        
 
-            # Set wall spacing for capsMesh == leftWing and capsMesh == riteWing
-            viscousWall  = {"boundaryLayerSpacing" : 0.001}
-            self.pointwiseAim.input.Mesh_Sizing = {"wall": {"bcType" : "inviscid"},
-                    "Farfield": {"bcType":"Farfield"}}
+        
+            self.pointwiseAim.input.Mesh_Sizing = {"wall": self.wallBC,
+                "Farfield": {"bcType":"Farfield"}}
 
         elif (self.mesh_style == "tetgen"):
             self.egadsFluidAim.input.Tess_Params = [0.01, 0.01, 0]
@@ -527,8 +543,9 @@ class Caps2Fun():
             self.tetgenAim.input.Mesh_Format = "AFLR3"
 
     def fun3dSettings(self):
-        viscousWall  = {"boundaryLayerSpacing" : 0.001}
-        self.fun3dAim.input.Boundary_Condition = {"wall": {"bcType" : "inviscid"},
+
+        
+        self.fun3dAim.input.Boundary_Condition = {"wall": self.wallBC,
                 "Farfield": {"bcType":"Farfield"}}
 
         #add thickDVs and geomDVs to caps

@@ -6,7 +6,7 @@ despmtr chord0 1.0
 despmtr diamAnglef 10
 
 #design parameters of wing
-despmtr span 6.0
+despmtr area 80.0
 despmtr AOA 0.0
 despmtr taper 1.0
 
@@ -16,8 +16,10 @@ cfgpmtr nrib 10
 cfgpmtr cfdOn 0
 
 #wing quantities
-set sspan span/2
 set chordf taper*chord0
+set cmean 0.5*(chord0+chordf)
+set span area/cmean
+set sspan span/2
 set toverc0 tand(diamAngle0)
 set tovercf tand(diamAnglef)
 
@@ -187,7 +189,9 @@ patend
 
 #make the fluid mesh
 patbeg foo ifzero(cfdOn-1,1,0)
-   set ff 10*chord0
+   set ff 20*chord0
+   set exspan 1.5*span
+   set ff sqrt(ff*ff+exspan*exspan)
     set df 2*ff
     #farfield
     box -ff -ff ff df df -df

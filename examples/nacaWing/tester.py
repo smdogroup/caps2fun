@@ -10,7 +10,7 @@ def makeDVdict():
 
     #--------------Make initial design variable dicts-----------------------#
     DVdict = []
-    inits = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 0.0,  0.5, 0.1, 0.1]
+    inits = [120.0, 6.0,  0.03, 0.03, 5.0,  5.0, 0.0,  0.5, 0.05, 0.05]
     ct = 0
     DVind = 0
     shapeind = 0

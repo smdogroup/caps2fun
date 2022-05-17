@@ -4,7 +4,7 @@
 despmtr   diamAngle0      10.00000
 despmtr   chord0       1.00000
 despmtr   diamAnglef      10.00000
-despmtr   span       6.00000
+despmtr   area      80.00000
 despmtr   AOA       0.00000
 despmtr   taper       1.00000
 cfgpmtr   nrib      10.00000
@@ -13,8 +13,10 @@ cfgpmtr   cfdOn       0.00000
 # Global Attributes:
 
 # Branches:
-set       sspan span/2
 set       chordf taper*chord0
+set       cmean 0.5*(chord0+chordf)
+set       span area/cmean
+set       sspan span/2
 set       toverc0 tand(diamAngle0)
 set       tovercf tand(diamAnglef)
 set       xmag0 chord0/2
@@ -156,7 +158,9 @@ attribute isface   $true
 attribute capsAIM   $egadsTessAIM;tacsAIM
 patend
 patbeg    foo   ifzero(cfdOn-1,1,0)
-   set       ff 10*chord0
+   set       ff 20*chord0
+   set       exspan 1.5*span
+   set       ff sqrt(ff*ff+exspan*exspan)
    set       df 2*ff
    box       -ff   -ff   ff   df   df   -df
    select    face
