@@ -1,203 +1,75 @@
-# /p/home/seanfire/git/caps2fun/examples/nacaWing/CAPS_fluid/Scratch/capsRestart.cpc written by ocsmSave (v1.21)
+# /p/home/seanfire/git/caps2fun/examples/diamondWing/CAPS_fluid/Scratch/capsRestart.cpc written by ocsmSave (v1.21)
 
 # Constant, Design, and Output Parameters:
+despmtr   diamAngle0      10.00000
+despmtr   chord0       1.00000
+despmtr   diamAnglef      10.00000
+despmtr   span       6.00000
+despmtr   AOA       0.00000
+despmtr   taper       1.00000
+cfgpmtr   nrib      10.00000
 cfgpmtr   cfdOn       0.00000
-cfgpmtr   nspar       2.00000
-cfgpmtr   nrib      16.00000
-cfgpmtr   sharpTE       0.00000
-cfgpmtr   TEfaceOn       1.00000
-cfgpmtr   nstringer       3.00000
-despmtr   area     120.00000
-despmtr   aspect       8.00000
-despmtr   taper       0.50000
-despmtr   ctwist       0.00000
-despmtr   lesweep       0.00000
-despmtr   dihedral       0.00000
-despmtr   tc0       0.10000
-despmtr   tcf       0.10000
-despmtr   camb0       0.05000
-despmtr   cambf       0.05000
-despmtr   ml0       0.40000
-despmtr   mlf       0.40000
-despmtr   ribSpaceFr       0.05000
-despmtr   stringerFr       0.08000
-dimension zrib   1   15
-despmtr   zrib[1,:]   "     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;     1.00000;"
-dimension xspar   1   3
-despmtr   xspar[1,:]   "     0.50000;     1.00000;     1.00000;"
 
 # Global Attributes:
 
 # Branches:
-set       cmean sqrt(area/aspect)
-set       span cmean*aspect
 set       sspan span/2
-set       croot 2*cmean/(1+taper)
-set       ctip croot*taper
-set       xtip sspan*tand(lesweep)
-set       ytip sspan*tand(dihedral)
-set       margin 0.05*cmean
-set       ybot -0.2*croot-margin
-set       ytop 0.2*croot+ytip+margin
-set       ctipEff ctip*cosd(ctwist)
-udprim    naca   thickness   tc0   Camber   camb0   maxloc   ml0   sharpte   sharpTE
-scale     croot   0   0   0
-udprim    naca   thickness   tcf   Camber   cambf   maxloc   mlf   sharpte   sharpTE
-scale     ctip   0   0   0
-rotatez   -ctwist   0   0
-translate xtip   ytip   -sspan
+set       chordf taper*chord0
+set       toverc0 tand(diamAngle0)
+set       tovercf tand(diamAnglef)
+set       xmag0 chord0/2
+set       thickness0 chord0*toverc0
+set       ymag0 thickness0/2
+mark
+skbeg     xmag0   0   0   0
+   linseg    0   ymag0   0
+   linseg    -xmag0   0   0
+   linseg    0   -ymag0   0
+   linseg    xmag0   0   0
+skend     0
+rotatez   -AOA   0   0
+set       xmagf chordf/2
+set       thicknessf chordf*tovercf
+set       ymagf thicknessf/2
+skbeg     xmagf   0   -sspan   0
+   linseg    0   ymagf   -sspan
+   linseg    -xmagf   0   -sspan
+   linseg    0   -ymagf   -sspan
+   linseg    xmagf   0   -sspan
+skend     0
+rotatez   -AOA   0   0
 loft      0
-store     wingloft   0   0
-set       smalltc0 tc0*(1-stringerFr)
-set       smalltcf tcf*(1-stringerFr)
-udprim    naca   thickness   smalltc0   Camber   camb0   maxloc   ml0   sharpte   sharpTE
-scale     croot   0   0   0
-udprim    naca   thickness   smalltcf   Camber   cambf   maxloc   mlf   sharpte   sharpTE
-scale     ctip   0   0   0
-rotatez   -ctwist   0   0
-translate xtip   ytip   -sspan
-loft      0
-store     smallWing   0   0
+select    face
+attribute compGroup   $OML
+attribute comp   $OML
+store     diamondLoft   0   0
 patbeg    foo   ifzero(cfdOn,1,0)
-   udprim    naca   thickness   tc0   Camber   camb0
-   scale     croot   0   0   0
-   udprim    naca   thickness   tcf   Camber   cambf
-   scale     ctip   0   0   0
-   rotatez   -ctwist   0   0
-   translate xtip   ytip   -sspan
-   loft      0
-   select    face   @nbody   2
-attribute capsGroup   $rib1
-attribute compGroup   $rib
-attribute capsConstraint   $wingRoot
-   select    face   @nbody   1
-attribute capsGroup   !$rib+nrib
-attribute compGroup   $rib
-   select    face   @nbody   3
-   select    add   @nbody   4
-attribute compGroup   $OML
-   patbeg    foo   ifzero(TEfaceOn-1,1,0)
-      select    add   @nbody   5
-attribute compGroup   $OML
-   patend
-   select    add   @nbody   1
-   select    add   @nbody   2
-   patbeg    foo   ifzero(TEfaceOn,1,0)
-      extract   @sellist
-   patend
-   patbeg    foo   ifzero(TEfaceOn-1,1,0)
-      hollow    0   0   0
-   patend
+   set       margin 0.1*chord0
+   box       0   -ymag0-margin   margin   0   2*(ymag0+margin)   -sspan-2*margin
    select    face
-attribute comp   $wing
-   store     wing   0   0
-   set       sparsum 0
-   set       sparfrac 0
-   patbeg    ispar   nspar
-      set       sparsum sparsum+!xspar[1,ispar]
-      set       sparfrac sparsum/xspar.sum
-      set       dx sparfrac*(croot-ctipEff)-xtip
-      set       hyp sqrt(sspan*sspan+dx*dx)
-      box       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
-      set       localSweep atand(dx/sspan)
-      rotatey   localSweep   0   0
-      translate sparfrac*croot   0   0
-      select    face
-attribute capsGroup   !$spar+ispar
-attribute capsMesh   !$spar+ispar
-attribute spar   ispar
-attribute comp   !$spar+ispar
+attribute capsGroup   $spar1
+attribute capsMesh   $spar1
+attribute spar   1
+attribute comp   $spar1
 attribute compGroup   $spar
-   patend
-   set       zribAdd 0
-   set       zfrac 0
-   set       ninnerrib nrib-2
-   patbeg    irib   ninnerrib
-      set       index irib+1
-      set       zribAdd zribAdd+!zrib[1,irib]
-      set       zfrac zribAdd/zrib.sum
-      set       xleft zfrac*xtip
-      set       clocal croot*(1-zfrac)+ctip*zfrac
-      set       xright clocal+xleft
-      set       dx xright-xleft+margin
-      set       ribSpace dx*ribSpaceFr
-      set       dx dx-ribSpace
-      set       zcoord -zfrac*sspan
-      box       xleft-margin   ybot   zcoord   dx   ytop-ybot   0
-      box       xright-ribSpace   ybot   zcoord   ribSpace*1.1   ytop-ybot   0
+   set       xmmag xmag0+margin
+   set       ymmag ymag0+margin
+   patbeg    irib   nrib
+      set       zpos -(irib-1)/(nrib-1)*sspan
+      box       -xmmag   -ymmag   zpos   2*xmmag   2*ymmag   0
       select    face
-attribute extractGroup   $chipRib
-      union     0   0   0
-      select    face
-attribute capsGroup   !$rib+index
-attribute capsMesh   !$rib+index
-attribute comp   !$rib+index
+attribute capsGroup   !$rib+irib
+attribute capsMesh   !$rib+irib
+attribute comp   !$rib+irib
 attribute compGroup   $rib
-      patbeg    foo   ifzero(irib-1,nspar,1)
+      patbeg    foo   ifzero(irib-1,1,1)
          union     0   0   0
       patend
    patend
-   restore   wingloft   0
+   restore   diamondLoft   0
    intersect none   1   0
-   restore   wing   0
-   union     0   0   0
-   store     mainwing   0   0
-   box       -croot   -1   0   2*croot   2   0
-   select    face
-attribute capsGroup   $rib1
-attribute capsMesh   $rib1
-attribute comp   $rib
-attribute compGroup   $rib
-   box       -ctip   -1   0   2*ctip   2   0
-   translate xtip   ytip   -sspan
-   select    face
-attribute capsGroup   !$rib+nrib
-attribute capsMesh   !$rib+nrib
-attribute comp   $rib
-attribute compGroup   $rib
-   set       sparsum 0
-   set       sparfrac 0
-   patbeg    ispar   nspar
-      set       sparsum sparsum+!xspar[1,ispar]
-      set       sparsum2 sparsum+!xspar[1,ispar+1]
-      set       sparfrac sparsum/xspar.sum
-      set       sparfrac2 sparsum2/xspar.sum
-      patbeg    istringer   nstringer
-         set       newfrac sparfrac+istringer/(nstringer+1)*(sparfrac2-sparfrac)
-         set       dx newfrac*(croot-ctipEff)-xtip
-         set       hyp sqrt(sspan*sspan+dx*dx)
-         box       0   ybot   margin   0   ytop-ybot   -hyp-2*margin
-         set       localSweep atand(dx/sspan)
-         rotatey   localSweep   0   0
-         translate newfrac*croot   0   0
-         select    face
-attribute capsGroup   $stringer
-attribute capsMesh   $stringer
-attribute stringer   istringer
-attribute comp   $stringer
-attribute compGroup   $stringer
-         patbeg    foo   ifzero(ispar+istringer-2,2,1)
-            union     0   0   0
-         patend
-      patend
-   patend
-   store     stringerspars   0   0
-   restore   stringerspars   0
-   restore   smallWing   0
-   subtract  none   1   0
-   restore   wingloft   0
-   intersect none   1   0
-   store     bottomStringers   0   0
-   restore   stringerspars   0
-   restore   wingloft   0
-   intersect none   1   0
-   restore   smallWing   0
-   subtract  none   1   0
-   store     topStringers   0   0
-   restore   mainwing   0
-   restore   topStringers   0
-   union     0   0   0
-   restore   bottomStringers   0
+   restore   diamondLoft   0
+   hollow    0   0   0
    union     0   0   0
    select    face
 attribute isface   $true
@@ -234,6 +106,16 @@ attribute isface   $true
 		SET capsMesh=OML1
 		SET _color=!OMLcolor
 		SET colored=true
+   
+   		FACE HAS _color=red
+		AND ADJ2FACE comp=OML1
+		AND HAS compGroup=OML
+		SET  comp=rib1
+		SET  capsGroup=rib1
+		SET capsMesh=rib1
+		SET _color=!ribColor
+		SET colored=true
+   		SET capsConstraint=wingRoot
 
 		FACE HAS _color=red
 		AND ADJ2FACE comp=!$rib+(nrib-1)
@@ -242,6 +124,15 @@ attribute isface   $true
 		SET capsGroup=!$OML+nOML
 		SET capsMesh=!$OML+nOML
 		SET _color=!OMLcolor
+		SET colored=true
+   
+   		FACE HAS _color=red
+		AND ADJ2FACE comp=!$OML+nOML
+		AND HAS compGroup=OML
+		SET  comp=!$rib+nrib
+		SET  capsGroup=!$rib+nrib
+		SET capsMesh=!$rib+nrib
+		SET _color=!ribColor
 		SET colored=true
 
 		FACE HAS compGroup=spar
@@ -255,29 +146,6 @@ attribute isface   $true
 		EDGE ADJ2FACE  compGroup=OML
 		SET _color=black
 
-		FACE HAS comp=stringer
-		SET _color=!stringerColor
-		SET colored=true
-
-		EDGE ADJ2FACE comp=stringer
-		SET _color=red
-		SET _adj=stringer
-
-		FACE HAS colored=false
-		AND ADJ2FACE capsGroup=rib1
-		SET comp=!$rib
-		SET capsGroup=!$rib1
-		SET capsMesh=!$rib1
-		SET _color=!ribColor
-		SET capsConstraint=wingRoot
-
-		FACE HAS colored=false
-		AND ADJ2FACE capsGroup=!$rib+nrib
-		SET comp=!$rib
-		SET capsGroup=!$rib+nrib
-		SET capsMesh=!$rib+nrib
-		SET _color=!ribColor
-
 		EDGE  ADJ2FACE  capsConstraint=wingRoot
 		SET   capsConstraint=wingRoot
 		NODE  ADJ2FACE  capsConstraint=wingRoot
@@ -288,14 +156,14 @@ attribute isface   $true
 attribute capsAIM   $egadsTessAIM;tacsAIM
 patend
 patbeg    foo   ifzero(cfdOn-1,1,0)
-   set       ff 20*cmean
+   set       ff 10*chord0
    set       df 2*ff
    box       -ff   -ff   ff   df   df   -df
    select    face
 attribute capsGroup   $Farfield
 attribute capsMesh   $Farfield
 attribute capsMeshLength   3.0
-   restore   wingloft   0
+   restore   diamondLoft   0
    select    face
 attribute capsGroup   $wall
 attribute capsMesh   $wall
