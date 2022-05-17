@@ -420,13 +420,13 @@ class Caps2Fun():
         self.tacsAim.input.Analysis_Type = "Static"
 
         #materials section    
-        madeupium    = {"materialType" : "isotropic",
+        aluminum    = {"materialType" : "isotropic",
                         "youngModulus" : 72.0E9 ,
                         "poissonRatio": 0.33,
                         "density" : 2.8E3,
                         "tensionAllow" :  20.0e7}
 
-        self.tacsAim.input.Material = {"madeupium": madeupium}
+        self.tacsAim.input.Material = {"aluminum": aluminum}
 
         # Material properties section
         propDict = {}
@@ -434,11 +434,20 @@ class Caps2Fun():
             if (DV["type"] == "struct"):
                 capsGroup = DV["capsGroup"]
                 if (len(capsGroup) > 0):
+
+                    bendingInertiaRatio = 1.0 #default
+                    #artificial boost to bending inertia as if stringers were there in OML
+                    if ("OML" in capsGroup):
+                        bendingInertiaRatio *= 20.0
+
+                    #make the shell property
                     shell = {"propertyType" : "Shell",
                         "membraneThickness" : DV["value"],
-                        "material"        : "madeupium",
-                        "bendingInertiaRatio" : 1.0, # Default
+                        "material"        : "aluminum",
+                        "bendingInertiaRatio" : bendingInertiaRatio, # Default
                         "shearMembraneRatio"  : 5.0/6.0} # Default
+
+                    
                     propDict[capsGroup] = shell
 
         self.tacsAim.input.Property = propDict
