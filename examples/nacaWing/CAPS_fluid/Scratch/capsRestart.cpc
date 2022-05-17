@@ -292,6 +292,8 @@ attribute capsAIM   $egadsTessAIM;tacsAIM
 patend
 patbeg    foo   ifzero(cfdOn-1,1,0)
    set       ff 20*cmean
+   set       exspan 1.5*span
+   set       ff sqrt(ff*ff+exspan*exspan)
    set       df 2*ff
    box       -ff   -ff   ff   df   df   -df
    select    face

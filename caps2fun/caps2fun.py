@@ -348,7 +348,7 @@ class Caps2Fun():
             self.capsStruct.geometry.cfgpmtr["cfdOn"].value = 0
 
             #print the structure mesh deskeys
-            print("Design keys... {}".format(self.capsStruct.geometry.despmtr.keys())
+            print("Design keys... {}".format(self.capsStruct.geometry.despmtr.keys()))
 
             #self.cwrite("Initialized caps Struct AIM\n")
 
@@ -439,15 +439,21 @@ class Caps2Fun():
                 if (len(capsGroup) > 0):
 
                     bendingInertiaRatio = 1.0 #default
+                    shearMembraneRatio = 5.0/6.0 #default
+
+                    boostFactor = 50.0
+
                     #artificial boost to bending inertia as if stringers were there in OML
-                    if ("OML" in capsGroup): bendingInertiaRatio *= 20.0
+                    if ("OML" in capsGroup): 
+                        bendingInertiaRatio *= boostFactor
+                        shearMembraneRatio *= boostFactor
 
                     #make the shell property
                     shell = {"propertyType" : "Shell",
                         "membraneThickness" : DV["value"],
                         "material"        : "aluminum",
                         "bendingInertiaRatio" : bendingInertiaRatio, # Default
-                        "shearMembraneRatio"  : 5.0/6.0} # Default
+                        "shearMembraneRatio"  : shearMembraneRatio} # Default
 
                     
                     propDict[capsGroup] = shell
@@ -640,9 +646,16 @@ class Caps2Fun():
 
         #mesh elasticity settings
         self.fun3dnml["elasticity_gmres"] = f90nml.Namelist()
+        self.fun3dnml["elasticity_gmres"]["algebraic_mesh_deform"] = False #default False
         self.fun3dnml["elasticity_gmres"]["nsearch"] = 200
         self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-10
-
+        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 10
+        self.fun3dnml["elasticity_gmres"]["deform_from_initial_mesh"] = False
+        self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = True
+        self.fun3dnml["elasticity_gmres"]["elasticity"] = 2 #default 1
+        self.fun3dnml["elasticity_gmres"]["elasticity_exponent"] = 2.0 #default false
+        self.fun3dnml["elasticity_gmres"]["nrestarts"] = 1
+        
         #massoud output settings
         self.fun3dnml["massoud_output"] = f90nml.Namelist()
         self.fun3dnml["massoud_output"]["funtofem_include_skin_friction"] = False
@@ -1021,6 +1034,28 @@ class Caps2Fun():
             #write the moving_body.input file
             self.moving_body_input.write(os.path.join(caps_flow_dir, "moving_body.input"), force=True)
 
+            #add names of the BCs to the mapbc file
+            mapbc = os.path.join(caps_flow_dir, "fun3d_CAPS.mapbc")
+            mapbc_hdl = open(mapbc, "r")
+            lines = mapbc_hdl.readlines()
+            mapbc_hdl.close()
+            wr_hdl = open(mapbc,"w")
+            newlines = []
+            bc_inds = ["1","2"]
+            bc_names = ["Farfield", "wall"]
+            ind = 0
+            for line in lines:
+                chunks = line.split(" ")
+                if (len(chunks) > 1):
+                    line = line.strip()
+                    if (bc_inds[ind] in chunks[0]):
+                        line += " " + bc_names[ind]
+                        ind += 1
+                    line += "\n"
+
+                wr_hdl.write(line)
+            wr_hdl.close()
+                    
             #move perturb.input from archive folder if complex mode
             if (self.complex):
                 src = os.path.join(self.root_dir,"archive","perturb.input")
@@ -1844,6 +1879,8 @@ class Optimize():
 class Test():
     def __init__(self, DVdict, functions=None):
 
+        self.root_dir = os.getcwd()
+
         #copy the DV dict
         self.DVdict = DVdict
 
@@ -1877,6 +1914,26 @@ class Test():
         #run funtofem analysis
         callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/output.txt".format(self.n_procs)
         os.system(callMessage)
+
+    def multiForward(self, nruns):
+        #run the forward analysis multiple times and store the funtofem.output files in a data folder
+        
+        funtofemFolder = os.path.join(self.root_dir, "funtofem")
+        dataFolder = os.path.join(funtofemFolder, "data")
+        if (not(os.path.exists(funtofemFolder))): mkdir(funtofemFolder)
+        if (not(os.path.exists(dataFolder))): mkdir(dataFolder)
+
+        for irun in range(nruns):
+            
+            #call the forward analysis
+            self.runForward()
+
+            #copy the funtofem.out file to the data folder
+            src = os.path.join(funtofemFolder, "funtofem.out")
+            filename = "funtofem" + str(irun+1) + ".out"
+            dest = os.path.join(dataFolder, filename)
+            shutil.copy(src, dest)
+            
 
     def runForward(self):
         #write the F2F input file for adjoint mode
