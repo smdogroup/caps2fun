@@ -1,3 +1,4 @@
+import os
 from caps2fun import Test
 
 #main script to run
@@ -25,10 +26,39 @@ def makeDVdict():
         if (shapeActive): DVind += 1
         shapeind += 1
 
-    #setup thick DVs
-    nribs = 16
-    nspars = 2
+    ##--------------setup thick DVs------------------##
+    #get csm file name from funtofem.cfg
+    cfgFile = os.path.join(os.getcwd(),"funtofem", "funtofem.cfg")
+    cfghdl = open(cfgFile, "r")
+    lines = cfghdl.readlines()
+    csmPrefix = ""
+    for line in lines:
+        if ("csm" in line):
+            chunks = line.split(" = ")
+            csmPrefix = chunks[1].strip()
+    cfghdl.close()
+    csmFile = csmPrefix + ".csm"
+
+    #read csm file to count the current configuration
+    csmhdl = open(csmFile, "r")
+    lines = csmhdl.readlines()
+    csmhdl.close()
+    nribs = 0
+    nspars = 0
+    stringerOn = 0
+
+    for line in lines:
+        chunks = line.split(" ")
+        cfgpmtr = "cfgpmtr" in chunks[0]
+        if (cfgpmtr):
+            print(chunks)
+            if ("nrib" in chunks[1]): nribs = int(chunks[2].strip())
+            if ("nspar" in chunks[1]): nspars = int(chunks[2].strip())
+            if ("stringerOn" in chunks[1]): stringerOn = int(chunks[2].strip())
+
     nOML = nribs-1
+
+    print(nribs,nspars,stringerOn,nOML)
 
     def zeroString(nzeros):
         string = ""
@@ -76,31 +106,34 @@ def makeDVdict():
             structind += 1
             DVdict.append(tempDict)
 
-    thickIndex = thickCt + 1
-            
-    numDigits = len(str(thickIndex))
-    numZeros = numMaxDigits - numDigits
-    zeroStr = zeroString(numZeros)
+    
+    #add stringer caps group DV if turned on
+    if (stringerOn == 1):
 
-    #thickness = 0.001 * thickIndex #0.01
-    thickness = 0.01
+        thickIndex = thickCt + 1
+        numDigits = len(str(thickIndex))
+        numZeros = numMaxDigits - numDigits
+        zeroStr = zeroString(numZeros)
 
-    DVname = "thick" + zeroStr + str(thickIndex)
-    DVnames.append(DVname)
+        #thickness = 0.001 * thickIndex #0.01
+        thickness = 0.01
 
-    #tempDict for stringers
-    tempDict = {"name" : DVname,
-                "type" : "struct",
-                "value" : thickness,
-                "capsGroup" : "stringer",
-                "active" : structActive,
-                "opt_ind" : DVind,
-                "group_ind" : structind}
+        DVname = "thick" + zeroStr + str(thickIndex)
+        DVnames.append(DVname)
 
-    if (structActive): DVind += 1
-    thickCt += 1
-    structind += 1
-    DVdict.append(tempDict)
+        #tempDict for stringers
+        tempDict = {"name" : DVname,
+                    "type" : "struct",
+                    "value" : thickness,
+                    "capsGroup" : "stringer",
+                    "active" : structActive,
+                    "opt_ind" : DVind,
+                    "group_ind" : structind}
+
+        if (structActive): DVind += 1
+        thickCt += 1
+        structind += 1
+        DVdict.append(tempDict)
 
     sorted = False
 
