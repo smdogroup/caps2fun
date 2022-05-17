@@ -437,8 +437,7 @@ class Caps2Fun():
 
                     bendingInertiaRatio = 1.0 #default
                     #artificial boost to bending inertia as if stringers were there in OML
-                    if ("OML" in capsGroup):
-                        bendingInertiaRatio *= 20.0
+                    if ("OML" in capsGroup): bendingInertiaRatio *= 20.0
 
                     #make the shell property
                     shell = {"propertyType" : "Shell",
@@ -1395,6 +1394,41 @@ class TACSinterface(TacsSteadyInterface):
         f5.writeToFile(tacsOutFile)
 
 ##----------Supporting Methods and Classes --------------##
+
+def readnprocs(root_dir=None):
+    #get root dir
+    if (root_dir is None):
+        root_dir = os.getcwd()
+
+    #read the nprocs from run.pbs
+    runpbs = os.path.join(root_dir, "run.pbs")
+    hdl = open(runpbs, "r")
+    lines = hdl.readlines()
+    hdl.close()
+
+    #line with nprocs has this format:
+    #PBS -l select=4:ncpus=48:mpiprocs=48
+    #assume last two numbers are always the same
+
+    ntotprocs = 0
+    for line in lines:
+        if ("#PBS -l select=" in line):
+            chunks = line.split("=")
+            # 4:ncpus
+            chunk1 = chunks[1]
+            subchunk1 = chunk1.split(":")[0]
+            ncpus = int(subchunk1)
+            # 48:mpiprocs
+            chunk2 = chunks[2]
+            subchunk2 = chunk2.split(":")[0]
+            nprocs = int(subchunk2)
+
+            #total number of procs is product of these two
+            ntotprocs = ncpus * nprocs
+
+    return ntotprocs    
+
+
 def writeInput(DVdict, functions, mode="adjoint", eps=None, x_direction=None):
     # script to write the design variables to funtofem
     # sends them in the file funtofem.in
@@ -1571,7 +1605,7 @@ class Optimize():
         self.optimizationMode = optimizationMode
 
         #other information such as analysis type, mesher type is  setup in funtofem.py
-        self.n_procs = 192
+        self.n_procs = readnprocs()
 
         #make status file
         statusFile = os.path.join(os.getcwd(), "opt_status.out")
@@ -1791,13 +1825,13 @@ class Optimize():
         return sens, self.fail
 
 class Test():
-    def __init__(self, DVdict, n_procs=192, functions=None):
+    def __init__(self, DVdict, functions=None):
 
         #copy the DV dict
         self.DVdict = DVdict
 
         #set the num procs
-        self.n_procs = n_procs
+        self.n_procs = readnprocs()
 
         #set the functions to check
         self.functions = functions
