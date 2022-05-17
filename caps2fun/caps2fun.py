@@ -348,7 +348,7 @@ class Caps2Fun():
             self.capsStruct.geometry.cfgpmtr["cfdOn"].value = 0
 
             #print the structure mesh deskeys
-            print("Design keys... {}".format(self.capsStruct.geometry.despmtr.keys())
+            print("Design keys... {}".format(self.capsStruct.geometry.despmtr.keys()))
 
             #self.cwrite("Initialized caps Struct AIM\n")
 
