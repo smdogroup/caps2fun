@@ -126,6 +126,10 @@ class Caps2Fun():
         self.constraintType = None
         self.f2f_analysis_type = None
         self.fun3d_analysis_type = None
+        self.mach = None
+        self.AOA = None
+        self.temperature = None
+        self.Re = None
 
         #subfunction to parse the config file, used for each case
         def parseFile(file):
@@ -156,6 +160,15 @@ class Caps2Fun():
                     self.f2f_analysis_type = chunk
                 elif ("fun3d_analysis" in line):
                     self.fun3d_analysis_type = chunk
+                elif ("mach" in line):
+                    self.mach = float(chunk)
+                elif ("AOA" in line):
+                    self.AOA = float(chunk)
+                elif ("temperature" in line):
+                    self.temperature = float(chunk)
+                elif ("Re" in line):
+                    self.Re = float(chunk)
+                
             print(self.capsConstraint, self.constraintType)
             handle.close()
 
@@ -191,7 +204,10 @@ class Caps2Fun():
         self.capsConstraint = self.comm.bcast(self.capsConstraint, root=0)
         self.constraintType = self.comm.bcast(self.constraintType, root=0)    
         self.f2f_analysis_type = self.comm.bcast(self.f2f_analysis_type, root=0)
-        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)     
+        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)    
+        self.mach = self.comm.bcast(self.mach, root=0) 
+        self.AOA = self.comm.bcast(self.AOA, root=0) 
+        self.temperature = self.comm.bcast(self.temperature, root=0) 
         
 
     def makeStatusFile(self):
@@ -439,15 +455,22 @@ class Caps2Fun():
                 if (len(capsGroup) > 0):
 
                     bendingInertiaRatio = 1.0 #default
+                    shearMembraneRatio = 5.0/6.0 #default
+
+                    #factor to artificially boost OML bending and membrane stiffnesses as if stringers were there
+                    boostFactor = 20.0
+
                     #artificial boost to bending inertia as if stringers were there in OML
-                    if ("OML" in capsGroup): bendingInertiaRatio *= 20.0
+                    if ("OML" in capsGroup): 
+                        bendingInertiaRatio *= boostFactor
+                        shearMembraneRatio *= boostFactor
 
                     #make the shell property
                     shell = {"propertyType" : "Shell",
                         "membraneThickness" : DV["value"],
                         "material"        : "aluminum",
                         "bendingInertiaRatio" : bendingInertiaRatio, # Default
-                        "shearMembraneRatio"  : 5.0/6.0} # Default
+                        "shearMembraneRatio"  : shearMembraneRatio} # Default
 
                     
                     propDict[capsGroup] = shell
@@ -594,10 +617,10 @@ class Caps2Fun():
 
         #reference physical properties section
         self.fun3dnml["reference_physical_properties"] = f90nml.Namelist()
-        self.fun3dnml["reference_physical_properties"]["mach_number"] = 0.5
-        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = 3.0
-        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = 35.0e6
-        self.fun3dnml["reference_physical_properties"]["temperature"] = 300.0
+        self.fun3dnml["reference_physical_properties"]["mach_number"] = self.mach
+        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = self.AOA
+        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = self.Re
+        self.fun3dnml["reference_physical_properties"]["temperature"] = self.temperature
         self.fun3dnml["reference_physical_properties"]["temperature_units"] = "Kelvin"
         #self.capsFluid.analysis["fun3d"].input.Alpha = 1.0
         #self.capsFluid.analysis["fun3d"].input.Mach = 0.5
@@ -640,9 +663,17 @@ class Caps2Fun():
 
         #mesh elasticity settings
         self.fun3dnml["elasticity_gmres"] = f90nml.Namelist()
-        self.fun3dnml["elasticity_gmres"]["nsearch"] = 200
-        self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-10
-
+        self.fun3dnml["elasticity_gmres"]["algebraic_mesh_deform"] = False #default False
+        self.fun3dnml["elasticity_gmres"]["nsearch"] = 200 #default 50
+        self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-14
+        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 5 #default 1
+        self.fun3dnml["elasticity_gmres"]["deform_from_initial_mesh"] = True #default true
+        self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = True
+        self.fun3dnml["elasticity_gmres"]["elasticity"] = 1 #default 1, option 2
+        self.fun3dnml["elasticity_gmres"]["elasticity_exponent"] = 1.0 #default 1.0, change to 2.0 if needed
+        self.fun3dnml["elasticity_gmres"]["nrestarts"] = 1
+        self.fun3dnml["elasticity_gmres"]["poisson_ratio"] = -0.5
+        
         #massoud output settings
         self.fun3dnml["massoud_output"] = f90nml.Namelist()
         self.fun3dnml["massoud_output"]["funtofem_include_skin_friction"] = False
@@ -685,7 +716,7 @@ class Caps2Fun():
         self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
         self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
         self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
+        self.moving_body_input["body_definitions"]["mesh_movement"] = ["rigid+deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
         ##############################
         # fun3d settings for moving_body.input file
@@ -1021,6 +1052,28 @@ class Caps2Fun():
             #write the moving_body.input file
             self.moving_body_input.write(os.path.join(caps_flow_dir, "moving_body.input"), force=True)
 
+            #add names of the BCs to the mapbc file
+            mapbc = os.path.join(caps_flow_dir, "fun3d_CAPS.mapbc")
+            mapbc_hdl = open(mapbc, "r")
+            lines = mapbc_hdl.readlines()
+            mapbc_hdl.close()
+            wr_hdl = open(mapbc,"w")
+            newlines = []
+            bc_inds = ["1","2"]
+            bc_names = ["Farfield", "wall"]
+            ind = 0
+            for line in lines:
+                chunks = line.split(" ")
+                if (len(chunks) > 1):
+                    line = line.strip()
+                    if (bc_inds[ind] in chunks[0]):
+                        line += " " + bc_names[ind]
+                        ind += 1
+                    line += "\n"
+
+                wr_hdl.write(line)
+            wr_hdl.close()
+                    
             #move perturb.input from archive folder if complex mode
             if (self.complex):
                 src = os.path.join(self.root_dir,"archive","perturb.input")
@@ -1844,6 +1897,8 @@ class Optimize():
 class Test():
     def __init__(self, DVdict, functions=None):
 
+        self.root_dir = os.getcwd()
+
         #copy the DV dict
         self.DVdict = DVdict
 
@@ -1877,6 +1932,26 @@ class Test():
         #run funtofem analysis
         callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/output.txt".format(self.n_procs)
         os.system(callMessage)
+
+    def multiForward(self, nruns):
+        #run the forward analysis multiple times and store the funtofem.output files in a data folder
+        
+        funtofemFolder = os.path.join(self.root_dir, "funtofem")
+        dataFolder = os.path.join(funtofemFolder, "data")
+        if (not(os.path.exists(funtofemFolder))): mkdir(funtofemFolder)
+        if (not(os.path.exists(dataFolder))): mkdir(dataFolder)
+
+        for irun in range(nruns):
+            
+            #call the forward analysis
+            self.runForward()
+
+            #copy the funtofem.out file to the data folder
+            src = os.path.join(funtofemFolder, "funtofem.out")
+            filename = "funtofem" + str(irun+1) + ".out"
+            dest = os.path.join(dataFolder, filename)
+            shutil.copy(src, dest)
+            
 
     def runForward(self):
         #write the F2F input file for adjoint mode

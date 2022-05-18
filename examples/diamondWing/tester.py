@@ -7,8 +7,7 @@ from caps2fun import Test, readnprocs
 # despmtr diamAnglef 10
 
 # #design parameters of wing
-# despmtr span 6.0
-# despmtr AOA 0.0
+# despmtr area 40.0
 # despmtr taper 1.0
 
 #main script to run

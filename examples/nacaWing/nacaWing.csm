@@ -352,6 +352,8 @@ patend
 #fluid mesh section
 patbeg foo ifzero(cfdOn-1,1,0)
     set ff 20*cmean
+    set exspan 1.5*span
+    set ff sqrt(ff*ff+exspan*exspan)
     set df 2*ff
     #farfield
     box -ff -ff ff df df -df
@@ -382,5 +384,8 @@ patbeg foo ifzero(cfdOn-1,1,0)
    >>
 #end of fluid mesh section
 patend
+
+#rotate yz axes to match fun3d
+rotatex 90 0 0
 
 end

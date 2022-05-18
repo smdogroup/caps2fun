@@ -3,7 +3,8 @@
 /
 
 &governing_equations
-    viscous_terms = 'inviscid'
+    eqn_type = 'compressible'
+    viscous_terms = 'laminar'
 /
 
 &raw_grid
@@ -24,12 +25,16 @@
     flux_construction = 'roe'
     flux_limiter = 'hminmod'
     smooth_limiter_coeff = 1.0
-    freeze_limiter_iteration = 83
+    freeze_limiter_iteration = 166
 /
 
 &nonlinear_solver_parameters
     schedule_iteration = 1, 80
     schedule_cfl = 2, 100
+    time_accuracy = 'steady'
+    time_step_nondim = 0.1
+    subiterations = 0
+    schedule_cflturb = 50.0, 50.0
 /
 
 &force_moment_integ_properties
@@ -37,7 +42,7 @@
 /
 
 &code_run_control
-    steps = 100
+    steps = 200
     stopping_tolerance = 1e-15
     restart_write_freq = 1000
     restart_read = 'off'
@@ -50,8 +55,16 @@
 /
 
 &elasticity_gmres
+    algebraic_mesh_deform = .false.
     nsearch = 200
-    tol = 1e-10
+    tol = 1e-14
+    deformation_substeps = 10
+    deform_from_initial_mesh = .true.
+    use_substeps_each_step = .true.
+    elasticity = 1
+    elasticity_exponent = 1.0
+    nrestarts = 1
+    poisson_ratio = -0.5
 /
 
 &massoud_output
