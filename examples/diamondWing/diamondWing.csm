@@ -1,12 +1,13 @@
 #make diamond airfoil wing for supersonic test case
 
 #design parameters for airfoil
-despmtr diamAngle0 10
+despmtr diamAngle0 10.0
 despmtr chord0 1.0
-despmtr diamAnglef 10
+despmtr diamAnglef 10.0
+despmtr frchamfer 0.05
 
 #design parameters of wing
-despmtr area 80.0
+despmtr area 10.0
 despmtr AOA 0.0
 despmtr taper 1.0
 
@@ -27,17 +28,24 @@ set tovercf tand(diamAnglef)
 set xmag0 chord0/2
 set thickness0 chord0*toverc0
 set ymag0 thickness0/2
+set tchamf ymag0*frchamfer
 
 
 #make the solid diamond loft
 mark
 #make root diamond
-skbeg xmag0 0 0
-   linseg 0 ymag0 0
-   linseg -xmag0 0 0
-   linseg 0 -ymag0 0
-   linseg xmag0 0 0
+skbeg xmag0 tchamf 0
+   linseg tchamf ymag0 0
+   linseg -tchamf ymag0 0
+   linseg -xmag0 tchamf 0
+   linseg -xmag0 -tchamf 0
+   linseg -tchamf -ymag0 0
+   linseg tchamf -ymag0 0
+   linseg xmag0 -tchamf 0
+   linseg xmag0 tchamf 0
 skend
+store rootDiamond 0
+restore rootDiamond 0
 rotatez -AOA 0 0
 
 #tip airfoil quantities
@@ -46,12 +54,8 @@ set thicknessf chordf*tovercf
 set ymagf thicknessf/2
 
 #make tip diamond
-skbeg xmagf 0 -sspan
-   linseg 0 ymagf -sspan
-   linseg -xmagf 0 -sspan
-   linseg 0 -ymagf -sspan
-   linseg xmagf 0 -sspan
-skend
+restore rootDiamond 0
+translate 0 0 -sspan
 rotatez -AOA 0 0
 loft 0
 
@@ -220,7 +224,7 @@ patbeg foo ifzero(cfdOn-1,1,0)
    >>
 patend
 
-
-
+#rotate to match fun3d coordinates
+rotatex 90 0 0
 
    

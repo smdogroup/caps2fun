@@ -385,4 +385,7 @@ patbeg foo ifzero(cfdOn-1,1,0)
 #end of fluid mesh section
 patend
 
+#rotate yz axes to match fun3d
+rotatex 90 0 0
+
 end

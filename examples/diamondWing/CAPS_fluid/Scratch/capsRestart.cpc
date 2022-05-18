@@ -4,7 +4,8 @@
 despmtr   diamAngle0      10.00000
 despmtr   chord0       1.00000
 despmtr   diamAnglef      10.00000
-despmtr   area      80.00000
+despmtr   frchamfer       0.05000
+despmtr   area      10.00000
 despmtr   AOA       0.00000
 despmtr   taper       1.00000
 cfgpmtr   nrib      10.00000
@@ -22,23 +23,26 @@ set       tovercf tand(diamAnglef)
 set       xmag0 chord0/2
 set       thickness0 chord0*toverc0
 set       ymag0 thickness0/2
+set       tchamf ymag0*frchamfer
 mark
-skbeg     xmag0   0   0   0
-   linseg    0   ymag0   0
-   linseg    -xmag0   0   0
-   linseg    0   -ymag0   0
-   linseg    xmag0   0   0
+skbeg     xmag0   tchamf   0   0
+   linseg    tchamf   ymag0   0
+   linseg    -tchamf   ymag0   0
+   linseg    -xmag0   tchamf   0
+   linseg    -xmag0   -tchamf   0
+   linseg    -tchamf   -ymag0   0
+   linseg    tchamf   -ymag0   0
+   linseg    xmag0   -tchamf   0
+   linseg    xmag0   tchamf   0
 skend     0
+store     rootDiamond   0   0
+restore   rootDiamond   0
 rotatez   -AOA   0   0
 set       xmagf chordf/2
 set       thicknessf chordf*tovercf
 set       ymagf thicknessf/2
-skbeg     xmagf   0   -sspan   0
-   linseg    0   ymagf   -sspan
-   linseg    -xmagf   0   -sspan
-   linseg    0   -ymagf   -sspan
-   linseg    xmagf   0   -sspan
-skend     0
+restore   rootDiamond   0
+translate 0   0   -sspan
 rotatez   -AOA   0   0
 loft      0
 select    face
@@ -184,5 +188,6 @@ attribute capsMeshLength   1.0
       SET capsMeshLength=3.0
 >>
 patend
+rotatex   90   0   0
 
 end

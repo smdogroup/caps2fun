@@ -126,6 +126,10 @@ class Caps2Fun():
         self.constraintType = None
         self.f2f_analysis_type = None
         self.fun3d_analysis_type = None
+        self.mach = None
+        self.AOA = None
+        self.temperature = None
+        self.Re = None
 
         #subfunction to parse the config file, used for each case
         def parseFile(file):
@@ -156,6 +160,15 @@ class Caps2Fun():
                     self.f2f_analysis_type = chunk
                 elif ("fun3d_analysis" in line):
                     self.fun3d_analysis_type = chunk
+                elif ("mach" in line):
+                    self.mach = float(chunk)
+                elif ("AOA" in line):
+                    self.AOA = float(chunk)
+                elif ("temperature" in line):
+                    self.temperature = float(chunk)
+                elif ("Re" in line):
+                    self.Re = float(chunk)
+                
             print(self.capsConstraint, self.constraintType)
             handle.close()
 
@@ -191,7 +204,10 @@ class Caps2Fun():
         self.capsConstraint = self.comm.bcast(self.capsConstraint, root=0)
         self.constraintType = self.comm.bcast(self.constraintType, root=0)    
         self.f2f_analysis_type = self.comm.bcast(self.f2f_analysis_type, root=0)
-        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)     
+        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)    
+        self.mach = self.comm.bcast(self.mach, root=0) 
+        self.AOA = self.comm.bcast(self.AOA, root=0) 
+        self.temperature = self.comm.bcast(self.temperature, root=0) 
         
 
     def makeStatusFile(self):
@@ -441,7 +457,8 @@ class Caps2Fun():
                     bendingInertiaRatio = 1.0 #default
                     shearMembraneRatio = 5.0/6.0 #default
 
-                    boostFactor = 50.0
+                    #factor to artificially boost OML bending and membrane stiffnesses as if stringers were there
+                    boostFactor = 20.0
 
                     #artificial boost to bending inertia as if stringers were there in OML
                     if ("OML" in capsGroup): 
@@ -600,10 +617,10 @@ class Caps2Fun():
 
         #reference physical properties section
         self.fun3dnml["reference_physical_properties"] = f90nml.Namelist()
-        self.fun3dnml["reference_physical_properties"]["mach_number"] = 0.5
-        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = 3.0
-        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = 35.0e6
-        self.fun3dnml["reference_physical_properties"]["temperature"] = 300.0
+        self.fun3dnml["reference_physical_properties"]["mach_number"] = self.mach
+        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = self.AOA
+        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = self.Re
+        self.fun3dnml["reference_physical_properties"]["temperature"] = self.temperature
         self.fun3dnml["reference_physical_properties"]["temperature_units"] = "Kelvin"
         #self.capsFluid.analysis["fun3d"].input.Alpha = 1.0
         #self.capsFluid.analysis["fun3d"].input.Mach = 0.5
@@ -647,14 +664,15 @@ class Caps2Fun():
         #mesh elasticity settings
         self.fun3dnml["elasticity_gmres"] = f90nml.Namelist()
         self.fun3dnml["elasticity_gmres"]["algebraic_mesh_deform"] = False #default False
-        self.fun3dnml["elasticity_gmres"]["nsearch"] = 200
-        self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-10
-        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 10
-        self.fun3dnml["elasticity_gmres"]["deform_from_initial_mesh"] = False
+        self.fun3dnml["elasticity_gmres"]["nsearch"] = 200 #default 50
+        self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-14
+        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 5 #default 1
+        self.fun3dnml["elasticity_gmres"]["deform_from_initial_mesh"] = True #default true
         self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = True
-        self.fun3dnml["elasticity_gmres"]["elasticity"] = 2 #default 1
-        self.fun3dnml["elasticity_gmres"]["elasticity_exponent"] = 2.0 #default false
+        self.fun3dnml["elasticity_gmres"]["elasticity"] = 1 #default 1, option 2
+        self.fun3dnml["elasticity_gmres"]["elasticity_exponent"] = 1.0 #default 1.0, change to 2.0 if needed
         self.fun3dnml["elasticity_gmres"]["nrestarts"] = 1
+        self.fun3dnml["elasticity_gmres"]["poisson_ratio"] = -0.5
         
         #massoud output settings
         self.fun3dnml["massoud_output"] = f90nml.Namelist()
@@ -698,7 +716,7 @@ class Caps2Fun():
         self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
         self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
         self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
+        self.moving_body_input["body_definitions"]["mesh_movement"] = ["rigid+deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
         ##############################
         # fun3d settings for moving_body.input file
