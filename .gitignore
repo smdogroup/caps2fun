@@ -7,3 +7,6 @@
 **/__pycache__
 **/__pycache__/*
 **/examples/**/Scratch
+**/*.f5
+**/*.out
+**/*.pbs.o*
