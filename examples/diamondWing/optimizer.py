@@ -4,6 +4,7 @@ returns function, gradient information in funtofem.out file
 '''
 from pyoptsparse import PSQP, Optimization
 from caps2fun import Optimize as CapsOptimize
+import numpy as np
 
 optimizationMode = "structural"
 

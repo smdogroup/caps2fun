@@ -172,6 +172,7 @@ DVdict = makeDVdict()
 
 functions = ["ksfailure", "cl", "cd", "mass"]
 
-#start a derivative test
-mytest = Test(DVdict, functions=functions)
-mytest.runForward()
+# #start a derivative test
+# mytest = Test(DVdict, functions=functions)
+# mytest.runForward()
+

@@ -1,0 +1,59 @@
+Start Prologue v2.5.3 Wed May 18 13:44:28 EDT 2022 
+r2i0n6: MemFree:        184267944 kB
+End Prologue v2.5.3 Wed May 18 13:44:33 EDT 2022 
+JOBID  QSTAT_OUT 2194689
+EUID 0
+WORKSPACE /p/work1
+PBS_HOME /var/spool/pbs
+JOB_ID 2194689.pbsserver
+whoami root
+LOG /p/work1/PBS/prologue/2194689.pbsserver
+whoami root
+file workspace /p/work1: directory
+file /p /p: directory
+PBS_REQUESTED_CPH = 48
+PBS_REQUESTED_CPS = 172800
+jobStarter
+  
+	Module loaded.
+	If on HPC Portal in a GNOME session, start the application with:
+		 vglrun pointwise
+
+	Copy & Paste server info if using SRD, keyboard mapping is incorrect.
+
+capi_return is NULL
+Call-back cb_obj_in_psqp__user__routines failed.
+NOT CMPLX_MODE
+Traceback (most recent call last):
+  File "/p/home/seanfire/git/caps2fun/examples/nacaWing/optimizer.py", line 124, in <module>
+    sol = opt(sparseProb, sens=capsOpt.objGrad)
+  File "/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pyPSQP/pyPSQP.py", line 244, in __call__
+    psqp.psqp_wrap(nvar, ncon, xs, xi, blx, bux, cf, ic, cl, cu,
+  File "/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pyPSQP/pyPSQP.py", line 189, in pobj
+    self._internalEval(x)
+  File "/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pyOpt_optimizer.py", line 616, in _internalEval
+    fobj, fcon, gobj, gcon, fail = self._masterFunc(x, ["fobj", "fcon", "gobj", "gcon"])
+  File "/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pyOpt_optimizer.py", line 321, in _masterFunc
+    result = self._masterFunc2(*args)
+  File "/p/home/seanfire/miniconda3/lib/python3.9/site-packages/pyoptsparse/pyOpt_optimizer.py", line 352, in _masterFunc2
+    args = self.optProb.objFun(xuser)
+  File "/p/home/seanfire/git/caps2fun/caps2fun/caps2fun.py", line 1835, in objCon
+    self.writeInput(x)
+  File "/p/home/seanfire/git/caps2fun/caps2fun/caps2fun.py", line 1715, in writeInput
+    self.cwrite("\tDV names {}\n".format(names))
+NameError: name 'names' is not defined
+sys:1: ResourceWarning: unclosed file <_io.TextIOWrapper name='/p/home/seanfire/git/caps2fun/examples/nacaWing/opt_status.out' mode='w' encoding='UTF-8'>
+
+real	0m2.823s
+user	0m0.718s
+sys	0m0.504s
+Start Epilogue v2.5.3 Wed May 18 13:44:38 EDT 2022 
+Memory usage reported in GB
+                    % of     user     user     user    total    total
+Node               limit      max    limit  current  current     phys
+r2i0n6              0.18     0.32   175.00     0.26     5.58   187.31
+Memory summary:
+		min    0.32 GB
+		max    0.32 GB
+		ave    0.32 GB
+End Epilogue v2.5.3 Wed May 18 13:44:43 EDT 2022 

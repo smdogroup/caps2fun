@@ -1,7 +1,5 @@
-mode,forward
+mode,adjoint
 function,ksfailure
-function,cl
-function,cd
 function,mass
 thick01,struct,rib1,0.010000
 thick02,struct,rib2,0.010000

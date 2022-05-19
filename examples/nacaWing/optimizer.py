@@ -4,6 +4,7 @@ returns function, gradient information in funtofem.out file
 '''
 from pyoptsparse import PSQP, Optimization
 from caps2fun import Optimize as CapsOptimize
+import numpy as np
 
 optimizationMode = "structural"
 
@@ -115,7 +116,7 @@ for istruct in range(thickCt):
 #add functions, obj and constraint
 sparseProb.addObj("obj")
 #stress constraint upper bound 1/1.5/2.5 = 0.267
-sparseProb.addConGroup("con", 1,upper=15.0)
+sparseProb.addConGroup("con", 1,upper=0.5)
 
 #setup SLSQP optimizer
 optOptions = {"IPRINT": -1}

@@ -421,7 +421,7 @@ class Caps2Fun():
         self.tacsAim.input.Proj_Name = self.mesh_style
         
         #Egads Aim section, for mesh
-        self.egadsAim.input.Edge_Point_Min = 10
+        self.egadsAim.input.Edge_Point_Min = 5
         self.egadsAim.input.Edge_Point_Max = 20
 
         self.egadsAim.input.Mesh_Elements = "Quad"
@@ -666,13 +666,13 @@ class Caps2Fun():
         self.fun3dnml["elasticity_gmres"]["algebraic_mesh_deform"] = False #default False
         self.fun3dnml["elasticity_gmres"]["nsearch"] = 200 #default 50
         self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-14
-        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 5 #default 1
+        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 1 #default 1, other value 5
         self.fun3dnml["elasticity_gmres"]["deform_from_initial_mesh"] = True #default true
-        self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = True
+        self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = False #default False, need to turn to True if deformation_substeps used
         self.fun3dnml["elasticity_gmres"]["elasticity"] = 1 #default 1, option 2
         self.fun3dnml["elasticity_gmres"]["elasticity_exponent"] = 1.0 #default 1.0, change to 2.0 if needed
         self.fun3dnml["elasticity_gmres"]["nrestarts"] = 1
-        self.fun3dnml["elasticity_gmres"]["poisson_ratio"] = -0.5
+        self.fun3dnml["elasticity_gmres"]["poisson_ratio"] = 0.0 #default 0.0
         
         #massoud output settings
         self.fun3dnml["massoud_output"] = f90nml.Namelist()
@@ -1875,8 +1875,8 @@ class Optimize():
             conname = ""
         
 
-        self.cwrite("\t {} Obj grad = {}\n".format(objname,objGrad))
-        self.cwrite("\t{} Con grad = {}\n".format(conname,conGrad))
+        #self.cwrite("\t {} Obj grad = {}\n".format(objname,objGrad))
+        #self.cwrite("\t{} Con grad = {}\n".format(conname,conGrad))
 
         sens = {}
         iDV = 0

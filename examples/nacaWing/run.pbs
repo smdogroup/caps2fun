@@ -16,5 +16,5 @@ source $HOME/.profile
 
 bash clean.sh
 module load pointwise/18.5R1
-time python tester.py
-#time python optimizer.py
+#time python tester.py
+time python optimizer.py
