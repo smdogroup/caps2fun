@@ -14,10 +14,10 @@ despmtr   taper       0.50000
 despmtr   ctwist       0.00000
 despmtr   lesweep       0.00000
 despmtr   dihedral       0.00000
-despmtr   tc0       0.10000
-despmtr   tcf       0.10000
-despmtr   camb0       0.05000
-despmtr   cambf       0.05000
+despmtr   tc0       0.12000
+despmtr   tcf       0.12000
+despmtr   camb0       0.02000
+despmtr   cambf       0.02000
 despmtr   ml0       0.40000
 despmtr   mlf       0.40000
 despmtr   ribSpaceFr       0.05000
@@ -317,5 +317,6 @@ attribute capsMeshLength   1.0
       SET capsMeshLength=3.0
 >>
 patend
+rotatex   90   0   0
 
 end

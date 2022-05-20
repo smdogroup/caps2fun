@@ -1,6 +1,5 @@
 import os
-from caps2fun import Test, readnprocs
-
+from caps2fun import Test
 # #design parameters for airfoil
 # despmtr diamAngle0 10
 # despmtr chord0 1.0
@@ -151,3 +150,4 @@ functions = ["ksfailure", "cl", "cd", "mass"]
 #start a derivative test
 mytest = Test(DVdict, functions=functions)
 mytest.runForward()
+#mytest.derivativeTest()

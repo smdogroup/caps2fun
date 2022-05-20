@@ -24,14 +24,15 @@ set       xmag0 chord0/2
 set       thickness0 chord0*toverc0
 set       ymag0 thickness0/2
 set       tchamf ymag0*frchamfer
+set       wchamf tchamf*4
 mark
 skbeg     xmag0   tchamf   0   0
-   linseg    tchamf   ymag0   0
-   linseg    -tchamf   ymag0   0
+   linseg    wchamf   ymag0   0
+   linseg    -wchamf   ymag0   0
    linseg    -xmag0   tchamf   0
    linseg    -xmag0   -tchamf   0
-   linseg    -tchamf   -ymag0   0
-   linseg    tchamf   -ymag0   0
+   linseg    -wchamf   -ymag0   0
+   linseg    wchamf   -ymag0   0
    linseg    xmag0   -tchamf   0
    linseg    xmag0   tchamf   0
 skend     0

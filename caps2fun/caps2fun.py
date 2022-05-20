@@ -117,19 +117,7 @@ class Caps2Fun():
         #read the config files
 
         #initial values of each setting
-        self.mesh_style = None
-        self.n_tacs_procs = None
-        self.nsteps = None
-        self.scenario_name = None
-        self.csmFile = None
-        self.capsConstraint = None
-        self.constraintType = None
-        self.f2f_analysis_type = None
-        self.fun3d_analysis_type = None
-        self.mach = None
-        self.AOA = None
-        self.temperature = None
-        self.Re = None
+        self.config = None
 
         #subfunction to parse the config file, used for each case
         def parseFile(file):
@@ -143,72 +131,62 @@ class Caps2Fun():
                 else:
                     chunk = None
                 if ("mesh_style" in line):
-                    self.mesh_style = chunk
+                    self.config["mesh_style"] = chunk
                 elif ("n_tacs_procs" in line):
-                    self.n_tacs_procs = int(chunk)
+                    self.config["n_tacs_procs"] = int(chunk)
                 elif ("n_steps" in line):
-                    self.nsteps = int(chunk)
+                    self.config["nsteps"] = int(chunk)
                 elif ("scenario_name" in line):
-                    self.scenario_name = chunk
+                    self.config["scenario_name"] = chunk
                 elif ("csm_file" in line):
-                    self.csmFile = chunk + ".csm"
+                    self.config["csmFile"] = chunk + ".csm"
                 elif ("caps_constraint" in line):
-                    self.capsConstraint = chunk
+                    self.config["capsConstraint"] = chunk
                 elif ("constraint_type" in line):
-                    self.constraintType = int(chunk)
+                    self.config["constraintType"] = int(chunk)
                 elif ("f2f_analysis" in line):
-                    self.f2f_analysis_type = chunk
+                    self.config["f2f_analysis_type"] = chunk
                 elif ("fun3d_analysis" in line):
-                    self.fun3d_analysis_type = chunk
+                    self.config["fun3d_analysis_type"] = chunk
                 elif ("mach" in line):
-                    self.mach = float(chunk)
+                    self.config["mach"] = float(chunk)
                 elif ("AOA" in line):
-                    self.AOA = float(chunk)
+                    self.config["AOA"] = float(chunk)
                 elif ("temperature" in line):
-                    self.temperature = float(chunk)
+                    self.config["temperature"] = float(chunk)
                 elif ("Re" in line):
-                    self.Re = float(chunk)
+                    self.config["Re"] = float(chunk)
+                elif ("qinf" in line):
+                    self.config["qinf"] = float(chunk)
+                elif ("thermal_scale" in line):
+                    self.config["thermal_scale"] = float(chunk)
                 
-            print(self.capsConstraint, self.constraintType)
             handle.close()
 
 
-        #get the caps2fun directory
-        self.caps2fun_dir = None
-        self.src_dir = None
-        for path in sys.path:
-            if ("caps2fun/caps2fun" in path):
-                self.src_dir = path
-            elif ("caps2fun" in path):
-                self.caps2fun_dir = path
+        #get the caps2fun environment directory
+        self.caps2fun_dir = os.environ["CAPS2FUN"]
+        self.src_dir = os.path.join(self.caps2fun_dir, "caps2fun")
 
         #read config on root proc
         if (self.comm.Get_rank() == 0):
-            #default config file
-            cfg_file = os.path.join(self.src_dir, "default.cfg")
+            #initialize config attribute
+            self.config = {}
+
+            #read default config file
+            default_cfg = os.path.join(self.src_dir, "default.cfg")
+            parseFile(default_cfg)
 
             funtofem_folder = os.path.join(self.root_dir, "funtofem")
             if (not(os.path.exists(funtofem_folder))): os.mkdir(funtofem_folder)
             funtofem_cfg = os.path.join(funtofem_folder, "funtofem.cfg")
             if (not(os.path.exists(funtofem_cfg))): 
-                shutil.copy(cfg_file, funtofem_cfg)
+                shutil.copy(default_cfg, funtofem_cfg)
                 sys.exit("The funtofem/funtofem.cfg file was missing. A copy has been created - edit and then run it again.\n")
             parseFile(funtofem_cfg)
 
         #now broadcast results from reading the config file
-        self.mesh_style = self.comm.bcast(self.mesh_style, root=0)
-        self.n_tacs_procs = self.comm.bcast(self.n_tacs_procs, root=0)
-        self.nsteps = self.comm.bcast(self.nsteps, root=0)
-        self.scenario_name = self.comm.bcast(self.scenario_name, root=0)
-        self.csmFile = self.comm.bcast(self.csmFile, root=0)
-        self.capsConstraint = self.comm.bcast(self.capsConstraint, root=0)
-        self.constraintType = self.comm.bcast(self.constraintType, root=0)    
-        self.f2f_analysis_type = self.comm.bcast(self.f2f_analysis_type, root=0)
-        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)    
-        self.mach = self.comm.bcast(self.mach, root=0) 
-        self.AOA = self.comm.bcast(self.AOA, root=0) 
-        self.temperature = self.comm.bcast(self.temperature, root=0) 
-        
+        self.config = self.comm.bcast(self.config, root=0)        
 
     def makeStatusFile(self):
         #initialize time
@@ -335,8 +313,6 @@ class Caps2Fun():
         self.DVdict = self.comm.bcast(self.DVdict, root=0)
         self.functionNames = self.comm.bcast(self.functionNames, root=0)
         self.mode = self.comm.bcast(self.mode, root=0)
-        self.f2f_analysis_type = self.comm.bcast(self.f2f_analysis_type, root=0)
-        self.fun3d_analysis_type = self.comm.bcast(self.fun3d_analysis_type, root=0)
         self.complex = self.comm.bcast(self.complex,root=0)
 
         if (self.mode == "adjoint"):
@@ -349,16 +325,13 @@ class Caps2Fun():
             self.eps = self.comm.bcast(self.eps, root=0)
             self.x_dir = self.comm.bcast(self.x_dir,root=0)
 
-            #turn on complex mode environment
-            #os.environ['CMPLX_MODE'] = "1"
-
     def initializeAIMs(self):
         if (self.comm.Get_rank() == 0):
             #initialize all 6 ESP/CAPS AIMs used for the fluid and structural analysis
 
             #initialize pyCAPS structural problem
             self.capsStruct = pyCAPS.Problem(problemName = "CAPS_struct",
-                        capsFile = self.csmFile,
+                        capsFile = self.config["csmFile"],
                         outLevel = 1)
 
             self.capsStruct.geometry.cfgpmtr["cfdOn"].value = 0
@@ -370,7 +343,7 @@ class Caps2Fun():
 
             #initialize pyCAPS fluid problem
             self.capsFluid = pyCAPS.Problem(problemName = "CAPS_fluid",
-                        capsFile = self.csmFile,
+                        capsFile = self.config["csmFile"],
                         outLevel = 1)
             self.capsFluid.geometry.cfgpmtr["cfdOn"].value = 1
             #self.cwrite("Initialized caps fluid AIM\n")
@@ -384,12 +357,12 @@ class Caps2Fun():
             #self.cwrite("Initialized tacs AIM\n")
 
 
-            if (self.mesh_style == "pointwise"):
+            if (self.config["mesh_style"] == "pointwise"):
                 #initialize pointwise AIM
                 self.pointwiseAim = self.capsFluid.analysis.create(aim = "pointwiseAIM",
                                             name = "pointwise")
                 #self.cwrite("Initialized pointwise AIM\n")
-            elif (self.mesh_style == "tetgen"):
+            elif (self.config["mesh_style"] == "tetgen"):
                 #initialize egads fluid aim
                 self.egadsFluidAim = self.capsFluid.analysis.create(aim = "egadsTessAIM", name = "egadsTess")
                 #self.cwrite("Initialized egadsTessAIM for fluid\n")
@@ -418,15 +391,15 @@ class Caps2Fun():
 
     def structureMeshSettings(self):
         #names the bdf and dat files as pointwise.ext or tetgen.ext
-        self.tacsAim.input.Proj_Name = self.mesh_style
+        self.tacsAim.input.Proj_Name = self.config["mesh_style"]
         
         #Egads Aim section, for mesh
-        self.egadsAim.input.Edge_Point_Min = 10
+        self.egadsAim.input.Edge_Point_Min = 5
         self.egadsAim.input.Edge_Point_Max = 20
 
         self.egadsAim.input.Mesh_Elements = "Quad"
 
-        self.egadsAim.input.Tess_Params = [0.1,.01,10]
+        self.egadsAim.input.Tess_Params = [0.25,.01,15]
 
         #increase the precision in the BDF file
         self.tacsAim.input.File_Format = "Large"
@@ -458,12 +431,14 @@ class Caps2Fun():
                     shearMembraneRatio = 5.0/6.0 #default
 
                     #factor to artificially boost OML bending and membrane stiffnesses as if stringers were there
-                    boostFactor = 20.0
+                    boostFactor = 5.0
 
                     #artificial boost to bending inertia as if stringers were there in OML
                     if ("OML" in capsGroup): 
                         bendingInertiaRatio *= boostFactor
                         shearMembraneRatio *= boostFactor
+
+                        print("applied boost factor to capsGroup {}".format(capsGroup))
 
                     #make the shell property
                     shell = {"propertyType" : "Shell",
@@ -478,8 +453,8 @@ class Caps2Fun():
         self.tacsAim.input.Property = propDict
 
         # constraint section
-        constraint1 = {"groupName" : self.capsConstraint,
-                        "dofConstraint" : self.constraintType} #123
+        constraint1 = {"groupName" : self.config["capsConstraint"],
+                        "dofConstraint" : self.config["constraintType"]} #123
 
         self.tacsAim.input.Constraint = {"fixRoot": constraint1}
 
@@ -506,17 +481,17 @@ class Caps2Fun():
         self.tacsAim.input.Design_Variable_Relation = DVRdict
 
     def fluidMeshSettings(self):
-        if (self.mesh_style == "pointwise"):
+        if (self.config["mesh_style"] == "pointwise"):
 
             #wall bc settings (wall is the OML)
-            if (self.fun3d_analysis_type == "inviscid"):
+            if (self.config["fun3d_analysis_type"] == "inviscid"):
                 self.wallBC = {"bcType" : "inviscid"}
                 wallSpacing = 0.1
-            elif (self.fun3d_analysis_type == "laminar"):
+            elif (self.config["fun3d_analysis_type"] == "laminar"):
                 wallSpacing = 0.01
                 self.wallBC = {"bcType" : "viscous",
                 "boundaryLayerSpacing" : wallSpacing}
-            elif (self.fun3d_analysis_type == "turbulent"):
+            elif (self.config["fun3d_analysis_type"] == "turbulent"):
                 wallSpacing = 0.01
                 self.wallBC = {"bcType" : "viscous",
                 "boundaryLayerSpacing" : wallSpacing}
@@ -553,7 +528,7 @@ class Caps2Fun():
             self.pointwiseAim.input.Mesh_Sizing = {"wall": self.wallBC,
                 "Farfield": {"bcType":"Farfield"}}
 
-        elif (self.mesh_style == "tetgen"):
+        elif (self.config["mesh_style"] == "tetgen"):
             self.egadsFluidAim.input.Tess_Params = [0.01, 0.01, 0]
             self.tetgenAim.input.Quality_Rad_Edge = 1.0
             self.egadsFluidAim.input.Mesh_Sizing = {"Farfield": {"tessParams" : [0.005, 0.01, 0]}}
@@ -593,19 +568,19 @@ class Caps2Fun():
         #project section
         self.fun3dnml["project"] = f90nml.Namelist()
         self.fun3dnml["project"]["project_rootname"] = self.fun3dAim.input.Proj_Name
-        #self.fun3dAim.input.Proj_Name = self.mesh_style
+        #self.fun3dAim.input.Proj_Name = self.config["mesh_style"]
 
         #governing equation section
         self.fun3dnml["governing_equations"] = f90nml.Namelist()
 
         #apply fun3d analysis type
         #options = "inviscid", "laminar", "turbulent"
-        if (self.fun3d_analysis_type == "inviscid"):
+        if (self.config["fun3d_analysis_type"] == "inviscid"):
             self.fun3dnml["governing_equations"]["viscous_terms"] = "inviscid"
-        elif (self.fun3d_analysis_type == "laminar"):
+        elif (self.config["fun3d_analysis_type"] == "laminar"):
             self.fun3dnml["governing_equations"]["eqn_type"] = "compressible"
             self.fun3dnml["governing_equations"]["viscous_terms"] = "laminar"
-        elif (self.fun3d_analysis_type == "turbulent"):
+        elif (self.config["fun3d_analysis_type"] == "turbulent"):
             pass
 
         #raw grid section
@@ -617,10 +592,10 @@ class Caps2Fun():
 
         #reference physical properties section
         self.fun3dnml["reference_physical_properties"] = f90nml.Namelist()
-        self.fun3dnml["reference_physical_properties"]["mach_number"] = self.mach
-        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = self.AOA
-        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = self.Re
-        self.fun3dnml["reference_physical_properties"]["temperature"] = self.temperature
+        self.fun3dnml["reference_physical_properties"]["mach_number"] = self.config["mach"]
+        self.fun3dnml["reference_physical_properties"]["angle_of_attack"] = self.config["AOA"]
+        self.fun3dnml["reference_physical_properties"]["reynolds_number"] = self.config["Re"]
+        self.fun3dnml["reference_physical_properties"]["temperature"] = self.config["temperature"]
         self.fun3dnml["reference_physical_properties"]["temperature_units"] = "Kelvin"
         #self.capsFluid.analysis["fun3d"].input.Alpha = 1.0
         #self.capsFluid.analysis["fun3d"].input.Mach = 0.5
@@ -631,13 +606,13 @@ class Caps2Fun():
         self.fun3dnml["inviscid_flux_method"]["flux_construction"] = "roe"
         self.fun3dnml["inviscid_flux_method"]["flux_limiter"] = "hminmod"
         self.fun3dnml["inviscid_flux_method"]["smooth_limiter_coeff"] = 1.0
-        self.fun3dnml["inviscid_flux_method"]["freeze_limiter_iteration"] = int(5.0/6 * self.nsteps)
+        self.fun3dnml["inviscid_flux_method"]["freeze_limiter_iteration"] = int(5.0/6 * self.config["nsteps"])
 
         #nonlinear solver parameters section
         self.fun3dnml["nonlinear_solver_parameters"] = f90nml.Namelist()
         self.fun3dnml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 80]
         self.fun3dnml["nonlinear_solver_parameters"]["schedule_cfl"] = [2, 100]
-        if (not(self.fun3d_analysis_type == "inviscid")):
+        if (not(self.config["fun3d_analysis_type"] == "inviscid")):
             self.fun3dnml["nonlinear_solver_parameters"]["time_accuracy"] = "steady"
             self.fun3dnml["nonlinear_solver_parameters"]["time_step_nondim"] = 0.1
             self.fun3dnml["nonlinear_solver_parameters"]["subiterations"] = 0
@@ -650,7 +625,7 @@ class Caps2Fun():
 
         #code run and control section
         self.fun3dnml["code_run_control"] = f90nml.Namelist()
-        self.fun3dnml["code_run_control"]["steps"] = self.nsteps
+        self.fun3dnml["code_run_control"]["steps"] = self.config["nsteps"]
         self.fun3dnml["code_run_control"]["stopping_tolerance"] = 1.0e-15
         self.fun3dnml["code_run_control"]["restart_write_freq"] = 1000
         self.fun3dnml["code_run_control"]["restart_read"] = "off"
@@ -666,13 +641,13 @@ class Caps2Fun():
         self.fun3dnml["elasticity_gmres"]["algebraic_mesh_deform"] = False #default False
         self.fun3dnml["elasticity_gmres"]["nsearch"] = 200 #default 50
         self.fun3dnml["elasticity_gmres"]["tol"] = 1.e-14
-        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 5 #default 1
+        self.fun3dnml["elasticity_gmres"]["deformation_substeps"] = 1 #default 1, other value 5
         self.fun3dnml["elasticity_gmres"]["deform_from_initial_mesh"] = True #default true
-        self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = True
+        self.fun3dnml["elasticity_gmres"]["use_substeps_each_step"] = False #default False, need to turn to True if deformation_substeps used
         self.fun3dnml["elasticity_gmres"]["elasticity"] = 1 #default 1, option 2
         self.fun3dnml["elasticity_gmres"]["elasticity_exponent"] = 1.0 #default 1.0, change to 2.0 if needed
         self.fun3dnml["elasticity_gmres"]["nrestarts"] = 1
-        self.fun3dnml["elasticity_gmres"]["poisson_ratio"] = -0.5
+        self.fun3dnml["elasticity_gmres"]["poisson_ratio"] = 0.0 #default 0.0
         
         #massoud output settings
         self.fun3dnml["massoud_output"] = f90nml.Namelist()
@@ -702,7 +677,7 @@ class Caps2Fun():
         self.moving_body_input = f90nml.Namelist()
 
         #moving body settings for funtofem to fun3d
-        bodyName = self.csmFile.split(".")[0]
+        bodyName = self.config["csmFile"].split(".")[0]
         nBodies = 1
         nBoundaries = 1
         bndryArray = [[2]]
@@ -716,14 +691,14 @@ class Caps2Fun():
         self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
         self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
         self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self.moving_body_input["body_definitions"]["mesh_movement"] = ["rigid+deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
+        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
         ##############################
         # fun3d settings for moving_body.input file
         self.moving_body_input = f90nml.Namelist()
 
         #moving body settings for funtofem to fun3d
-        bodyName = self.csmFile.split(".")[0]
+        bodyName = self.config["csmFile"].split(".")[0]
         nBodies = 1
         nBoundaries = 1
         bndryArray = [[2]]
@@ -748,10 +723,10 @@ class Caps2Fun():
 
         # Set up the communicators
         n_procs = self.comm.Get_size()
-        if (self.n_tacs_procs > n_procs): self.n_tacs_procs = n_procs
+        if (self.config["n_tacs_procs"] > n_procs): self.config["n_tacs_procs"] = n_procs
 
         world_rank = self.comm.Get_rank()
-        if world_rank < self.n_tacs_procs:
+        if world_rank < self.config["n_tacs_procs"]:
             color = 55
             key = world_rank
         else:
@@ -764,14 +739,14 @@ class Caps2Fun():
 
         # Build the model
         self.model = FUNtoFEMmodel('NACA Wing Simulation')
-        self.wing = Body('wing', analysis_type=self.f2f_analysis_type, group=0,boundary=2)
+        self.wing = Body('wing', analysis_type=self.config["f2f_analysis_type"], group=0,boundary=2)
 
         for i in range(num_tacs_dvs):
             self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
 
         self.model.add_body(self.wing)
 
-        myscenario = Scenario(self.scenario_name, group=0, steady=True, steps=self.nsteps)
+        myscenario = Scenario(self.config["scenario_name"], group=0, steady=True, steps=self.config["nsteps"])
 
         #add functions to scenario
         for functionName in self.functionNames:
@@ -792,28 +767,21 @@ class Caps2Fun():
 
         #==================================================================================================#
 
-        #set units for forces
-        v_inf = 1962.44/6.6*0.5 # 148.67 Mach 0.5   # freestream velocity [m/s]
-        rho = 0.4315                  # freestream density [kg/m^3], 10,000 m
-        grav = 9.81                            # gravity acc. [m/s^2]
-        qinf = 0.5 * rho * (v_inf)**2 # dynamic pressure [N/m^2]
-        thermal_scale = 0.5 * rho * (v_inf)**3 # heat flux * area [J/s]
-
         #broadcast directories and datFile to rest of procs
         fun3d_parent_dir = None
         datFile = None
         if (self.comm.Get_rank() == 0):
             fun3d_parent_dir = os.path.join(self.fun3dAim.analysisDir, "..")
-            datFile = os.path.join(self.tacsAim.analysisDir, self.mesh_style + ".dat")
+            datFile = os.path.join(self.tacsAim.analysisDir, self.config["mesh_style"] + ".dat")
         fun3d_parent_dir = self.comm.bcast(fun3d_parent_dir, root=0)
         datFile = self.comm.bcast(datFile, root=0)
 
         solvers = {}
-        solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0, qinf=qinf, thermal_scale=thermal_scale, fun3d_dir=fun3d_parent_dir)
-        solvers['structural'] = TACSinterface(self.comm,tacs_comm,self.model,self.n_tacs_procs, datFile, structDVs)
+        solvers['flow'] = Fun3dInterface(self.comm,self.model,flow_dt=1.0, qinf=self.config["qinf"], thermal_scale=self.config["thermal_scale"], fun3d_dir=fun3d_parent_dir)
+        solvers['structural'] = TACSinterface(self.comm,tacs_comm,self.model,self.config["n_tacs_procs"], datFile, structDVs)
 
         # L&D transfer options
-        transfer_options = {'analysis_type': self.f2f_analysis_type,
+        transfer_options = {'analysis_type': self.config["f2f_analysis_type"],
                             'scheme': 'meld', 'thermal_scheme': 'meld'}
 
         # instantiate the driver
@@ -888,7 +856,7 @@ class Caps2Fun():
 
         self.cwrite("completed F2F forward analysis")
         dt = time.time() - self.start_time
-        dtPerStep = round(dt/self.nsteps)
+        dtPerStep = round(dt/self.config["nsteps"])
         self.cwrite(", {} sec/step".format(dtPerStep))
         self.writeTime()
 
@@ -903,7 +871,7 @@ class Caps2Fun():
         #update status
         self.cwrite("finished adjoint analysis")
         dt = time.time() - self.start_time
-        dtPerStep = round(dt/self.nsteps)
+        dtPerStep = round(dt/self.config["nsteps"])
         self.cwrite(", {} sec/step".format(dtPerStep))
         self.writeTime()
 
@@ -1027,15 +995,15 @@ class Caps2Fun():
         self.cwrite("Building fluid mesh... ")
 
         if (self.comm.Get_rank() == 0):
-            if (self.mesh_style == "pointwise"):
+            if (self.config["mesh_style"] == "pointwise"):
                 #build fluid mesh by running pointwise and then linking with fun3d
                 self.runPointwise()
                 self.cwrite("ran pointwise, ")
 
             #update fun3d with current mesh so it knows mesh sensitivity
-            if (self.mesh_style == "pointwise"):
+            if (self.config["mesh_style"] == "pointwise"):
                 self.fun3dAim.input["Mesh"].link(self.pointwiseAim.output["Volume_Mesh"])
-            elif (self.mesh_style == "tetgen"):
+            elif (self.config["mesh_style"] == "tetgen"):
                 self.fun3dAim.input["Mesh"].link(self.tetgenAim.output["Volume_Mesh"])
             self.fun3dAim.preAnalysis()
             self.cwrite("linked to fun3d, ")
@@ -1074,9 +1042,13 @@ class Caps2Fun():
                 wr_hdl.write(line)
             wr_hdl.close()
                     
+            #get the caps2fun project dir
+            caps2fun_proj_dir = os.environ["CAPS2FUN"]
+            archive_folder = os.path.join(caps2fun_proj_dir, "archive")
+
             #move perturb.input from archive folder if complex mode
             if (self.complex):
-                src = os.path.join(self.root_dir,"archive","perturb.input")
+                src = os.path.join(archive_folder,"perturb.input")
                 dest = os.path.join(caps_flow_dir, "perturb.input")
                 shutil.copy(src, dest)
 
@@ -1638,6 +1610,36 @@ def readOutput(DVdict,mode="adjoint"):
             #return the functions and gradients
             return functions, gradients
 
+        elif (mode == "forward"):
+            functions = {}
+
+            #read function values only
+            ifunc = -1
+            firstLine = True
+            for line in lines:
+                if ("func" in line):
+                    #func, name, value
+                    ifunc += 1
+                    parts = line.split(",")
+                    functionName = parts[1]
+                    value = float(parts[2])
+
+                    functions[functionName] = value
+                    iDV = 0
+
+                elif (firstLine):
+                    firstLine = False
+                    #it's the first line
+                    parts = line.split(",")
+                    nfunc = int(parts[0])
+                    nDV = int(parts[1])
+
+            #close the file
+            outputHandle.close()
+
+            #return the functions and gradients
+            return functions
+
         elif (mode == "complex_step"):
             
             #read the funtofem.out with the following format
@@ -1674,21 +1676,31 @@ class Optimize():
         #option: "structural", "full"
         self.optimizationMode = optimizationMode
 
+        #root directory
+        self.root_dir = os.getcwd()
+
+        #caps2fun directory
+        self.caps2fun_dir = os.environ["CAPS2FUN"]
+
         #other information such as analysis type, mesher type is  setup in funtofem.py
         self.n_procs = readnprocs()
 
         #make status file
-        statusFile = os.path.join(os.getcwd(), "opt_status.out")
+        optimization_folder = os.path.join(self.root_dir, "optimization")
+        if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
+        statusFile = os.path.join(optimization_folder, "opt_status.out")
         self.status = open(statusFile, "w")
 
         #iterations
         self.iteration = 1
 
+        self.maxStress = None
+
         #used DVs
 
         self.cwrite("Aerothermoelastic Optimization with FuntoFem and ESP/CAPS\n")
         self.cwrite("\tDesign Problem: NACA Symmetric Wing\n")
-        self.cwrite("Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy\n")
+        self.cwrite("Authors: Sean Engelstad, Brian Burke, Sejal Sahu, Graeme Kennedy\n")
         self.cwrite("\tGeorgia Tech SMDO Lab April 2022\n")
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
@@ -1696,6 +1708,11 @@ class Optimize():
     def cwrite(self, msg):
         self.status.write(msg)
         self.status.flush()
+
+    def roundVec(self, vec):
+        for i in range(len(vec)):
+            vec[i] = round(vec[i], 5)
+        return vec
 
     def writeInput(self, x):
         #update design variable dict
@@ -1712,19 +1729,25 @@ class Optimize():
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
         self.cwrite("Global Iteration #{}\n".format(self.iteration))
-        self.cwrite("\tDV names {}\n".format(names))
-        self.cwrite("\tDV values {}\n".format(values))              
+        self.cwrite("\tDV names {}\n".format(self.names))
+        self.cwrite("\tDV values {}\n".format(self.values))              
 
     def updateDVdict(self,x):
         tempDict = []
+        self.names = []
+        self.values = []
         for DV in self.DVdict:
 
             #overwrite the value
             if (DV["active"]):
                 name = DV["name"]
                 DV["value"] = float(x[name])
-
+                
+                self.names.append(DV["name"])
+                self.values.append(DV["value"])
             tempDict.append(DV)
+
+        print(tempDict)
         
         #overwrite DVdict
         self.DVdict = tempDict
@@ -1804,6 +1827,18 @@ class Optimize():
             #close the file
             outputHandle.close()
 
+            #store the output file in optimization folder
+            optimization_folder = os.path.join(self.root_dir, "optimization")
+            if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
+            iteration_folder = os.path.join(optimization_folder, "iteration" + str(self.iteration))
+            if (not(os.path.exists(iteration_folder))): os.mkdir(iteration_folder)
+            for filename in ["funtofem.in", "funtofem.out", "TACSoutput.f5"]:
+                src = os.path.join(self.root_dir, "funtofem", filename)
+                chunks = filename.split(".")
+                newfilename = chunks[0] + str(self.iteration) + "." + chunks[1]
+                dest = os.path.join(iteration_folder, newfilename)
+                shutil.copy(src, dest)
+
             #delete output file
             os.remove(self.outputFile)
 
@@ -1821,6 +1856,7 @@ class Optimize():
             self.success = False
             self.cwrite("\tAnalysis Failed\n")
             self.fail = 1
+        
 
         return self.fail
 
@@ -1875,8 +1911,8 @@ class Optimize():
             conname = ""
         
 
-        self.cwrite("\t {} Obj grad = {}\n".format(objname,objGrad))
-        self.cwrite("\t{} Con grad = {}\n".format(conname,conGrad))
+        #self.cwrite("\t {} Obj grad = {}\n".format(objname,objGrad))
+        #self.cwrite("\t{} Con grad = {}\n".format(conname,conGrad))
 
         sens = {}
         iDV = 0
@@ -1954,14 +1990,21 @@ class Test():
             
 
     def runForward(self):
+        
+        mode = "forward"
+
         #write the F2F input file for adjoint mode
-        writeInput(self.DVdict, self.functions, mode="forward")
+        writeInput(self.DVdict, self.functions, mode=mode)
 
         #turnoff complex mode, this prob doesn't work
         #os.system("export CMPLX_MODE=0")
 
         #run funtofem
         self.callCaps2fun()
+
+        self.funcs = readOutput(self.DVdict, mode=mode)
+
+        return self.funcs
 
     def runAdjoint(self):
         #run the adjoint mode
@@ -1987,9 +2030,6 @@ class Test():
 
         #write the F2F input file for complex mode
         writeInput(self.DVdict, self.functions, mode="complex_step", eps=h, x_direction=x_dir)
-
-        #setup complex mode, this prob doesn't work
-        os.system("export CMPLX_MODE=1")
 
         #run funtofem
         self.callCaps2fun()
