@@ -16,10 +16,10 @@ despmtr  taper  0.5  -
 despmtr  ctwist  0.0  deg
 despmtr  lesweep  0.0 deg
 despmtr  dihedral 0.0  deg
-despmtr tc0 0.1
-despmtr tcf 0.1
-despmtr camb0 0.05
-despmtr cambf 0.05
+despmtr tc0 0.12
+despmtr tcf 0.12
+despmtr camb0 0.02
+despmtr cambf 0.02
 despmtr ml0 0.4
 despmtr mlf 0.4
 despmtr ribSpaceFr 0.05

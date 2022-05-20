@@ -7,3 +7,4 @@ rm -f funtofem/*.in
 rm -f funtofem/*.out
 rm -f funtofem/*.txt
 rm -f funtofem/*.f5
+rm -rf optimization

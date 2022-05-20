@@ -399,7 +399,7 @@ class Caps2Fun():
 
         self.egadsAim.input.Mesh_Elements = "Quad"
 
-        self.egadsAim.input.Tess_Params = [0.1,.01,10]
+        self.egadsAim.input.Tess_Params = [0.25,.01,15]
 
         #increase the precision in the BDF file
         self.tacsAim.input.File_Format = "Large"
@@ -431,12 +431,14 @@ class Caps2Fun():
                     shearMembraneRatio = 5.0/6.0 #default
 
                     #factor to artificially boost OML bending and membrane stiffnesses as if stringers were there
-                    boostFactor = 20.0
+                    boostFactor = 5.0
 
                     #artificial boost to bending inertia as if stringers were there in OML
                     if ("OML" in capsGroup): 
                         bendingInertiaRatio *= boostFactor
                         shearMembraneRatio *= boostFactor
+
+                        print("applied boost factor to capsGroup {}".format(capsGroup))
 
                     #make the shell property
                     shell = {"propertyType" : "Shell",
@@ -689,7 +691,7 @@ class Caps2Fun():
         self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
         self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
         self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self.moving_body_input["body_definitions"]["mesh_movement"] = ["rigid+deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
+        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
         ##############################
         # fun3d settings for moving_body.input file
@@ -1608,6 +1610,36 @@ def readOutput(DVdict,mode="adjoint"):
             #return the functions and gradients
             return functions, gradients
 
+        elif (mode == "forward"):
+            functions = {}
+
+            #read function values only
+            ifunc = -1
+            firstLine = True
+            for line in lines:
+                if ("func" in line):
+                    #func, name, value
+                    ifunc += 1
+                    parts = line.split(",")
+                    functionName = parts[1]
+                    value = float(parts[2])
+
+                    functions[functionName] = value
+                    iDV = 0
+
+                elif (firstLine):
+                    firstLine = False
+                    #it's the first line
+                    parts = line.split(",")
+                    nfunc = int(parts[0])
+                    nDV = int(parts[1])
+
+            #close the file
+            outputHandle.close()
+
+            #return the functions and gradients
+            return functions
+
         elif (mode == "complex_step"):
             
             #read the funtofem.out with the following format
@@ -1644,21 +1676,31 @@ class Optimize():
         #option: "structural", "full"
         self.optimizationMode = optimizationMode
 
+        #root directory
+        self.root_dir = os.getcwd()
+
+        #caps2fun directory
+        self.caps2fun_dir = os.environ["CAPS2FUN"]
+
         #other information such as analysis type, mesher type is  setup in funtofem.py
         self.n_procs = readnprocs()
 
         #make status file
-        statusFile = os.path.join(os.getcwd(), "opt_status.out")
+        optimization_folder = os.path.join(self.root_dir, "optimization")
+        if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
+        statusFile = os.path.join(optimization_folder, "opt_status.out")
         self.status = open(statusFile, "w")
 
         #iterations
         self.iteration = 1
 
+        self.maxStress = None
+
         #used DVs
 
         self.cwrite("Aerothermoelastic Optimization with FuntoFem and ESP/CAPS\n")
         self.cwrite("\tDesign Problem: NACA Symmetric Wing\n")
-        self.cwrite("Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy\n")
+        self.cwrite("Authors: Sean Engelstad, Brian Burke, Sejal Sahu, Graeme Kennedy\n")
         self.cwrite("\tGeorgia Tech SMDO Lab April 2022\n")
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
@@ -1666,6 +1708,11 @@ class Optimize():
     def cwrite(self, msg):
         self.status.write(msg)
         self.status.flush()
+
+    def roundVec(self, vec):
+        for i in range(len(vec)):
+            vec[i] = round(vec[i], 5)
+        return vec
 
     def writeInput(self, x):
         #update design variable dict
@@ -1682,19 +1729,25 @@ class Optimize():
         self.cwrite("----------------------------")
         self.cwrite("----------------------------\n")
         self.cwrite("Global Iteration #{}\n".format(self.iteration))
-        self.cwrite("\tDV names {}\n".format(names))
-        self.cwrite("\tDV values {}\n".format(values))              
+        self.cwrite("\tDV names {}\n".format(self.names))
+        self.cwrite("\tDV values {}\n".format(self.values))              
 
     def updateDVdict(self,x):
         tempDict = []
+        self.names = []
+        self.values = []
         for DV in self.DVdict:
 
             #overwrite the value
             if (DV["active"]):
                 name = DV["name"]
                 DV["value"] = float(x[name])
-
+                
+                self.names.append(DV["name"])
+                self.values.append(DV["value"])
             tempDict.append(DV)
+
+        print(tempDict)
         
         #overwrite DVdict
         self.DVdict = tempDict
@@ -1774,6 +1827,18 @@ class Optimize():
             #close the file
             outputHandle.close()
 
+            #store the output file in optimization folder
+            optimization_folder = os.path.join(self.root_dir, "optimization")
+            if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
+            iteration_folder = os.path.join(optimization_folder, "iteration" + str(self.iteration))
+            if (not(os.path.exists(iteration_folder))): os.mkdir(iteration_folder)
+            for filename in ["funtofem.in", "funtofem.out", "TACSoutput.f5"]:
+                src = os.path.join(self.root_dir, "funtofem", filename)
+                chunks = filename.split(".")
+                newfilename = chunks[0] + str(self.iteration) + "." + chunks[1]
+                dest = os.path.join(iteration_folder, newfilename)
+                shutil.copy(src, dest)
+
             #delete output file
             os.remove(self.outputFile)
 
@@ -1791,6 +1856,7 @@ class Optimize():
             self.success = False
             self.cwrite("\tAnalysis Failed\n")
             self.fail = 1
+        
 
         return self.fail
 
@@ -1924,14 +1990,21 @@ class Test():
             
 
     def runForward(self):
+        
+        mode = "forward"
+
         #write the F2F input file for adjoint mode
-        writeInput(self.DVdict, self.functions, mode="forward")
+        writeInput(self.DVdict, self.functions, mode=mode)
 
         #turnoff complex mode, this prob doesn't work
         #os.system("export CMPLX_MODE=0")
 
         #run funtofem
         self.callCaps2fun()
+
+        self.funcs = readOutput(self.DVdict, mode=mode)
+
+        return self.funcs
 
     def runAdjoint(self):
         #run the adjoint mode
@@ -1957,9 +2030,6 @@ class Test():
 
         #write the F2F input file for complex mode
         writeInput(self.DVdict, self.functions, mode="complex_step", eps=h, x_direction=x_dir)
-
-        #setup complex mode, this prob doesn't work
-        os.system("export CMPLX_MODE=1")
 
         #run funtofem
         self.callCaps2fun()

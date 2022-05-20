@@ -5,15 +5,16 @@ returns function, gradient information in funtofem.out file
 from pyoptsparse import PSQP, Optimization
 from caps2fun import Optimize as CapsOptimize
 import numpy as np
+import os
 
 optimizationMode = "structural"
 
 ## ------------------ Make DV Dict --------------------------------- ##
 
-shapeActive = False
-initThickness = 0.01; #10 mm
+shapeActive = optimizationMode == "full"
+structActive = True
 
-if (optimizationMode == "full"): shapeActive = True
+initThickness = 0.01; #10 mm
 DVdict = []
 inits = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 0.0,  0.5, 0.1, 0.1]
 ct = 0
