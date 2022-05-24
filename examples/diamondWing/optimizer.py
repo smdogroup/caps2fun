@@ -102,7 +102,7 @@ for igroup in range(3):
         zeroStr = zeroString(numZeros)
 
         #thickness = 0.001 * thickIndex #0.01
-        initThickness = 0.01
+        initThickness = 0.100
 
         DVname = "thick" + zeroStr + str(thickIndex)
         DVnames.append(DVname)
@@ -149,10 +149,10 @@ if (sorted):
 
 
 #run a forward analysis to gauge the max stress constraint
-mytest = Test(DVdict, functions=["ksfailure"])
-functions = mytest.runForward()
-maxStress = functions["ksfailure"]
-maxStress = max(maxStress, 0.5)
+#mytest = Test(DVdict, functions=["ksfailure"])
+#functions = mytest.runForward()
+#maxStress = functions["ksfailure"]
+maxKsfailure = 0.23
 
 #initialize wing optimization class
 capsOpt = CapsOptimize(DVdict, optimizationMode)
@@ -160,9 +160,14 @@ capsOpt = CapsOptimize(DVdict, optimizationMode)
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", capsOpt.objCon)
 
+minThickness = 0.0005
+# max_dthick = abs(initThickness - minThickness) / 10
+# max_dthick *= 5
+max_dthick = 10.0
+
 #thickness in meters
 names2 = DVnames
-lbnds2 = 0.0001 * np.ones(thickCt)
+lbnds2 = minThickness * np.ones(thickCt)
 init2 = initThickness*np.ones(thickCt)
 ubnds2 = 1.0*np.ones(thickCt)
 scales2 = 100 * np.ones(thickCt)
@@ -179,10 +184,12 @@ for istruct in range(thickCt):
 #add functions, obj and constraint
 sparseProb.addObj("obj")
 #stress constraint upper bound 1/1.5/2.5 = 0.267
-sparseProb.addConGroup("con", 1,upper=maxStress)
+sparseProb.addConGroup("con", 1,upper=maxKsfailure)
 
 #setup SLSQP optimizer
-optOptions = {"IPRINT": -1}
+optOptions = {"IPRINT": 1, #print output, 0 None, 1 Final, 2 each iteration
+            "MIT" : 1e2, #max iterations
+            "XMAX" : max_dthick} #max step size in design space
 opt = PSQP(options=optOptions)
 sol = opt(sparseProb, sens=capsOpt.objGrad)
 

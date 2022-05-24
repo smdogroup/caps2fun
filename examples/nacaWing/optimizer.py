@@ -14,7 +14,7 @@ optimizationMode = "structural"
 shapeActive = optimizationMode == "full"
 structActive = True
 
-initThickness = 0.01; #10 mm
+initThickness = 0.10; #10 mm
 DVdict = []
 inits = [40.0, 6.0,  0.05, 0.05, 5.0,  5.0, 0.0,  0.5, 0.1, 0.1]
 ct = 0
@@ -100,7 +100,7 @@ sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", caps
 
 #thickness in meters
 names2 = DVnames
-lbnds2 = 0.0005 * np.ones(thickCt)
+lbnds2 = 0.001 * np.ones(thickCt)
 init2 = initThickness*np.ones(thickCt)
 ubnds2 = 1.0*np.ones(thickCt)
 scales2 = 100 * np.ones(thickCt)
@@ -117,7 +117,7 @@ for istruct in range(thickCt):
 #add functions, obj and constraint
 sparseProb.addObj("obj")
 #stress constraint upper bound 1/1.5/2.5 = 0.267
-sparseProb.addConGroup("con", 1,upper=0.5)
+sparseProb.addConGroup("con", 1,upper=0.10)
 
 #setup SLSQP optimizer
 optOptions = {"IPRINT": -1}

@@ -160,7 +160,8 @@ class Caps2Fun():
                     self.config["qinf"] = float(chunk)
                 elif ("thermal_scale" in line):
                     self.config["thermal_scale"] = float(chunk)
-                
+                elif ("boost_factor" in line):
+                    self.config["boost_factor"] = float(chunk)
             handle.close()
 
 
@@ -431,7 +432,7 @@ class Caps2Fun():
                     shearMembraneRatio = 5.0/6.0 #default
 
                     #factor to artificially boost OML bending and membrane stiffnesses as if stringers were there
-                    boostFactor = 5.0
+                    boostFactor = self.config["boost_factor"]
 
                     #artificial boost to bending inertia as if stringers were there in OML
                     if ("OML" in capsGroup): 
@@ -693,27 +694,6 @@ class Caps2Fun():
         self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
         self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
-        ##############################
-        # fun3d settings for moving_body.input file
-        self.moving_body_input = f90nml.Namelist()
-
-        #moving body settings for funtofem to fun3d
-        bodyName = self.config["csmFile"].split(".")[0]
-        nBodies = 1
-        nBoundaries = 1
-        bndryArray = [[2]]
-        bndryArray = list(bndryArray)
-
-        #body definitions
-        self.moving_body_input["body_definitions"] = f90nml.Namelist()
-        self.moving_body_input["body_definitions"]["n_moving_bodies"] = nBodies
-        self.moving_body_input["body_definitions"]["body_name"] = [bodyName]
-        self.moving_body_input["body_definitions"]["parent_name"] = [""] # '' means motion relative to inertial ref frame
-        self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
-        self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
-        self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
-
     def initF2F(self):
         #sort struct DVs to match alphabetic, numeric sorting of ESP/CAPS
         structDVs = self.sortStructDVs()
@@ -739,7 +719,7 @@ class Caps2Fun():
 
         # Build the model
         self.model = FUNtoFEMmodel('NACA Wing Simulation')
-        self.wing = Body('wing', analysis_type=self.config["f2f_analysis_type"], group=0,boundary=2)
+        self.wing = Body('wing', analysis_type=self.config["f2f_analysis_type"], group=0,boundary=2, T_ref=self.config["temperature"])
 
         for i in range(num_tacs_dvs):
             self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
@@ -755,8 +735,10 @@ class Caps2Fun():
 
             if (functionName in ["cl","cd"]):
                 function = Function(functionName,analysis_type='aerodynamic')
-            elif (functionName in ["ksfailure"]):
-                function = Function(functionName,analysis_type='structural')
+            elif (functionName in ["ksfailure","temperature","compliance","heatflux"]):
+                options = {}
+                if (functionName=="ksfailure"): options = {'ksweight': 1000.0}
+                function = Function(functionName, analysis_type='structural', options=options)
             elif (functionName in ["mass"]):
                 function = Function(functionName,analysis_type='structural',adjoint=False)
             else:
@@ -1421,7 +1403,7 @@ class TACSinterface(TacsSteadyInterface):
                 nnodes = origNodePositions.shape[0]//3
                 nodes = np.arange(1,nnodes+1, dtype=int)
 
-        self._initialize_variables(assembler, struct_id=nodes, thermal_index=6) #
+        self._initialize_variables(assembler, struct_id=nodes) #
         self.initialize(model.scenarios[0],model.bodies)
 
     def post_export_f5(self):
@@ -1686,9 +1668,11 @@ class Optimize():
         self.n_procs = readnprocs()
 
         #make status file
-        optimization_folder = os.path.join(self.root_dir, "optimization")
-        if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
-        statusFile = os.path.join(optimization_folder, "opt_status.out")
+        results_folder = os.path.join(self.root_dir, "results")
+        if (not(os.path.exists(results_folder))): os.mkdir(results_folder)
+        self.optimization_folder = os.path.join(results_folder, "optimization")
+        if (not(os.path.exists(self.optimization_folder))): os.mkdir(self.optimization_folder)
+        statusFile = os.path.join(self.optimization_folder, "opt_status.out")
         self.status = open(statusFile, "w")
 
         #iterations
@@ -1828,9 +1812,7 @@ class Optimize():
             outputHandle.close()
 
             #store the output file in optimization folder
-            optimization_folder = os.path.join(self.root_dir, "optimization")
-            if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
-            iteration_folder = os.path.join(optimization_folder, "iteration" + str(self.iteration))
+            iteration_folder = os.path.join(self.optimization_folder, "iteration" + str(self.iteration))
             if (not(os.path.exists(iteration_folder))): os.mkdir(iteration_folder)
             for filename in ["funtofem.in", "funtofem.out", "TACSoutput.f5"]:
                 src = os.path.join(self.root_dir, "funtofem", filename)
@@ -1856,6 +1838,7 @@ class Optimize():
             self.success = False
             self.cwrite("\tAnalysis Failed\n")
             self.fail = 1
+            sys.exit("F2F analysis failed...")
         
 
         return self.fail
@@ -1944,7 +1927,7 @@ class Test():
         #set the functions to check
         self.functions = functions
         if (functions is None): 
-            self.functions = ["ksfailure","cl","cd","mass"]
+            self.functions = ["ksfailure","temperature", "cl","cd","mass"]
 
         #count the number of active DV
         self.nDV = 0
