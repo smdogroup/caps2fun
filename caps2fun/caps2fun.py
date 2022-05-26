@@ -122,6 +122,7 @@ class Caps2Fun():
         #subfunction to parse the config file, used for each case
         def parseFile(file):
             handle = open(file, "r")
+
             lines = handle.readlines()
             for line in lines:
                 chunks = line.split(" = ")
@@ -130,6 +131,7 @@ class Caps2Fun():
                     chunk = chunks[1].strip()
                 else:
                     chunk = None
+
                 if ("mesh_style" in line):
                     self.config["mesh_style"] = chunk
                 elif ("n_tacs_procs" in line):
@@ -162,6 +164,16 @@ class Caps2Fun():
                     self.config["thermal_scale"] = float(chunk)
                 elif ("boost_factor" in line):
                     self.config["boost_factor"] = float(chunk)
+                elif ("edge_pt_min" in line):
+                    self.config["edge_pt_min"][0] = int(chunk)
+                elif ("edge_pt_max" in line):
+                    self.config["edge_pt_max"][0] = int(chunk)
+                elif ("tess1" in line):
+                    self.config["struct_tess"][0] = float(chunk)
+                elif ("tess2" in line):
+                    self.config["struct_tess"][1] = float(chunk)
+                elif ("tess3" in line):
+                    self.config["struct_tess"][2] = float(chunk)
             handle.close()
 
 
@@ -173,6 +185,7 @@ class Caps2Fun():
         if (self.comm.Get_rank() == 0):
             #initialize config attribute
             self.config = {}
+            self.config["struct_tess"] = np.zeros((3))
 
             #read default config file
             default_cfg = os.path.join(self.src_dir, "default.cfg")
@@ -395,12 +408,12 @@ class Caps2Fun():
         self.tacsAim.input.Proj_Name = self.config["mesh_style"]
         
         #Egads Aim section, for mesh
-        self.egadsAim.input.Edge_Point_Min = 5
-        self.egadsAim.input.Edge_Point_Max = 20
+        self.egadsAim.input.Edge_Point_Min = self.config["edge_pt_min"]
+        self.egadsAim.input.Edge_Point_Max = self.config["edge_pt_max"]
 
         self.egadsAim.input.Mesh_Elements = "Quad"
 
-        self.egadsAim.input.Tess_Params = [0.25,.01,15]
+        self.egadsAim.input.Tess_Params = self.config["struct_tess"]
 
         #increase the precision in the BDF file
         self.tacsAim.input.File_Format = "Large"
@@ -719,7 +732,7 @@ class Caps2Fun():
 
         # Build the model
         self.model = FUNtoFEMmodel('NACA Wing Simulation')
-        self.wing = Body('wing', analysis_type=self.config["f2f_analysis_type"], group=0,boundary=2, T_ref=self.config["temperature"])
+        self.wing = Body('wing', analysis_type=self.config["f2f_analysis_type"], group=0,boundary=2)
 
         for i in range(num_tacs_dvs):
             self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
@@ -1668,9 +1681,9 @@ class Optimize():
         self.n_procs = readnprocs()
 
         #make status file
-        results_folder = os.path.join(self.root_dir, "results")
-        if (not(os.path.exists(results_folder))): os.mkdir(results_folder)
-        self.optimization_folder = os.path.join(results_folder, "optimization")
+        funtofem_folder = os.path.join(self.root_dir, "funtofem")
+        if (not(os.path.exists(funtofem_folder))): os.mkdir(funtofem_folder)
+        self.optimization_folder = os.path.join(funtofem_folder, "optimization")
         if (not(os.path.exists(self.optimization_folder))): os.mkdir(self.optimization_folder)
         statusFile = os.path.join(self.optimization_folder, "opt_status.out")
         self.status = open(statusFile, "w")
@@ -1957,20 +1970,33 @@ class Test():
         
         funtofemFolder = os.path.join(self.root_dir, "funtofem")
         dataFolder = os.path.join(funtofemFolder, "data")
-        if (not(os.path.exists(funtofemFolder))): mkdir(funtofemFolder)
-        if (not(os.path.exists(dataFolder))): mkdir(dataFolder)
+        if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+        if (not(os.path.exists(dataFolder))): os.mkdir(dataFolder)
+
+        MF_file = os.path.join(dataFolder, "multiForward.out")
+        MF_hdl = open(MF_file, "w")
+        MF_hdl.write("Multiple forward analysis results\n")
+        MF_hdl.write("=================================\n")
+        MF_hdl.close()
 
         for irun in range(nruns):
             
             #call the forward analysis
-            self.runForward()
+            self.funcs = self.runForward()
 
-            #copy the funtofem.out file to the data folder
-            src = os.path.join(funtofemFolder, "funtofem.out")
-            filename = "funtofem" + str(irun+1) + ".out"
-            dest = os.path.join(dataFolder, filename)
-            shutil.copy(src, dest)
-            
+            #read the funtofem.out file
+            out_file = os.path.join(funtofemFolder, "funtofem.out")
+            out_hdl = open(out_file, "r")
+            lines = out_hdl.readlines()
+            out_hdl.close()
+
+            #write funtofem.out contents into multiForward.out file
+            MF_hdl = open(MF_file, "a")
+            MF_hdl.write("run,{}\n".format(irun+1))
+            for line in lines:
+                MF_hdl.write(line)
+            MF_hdl.write("\n")
+            MF_hdl.close()
 
     def runForward(self):
         

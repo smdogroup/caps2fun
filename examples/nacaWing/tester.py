@@ -89,7 +89,7 @@ def makeDVdict():
             zeroStr = zeroString(numZeros)
 
             #thickness = 0.001 * thickIndex #0.01
-            thickness = 0.01
+            thickness = 0.010
 
             DVname = "thick" + zeroStr + str(thickIndex)
             DVnames.append(DVname)
@@ -116,7 +116,7 @@ def makeDVdict():
         zeroStr = zeroString(numZeros)
 
         #thickness = 0.001 * thickIndex #0.01
-        thickness = 0.01
+        thickness = 0.010
 
         DVname = "thick" + zeroStr + str(thickIndex)
         DVnames.append(DVname)
@@ -170,7 +170,7 @@ def makeDVdict():
 #make a DV dict
 DVdict = makeDVdict()
 
-functions = ["ksfailure", "cl", "cd", "mass"]
+functions = ["ksfailure", "temperature","cl", "cd", "mass"]
 
 # #start a derivative test
 mytest = Test(DVdict, functions=functions)

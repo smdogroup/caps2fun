@@ -150,4 +150,5 @@ functions = ["ksfailure", "temperature", "cl", "cd", "mass"]
 #start a derivative test
 mytest = Test(DVdict, functions=functions)
 mytest.runForward()
+#mytest.multiForward(25)
 #mytest.derivativeTest()
