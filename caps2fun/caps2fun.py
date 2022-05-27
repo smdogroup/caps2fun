@@ -1057,14 +1057,14 @@ class Caps2Fun():
         os.chdir(self.pointwiseAim.analysisDir)
 
         CAPS_GLYPH = os.environ["CAPS_GLYPH"]
-        ranPointwise = False
-        for i in range(5): #can run extra times if having license issues
+        #ranPointwise = False
+        for i in range(1): #can run extra times if having license issues
             os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
-            ranPointwise = os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid')
-            if ranPointwise: break
+            #ranPointwise = os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid')
+            #if ranPointwise: break
 
         os.chdir(self.root_dir)
-        if (not(ranPointwise)): sys.exit("No pointwise license available")
+        #if (not(ranPointwise)): sys.exit("No pointwise license available")
 
         #run AIM postanalysis, files in self.pointwiseAim.analysisDir
         self.pointwiseAim.postAnalysis()      
@@ -1969,6 +1969,7 @@ class Test():
         out_file = os.path.join(self.runFolder, "output.txt")
         out_hdl = open(out_file, "w")
         out_hdl.write("Output file for funtofem\n")
+        out_hdl.flush()
         out_hdl.close()
 
     def derivativeTest(self):
@@ -2001,12 +2002,17 @@ class Test():
         MF_hdl = open(MF_file, "w")
         MF_hdl.write("Multiple forward analysis results\n")
         MF_hdl.write("=================================\n")
+        MF_hdl.flush()
         MF_hdl.close()
+        print("wrote to MF_file\n", flush=True)
 
         values = np.zeros((nruns, self.nfunc))
 
         for irun in range(nruns):
             
+            #clean out run folder
+            os.system("rm -f ./funtofem/run/*")
+
             #call the forward analysis
             self.funcs = self.runForward()
 
@@ -2014,6 +2020,7 @@ class Test():
             out_file = os.path.join(self.runFolder, "funtofem.out")
             out_hdl = open(out_file, "r")
             lines = out_hdl.readlines()
+            out_hdl.flush()
             out_hdl.close()
 
             #write funtofem.out contents into multiForward.out file
@@ -2022,6 +2029,7 @@ class Test():
             for line in lines:
                 MF_hdl.write(line)
             MF_hdl.write("\n")
+            MF_hdl.flush()
             MF_hdl.close()
 
             #store the function values in values array
@@ -2042,6 +2050,7 @@ class Test():
             mean = means[ifunc]
             stddev = stdDevs[ifunc]
             stats_hdl.write("func,{},mean,{},stddev,{}\n".format(name,mean,stddev))
+        stats_hdl.flush()
         stats_hdl.close()
 
     def runForward(self):
@@ -2107,6 +2116,7 @@ class Test():
             deriv_handle.write("Funtofem Derivative Check, Adjoint vs Complex Step\n")
             deriv_handle.write("----------------------------")
             deriv_handle.write("----------------------------\n")
+            deriv_handle.flush()
 
         adjoint_dderiv = {}
         complex_dderiv = {}
@@ -2120,6 +2130,7 @@ class Test():
             #write the adjoint and complex_step functions (real part) to the file
             deriv_handle.write("\tadjoint func      = {}\n".format(self.adjoint_funcs[function]))
             deriv_handle.write("\tcomplex_step func = {}\n".format(self.complex_funcs[function].real))
+            deriv_handle.flush()
 
             #initialize directional derivative, and get this adjoint_grad
             adjoint_dderiv[function] = 0
@@ -2157,6 +2168,7 @@ class Test():
             #write relative error to a file
             line = "\relative error       = {}\n".format(relativeError)
             deriv_handle.write(line)
+            deriv_handle.flush()
 
 
         #close the derivative_check.out file
