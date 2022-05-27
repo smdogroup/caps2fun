@@ -1,8 +1,16 @@
 import os
-from caps2fun import Test
+from caps2fun import Test, writeInput
+# #design parameters for airfoil
+# despmtr diamAngle0 10
+# despmtr chord0 1.0
+# despmtr diamAnglef 10
+
+# #design parameters of wing
+# despmtr area 40.0
+# despmtr taper 1.0
 
 #main script to run
-def makeDVdict():
+def makeDVdict(thickness=None):
     
     #settings
     shapeActive = False #def: False
@@ -10,11 +18,11 @@ def makeDVdict():
 
     #--------------Make initial design variable dicts-----------------------#
     DVdict = []
-    inits = [120.0, 6.0,  0.03, 0.03, 5.0,  5.0, 0.0,  0.5, 0.05, 0.05]
+    inits = [40.0, 1.0, 10.0, 10.0, 1.0]
     ct = 0
     DVind = 0
     shapeind = 0
-    for dvname in ["area","aspect","camb0","cambf","ctwist", "dihedral","lesweep", "taper","tc0","tcf"]:
+    for dvname in ["area", "chord0","diamAngle0","diamAnglef","taper"]:
         tempDict = {"name" : dvname,
                     "type" : "shape",
                     "value" : inits[shapeind],
@@ -44,8 +52,6 @@ def makeDVdict():
     lines = csmhdl.readlines()
     csmhdl.close()
     nribs = 0
-    nspars = 0
-    stringerOn = 0
 
     for line in lines:
         chunks = line.split(" ")
@@ -53,13 +59,11 @@ def makeDVdict():
         if (cfgpmtr):
             print(chunks)
             if ("nrib" in chunks[1]): nribs = int(chunks[2].strip())
-            if ("nspar" in chunks[1]): nspars = int(chunks[2].strip())
-            if ("stringerOn" in chunks[1]): stringerOn = int(chunks[2].strip())
 
-    nOML = nribs-1
+    nOML = 1
+    nspars = 2
 
-    print(nribs,nspars,stringerOn,nOML)
-
+    print(nribs,nspars,nOML)
     def zeroString(nzeros):
         string = ""
         for i in range(nzeros):
@@ -81,15 +85,17 @@ def makeDVdict():
         #print(group,numDV)
 
         for iDV in range(numDV):
-            capsGroup = group + str(iDV+1)
             thickIndex = thickCt + 1
-            
+            if (igroup == 2):
+                capsGroup = "OML"
+            else:
+                capsGroup = group + str(iDV+1)
             numDigits = len(str(thickIndex))
             numZeros = numMaxDigits - numDigits
             zeroStr = zeroString(numZeros)
-
+            
             #thickness = 0.001 * thickIndex #0.01
-            thickness = 0.010
+            if (thickness is None): thickness = 0.01
 
             DVname = "thick" + zeroStr + str(thickIndex)
             DVnames.append(DVname)
@@ -105,35 +111,6 @@ def makeDVdict():
             thickCt += 1
             structind += 1
             DVdict.append(tempDict)
-
-    
-    #add stringer caps group DV if turned on
-    if (stringerOn == 1):
-
-        thickIndex = thickCt + 1
-        numDigits = len(str(thickIndex))
-        numZeros = numMaxDigits - numDigits
-        zeroStr = zeroString(numZeros)
-
-        #thickness = 0.001 * thickIndex #0.01
-        thickness = 0.010
-
-        DVname = "thick" + zeroStr + str(thickIndex)
-        DVnames.append(DVname)
-
-        #tempDict for stringers
-        tempDict = {"name" : DVname,
-                    "type" : "struct",
-                    "value" : thickness,
-                    "capsGroup" : "stringer",
-                    "active" : structActive,
-                    "opt_ind" : DVind,
-                    "group_ind" : structind}
-
-        if (structActive): DVind += 1
-        thickCt += 1
-        structind += 1
-        DVdict.append(tempDict)
 
     sorted = False
 
@@ -168,11 +145,12 @@ def makeDVdict():
 #-----------  Main Section, Run the Test -------------------#
 
 #make a DV dict
-DVdict = makeDVdict()
+DVdict = makeDVdict(thickness=0.01)
 
-functions = ["ksfailure", "temperature","cl", "cd", "mass"]
+functions = ["ksfailure", "temperature", "cl", "cd", "mass"]
 
-# #start a derivative test
+#start a derivative test
 mytest = Test(DVdict, functionNames=functions)
 mytest.runForward()
-
+#mytest.derivativeTest()
+#writeInput(DVdict, functions, mode="forward")

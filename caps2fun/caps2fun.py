@@ -55,7 +55,7 @@ import pyCAPS
 import f90nml
 
 #read whether to use complex mode or not from input file
-f2fin = os.path.join(os.getcwd(), "funtofem","funtofem.in")
+f2fin = os.path.join(os.getcwd(), "funtofem","run","funtofem.in")
 isComplex = False
 inputExists = os.path.exists(f2fin)
 if (inputExists):
@@ -122,6 +122,7 @@ class Caps2Fun():
         #subfunction to parse the config file, used for each case
         def parseFile(file):
             handle = open(file, "r")
+
             lines = handle.readlines()
             for line in lines:
                 chunks = line.split(" = ")
@@ -130,6 +131,7 @@ class Caps2Fun():
                     chunk = chunks[1].strip()
                 else:
                     chunk = None
+
                 if ("mesh_style" in line):
                     self.config["mesh_style"] = chunk
                 elif ("n_tacs_procs" in line):
@@ -160,7 +162,18 @@ class Caps2Fun():
                     self.config["qinf"] = float(chunk)
                 elif ("thermal_scale" in line):
                     self.config["thermal_scale"] = float(chunk)
-                
+                elif ("boost_factor" in line):
+                    self.config["boost_factor"] = float(chunk)
+                elif ("edge_pt_min" in line):
+                    self.config["edge_pt_min"] = int(chunk)
+                elif ("edge_pt_max" in line):
+                    self.config["edge_pt_max"] = int(chunk)
+                elif ("tess1" in line):
+                    self.config["struct_tess"][0] = float(chunk)
+                elif ("tess2" in line):
+                    self.config["struct_tess"][1] = float(chunk)
+                elif ("tess3" in line):
+                    self.config["struct_tess"][2] = float(chunk)
             handle.close()
 
 
@@ -172,17 +185,16 @@ class Caps2Fun():
         if (self.comm.Get_rank() == 0):
             #initialize config attribute
             self.config = {}
+            self.config["struct_tess"] = np.zeros((3))
 
             #read default config file
             default_cfg = os.path.join(self.src_dir, "default.cfg")
             parseFile(default_cfg)
 
-            funtofem_folder = os.path.join(self.root_dir, "funtofem")
-            if (not(os.path.exists(funtofem_folder))): os.mkdir(funtofem_folder)
-            funtofem_cfg = os.path.join(funtofem_folder, "funtofem.cfg")
-            if (not(os.path.exists(funtofem_cfg))): 
-                shutil.copy(default_cfg, funtofem_cfg)
-                sys.exit("The funtofem/funtofem.cfg file was missing. A copy has been created - edit and then run it again.\n")
+            caps2fun_cfg = os.path.join(self.root_dir, "caps2fun.cfg")
+            if (not(os.path.exists(caps2fun_cfg))): 
+                shutil.copy(default_cfg, caps2fun_cfg)
+                sys.exit("The caps2fun.cfg file was missing. A copy has been created - edit and then run it again.\n")
             parseFile(funtofem_cfg)
 
         #now broadcast results from reading the config file
@@ -194,7 +206,7 @@ class Caps2Fun():
 
         #status file
         if (self.comm.Get_rank() == 0):
-            statusFile = os.path.join(self.root_dir, "funtofem", "status.txt")
+            statusFile = os.path.join(self.root_dir, "funtofem", "run", "status.txt")
             self.status =  open(statusFile, "w")
             
         #into status
@@ -233,8 +245,9 @@ class Caps2Fun():
             
             #print(curDir)
             funtofemFolder = os.path.join(self.root_dir, "funtofem")
+            runFolder = os.path.join(funtofemFolder, "run")
 
-            inputFile = os.path.join(funtofemFolder, "funtofem.in")
+            inputFile = os.path.join(runFolder, "funtofem.in")
             inputHandle =  open(inputFile, "r")
             lines = inputHandle.readlines()
 
@@ -394,12 +407,12 @@ class Caps2Fun():
         self.tacsAim.input.Proj_Name = self.config["mesh_style"]
         
         #Egads Aim section, for mesh
-        self.egadsAim.input.Edge_Point_Min = 5
-        self.egadsAim.input.Edge_Point_Max = 20
+        self.egadsAim.input.Edge_Point_Min = self.config["edge_pt_min"]
+        self.egadsAim.input.Edge_Point_Max = self.config["edge_pt_max"]
 
         self.egadsAim.input.Mesh_Elements = "Quad"
 
-        self.egadsAim.input.Tess_Params = [0.25,.01,15]
+        self.egadsAim.input.Tess_Params = self.config["struct_tess"]
 
         #increase the precision in the BDF file
         self.tacsAim.input.File_Format = "Large"
@@ -431,7 +444,7 @@ class Caps2Fun():
                     shearMembraneRatio = 5.0/6.0 #default
 
                     #factor to artificially boost OML bending and membrane stiffnesses as if stringers were there
-                    boostFactor = 5.0
+                    boostFactor = self.config["boost_factor"]
 
                     #artificial boost to bending inertia as if stringers were there in OML
                     if ("OML" in capsGroup): 
@@ -693,27 +706,6 @@ class Caps2Fun():
         self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
         self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
 
-        ##############################
-        # fun3d settings for moving_body.input file
-        self.moving_body_input = f90nml.Namelist()
-
-        #moving body settings for funtofem to fun3d
-        bodyName = self.config["csmFile"].split(".")[0]
-        nBodies = 1
-        nBoundaries = 1
-        bndryArray = [[2]]
-        bndryArray = list(bndryArray)
-
-        #body definitions
-        self.moving_body_input["body_definitions"] = f90nml.Namelist()
-        self.moving_body_input["body_definitions"]["n_moving_bodies"] = nBodies
-        self.moving_body_input["body_definitions"]["body_name"] = [bodyName]
-        self.moving_body_input["body_definitions"]["parent_name"] = [""] # '' means motion relative to inertial ref frame
-        self.moving_body_input["body_definitions"]["n_defining_bndry"] = [nBoundaries] #number of boundaries that define this body
-        self.moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
-        self.moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self.moving_body_input["body_definitions"]["mesh_movement"] = ["deform"] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
-
     def initF2F(self):
         #sort struct DVs to match alphabetic, numeric sorting of ESP/CAPS
         structDVs = self.sortStructDVs()
@@ -755,8 +747,10 @@ class Caps2Fun():
 
             if (functionName in ["cl","cd"]):
                 function = Function(functionName,analysis_type='aerodynamic')
-            elif (functionName in ["ksfailure"]):
-                function = Function(functionName,analysis_type='structural')
+            elif (functionName in ["ksfailure","temperature","compliance","heatflux"]):
+                options = {}
+                if (functionName=="ksfailure"): options = {'ksweight': 1000.0}
+                function = Function(functionName, analysis_type='structural', options=options)
             elif (functionName in ["mass"]):
                 function = Function(functionName,analysis_type='structural',adjoint=False)
             else:
@@ -1061,11 +1055,14 @@ class Caps2Fun():
         os.chdir(self.pointwiseAim.analysisDir)
 
         CAPS_GLYPH = os.environ["CAPS_GLYPH"]
+        #ranPointwise = False
         for i in range(1): #can run extra times if having license issues
-                os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
-            #if os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid'): break
+            os.system("pointwise -b " + CAPS_GLYPH + "/GeomToMesh.glf caps.egads capsUserDefaults.glf")
+            #ranPointwise = os.path.isfile('caps.GeomToMesh.gma') and os.path.isfile('caps.GeomToMesh.ugrid')
+            #if ranPointwise: break
 
         os.chdir(self.root_dir)
+        #if (not(ranPointwise)): sys.exit("No pointwise license available")
 
         #run AIM postanalysis, files in self.pointwiseAim.analysisDir
         self.pointwiseAim.postAnalysis()      
@@ -1100,8 +1097,9 @@ class Caps2Fun():
 
             #...write the output functions, gradients, etc
             funtofemFolder = os.path.join(self.root_dir, "funtofem")
+            runFolder = os.path.join(funtofemFolder, "run")
 
-            outputFile = os.path.join(funtofemFolder, "funtofem.out")
+            outputFile = os.path.join(runFolder, "funtofem.out")
 
             outputHandle =  open(outputFile, "w")
 
@@ -1421,7 +1419,7 @@ class TACSinterface(TacsSteadyInterface):
                 nnodes = origNodePositions.shape[0]//3
                 nodes = np.arange(1,nnodes+1, dtype=int)
 
-        self._initialize_variables(assembler, struct_id=nodes, thermal_index=6) #
+        self._initialize_variables(assembler, struct_id=nodes) #
         self.initialize(model.scenarios[0],model.bodies)
 
     def post_export_f5(self):
@@ -1432,7 +1430,7 @@ class TACSinterface(TacsSteadyInterface):
                 TACS.OUTPUT_STRESSES |
                 TACS.OUTPUT_EXTRAS)
         f5 = TACS.ToFH5(self.assembler, TACS.BEAM_OR_SHELL_ELEMENT, flag)
-        tacsOutFile = os.path.join(os.getcwd(), "funtofem","TACSoutput.f5")
+        tacsOutFile = os.path.join(os.getcwd(), "funtofem", "run", "TACSoutput.f5")
         f5.writeToFile(tacsOutFile)
 
 ##----------Supporting Methods and Classes --------------##
@@ -1478,10 +1476,12 @@ def writeInput(DVdict, functions, mode="adjoint", eps=None, x_direction=None):
 
     #make sure funtofem folder exists
     funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+    runFolder = os.path.join(funtofemFolder, "run")
     if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+    if (not(os.path.exists(runFolder))): os.mkdir(runFolder)
 
     #make funtofem input file
-    inputFile = os.path.join(funtofemFolder, "funtofem.in")
+    inputFile = os.path.join(runFolder, "funtofem.in")
     inputHandle =  open(inputFile, "w")
 
     #write the real or complex mode, aka adjoint or complex_step
@@ -1552,10 +1552,12 @@ def readOutput(DVdict,mode="adjoint"):
     #read functions, gradients from funtofem call
     #make sure funtofem folder exists
     funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+    runFolder = os.path.join(funtofemFolder, "run")
     if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+    if (not(os.path.exists(runFolder))): os.mkdir(runFolder)
 
     #make funtofem input file
-    outputFile = os.path.join(funtofemFolder, "funtofem.out")
+    outputFile = os.path.join(runFolder, "funtofem.out")
     if (os.path.exists(outputFile)):
         #if the output file was written, the analysis ran successfully
         success = True
@@ -1686,9 +1688,13 @@ class Optimize():
         self.n_procs = readnprocs()
 
         #make status file
-        optimization_folder = os.path.join(self.root_dir, "optimization")
-        if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
-        statusFile = os.path.join(optimization_folder, "opt_status.out")
+        funtofem_folder = os.path.join(self.root_dir, "funtofem")
+        if (not(os.path.exists(funtofem_folder))): os.mkdir(funtofem_folder)
+        run_folder = os.path.join(funtofem_folder, "run")
+        if (not(os.path.exists(run_folder))): os.mkdir(run_folder)
+        self.optimization_folder = os.path.join(funtofem_folder, "optimization")
+        if (not(os.path.exists(self.optimization_folder))): os.mkdir(self.optimization_folder)
+        statusFile = os.path.join(self.optimization_folder, "opt_status.out")
         self.status = open(statusFile, "w")
 
         #iterations
@@ -1761,7 +1767,7 @@ class Optimize():
         self.cwrite("\tRunning F2F... ")
 
         #instead of bash, do system call inside of this python script
-        callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/output.txt".format(self.n_procs)
+        callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/run/output.txt".format(self.n_procs)
         os.system(callMessage)
 
         #update status that F2F finished
@@ -1772,10 +1778,12 @@ class Optimize():
         #read functions, gradients from funtofem call
         #make sure funtofem folder exists
         funtofemFolder = os.path.join(os.getcwd(), "funtofem")
+        runFolder = os.path.join(funtofemFolder, "run")
         if (not(os.path.exists(funtofemFolder))): os.mkdir(funtofemFolder)
+        if (not(os.path.exists(runFolder))): os.mkdir(runFolder)
 
         #make funtofem input file
-        self.outputFile = os.path.join(funtofemFolder, "funtofem.out")
+        self.outputFile = os.path.join(runFolder, "funtofem.out")
         if (os.path.exists(self.outputFile)):
             #if the output file was written, the analysis ran successfully
             self.success = True
@@ -1828,12 +1836,10 @@ class Optimize():
             outputHandle.close()
 
             #store the output file in optimization folder
-            optimization_folder = os.path.join(self.root_dir, "optimization")
-            if (not(os.path.exists(optimization_folder))): os.mkdir(optimization_folder)
-            iteration_folder = os.path.join(optimization_folder, "iteration" + str(self.iteration))
+            iteration_folder = os.path.join(self.optimization_folder, "iteration" + str(self.iteration))
             if (not(os.path.exists(iteration_folder))): os.mkdir(iteration_folder)
             for filename in ["funtofem.in", "funtofem.out", "TACSoutput.f5"]:
-                src = os.path.join(self.root_dir, "funtofem", filename)
+                src = os.path.join(self.root_dir, "funtofem", "run", filename)
                 chunks = filename.split(".")
                 newfilename = chunks[0] + str(self.iteration) + "." + chunks[1]
                 dest = os.path.join(iteration_folder, newfilename)
@@ -1856,13 +1862,10 @@ class Optimize():
             self.success = False
             self.cwrite("\tAnalysis Failed\n")
             self.fail = 1
+            sys.exit("F2F analysis failed...")
         
 
         return self.fail
-
-    def deleteF2Ffiles(self):
-        os.remove(self.inputFile)
-        os.remove(self.outputFile)
 
     def objCon(self, x):
         #py opt sparse function evaluator
@@ -1931,7 +1934,7 @@ class Optimize():
         return sens, self.fail
 
 class Test():
-    def __init__(self, DVdict, functions=None):
+    def __init__(self, DVdict, functionNames=None):
 
         self.root_dir = os.getcwd()
 
@@ -1942,14 +1945,30 @@ class Test():
         self.n_procs = readnprocs()
 
         #set the functions to check
-        self.functions = functions
-        if (functions is None): 
-            self.functions = ["ksfailure","cl","cd","mass"]
+        self.functionNames = functionNames
+        if (functionNames is None): 
+            self.functionNames = ["ksfailure","temperature", "cl","cd","mass"]
+        self.nfunc = len(self.functionNames)
 
         #count the number of active DV
         self.nDV = 0
         for DV in DVdict:
             if (DV["active"]): self.nDV += 1
+
+        #make folders
+        self.funtofemFolder = os.path.join(self.root_dir, "funtofem")
+        self.runFolder = os.path.join(self.funtofemFolder, "run")
+        self.dataFolder = os.path.join(self.funtofemFolder, "data")
+        if (not(os.path.exists(self.funtofemFolder))): os.mkdir(self.funtofemFolder)
+        if (not(os.path.exists(self.runFolder))): os.mkdir(self.runFolder)
+        if (not(os.path.exists(self.dataFolder))): os.mkdir(self.dataFolder)
+
+        #make output.txt file
+        out_file = os.path.join(self.runFolder, "output.txt")
+        out_hdl = open(out_file, "w")
+        out_hdl.write("Output file for funtofem\n")
+        out_hdl.flush()
+        out_hdl.close()
 
     def derivativeTest(self):
 
@@ -1965,36 +1984,83 @@ class Test():
     def callCaps2fun(self):
         #call caps2fun through funtofem analysis
 
+        #make output text file
+
         #run funtofem analysis
-        callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/output.txt".format(self.n_procs)
+        callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py 2>&1 > ./funtofem/run/output.txt".format(self.n_procs)
+        #callMessage = "mpiexec_mpt -n {} python $CAPS2FUN/caps2fun/caps2fun.py".format(self.n_procs)
         os.system(callMessage)
+
+        #sys.stdout = orig
+
+    def noiseForward(self, noise=0.0):
+        
 
     def multiForward(self, nruns):
         #run the forward analysis multiple times and store the funtofem.output files in a data folder
-        
-        funtofemFolder = os.path.join(self.root_dir, "funtofem")
-        dataFolder = os.path.join(funtofemFolder, "data")
-        if (not(os.path.exists(funtofemFolder))): mkdir(funtofemFolder)
-        if (not(os.path.exists(dataFolder))): mkdir(dataFolder)
+
+        MF_file = os.path.join(self.dataFolder, "multiForward.out")
+        MF_hdl = open(MF_file, "w")
+        MF_hdl.write("Multiple forward analysis results\n")
+        MF_hdl.write("=================================\n")
+        MF_hdl.flush()
+        MF_hdl.close()
+        print("wrote to MF_file\n", flush=True)
+
+        values = np.zeros((nruns, self.nfunc))
 
         for irun in range(nruns):
             
-            #call the forward analysis
-            self.runForward()
+            #clean out run folder
+            os.system("rm -f ./funtofem/run/*")
 
-            #copy the funtofem.out file to the data folder
-            src = os.path.join(funtofemFolder, "funtofem.out")
-            filename = "funtofem" + str(irun+1) + ".out"
-            dest = os.path.join(dataFolder, filename)
-            shutil.copy(src, dest)
-            
+            #call the forward analysis
+            self.funcs = self.runForward()
+
+            #read the funtofem.out file
+            out_file = os.path.join(self.runFolder, "funtofem.out")
+            out_hdl = open(out_file, "r")
+            lines = out_hdl.readlines()
+            out_hdl.flush()
+            out_hdl.close()
+
+            #write funtofem.out contents into multiForward.out file
+            MF_hdl = open(MF_file, "a")
+            MF_hdl.write("run,{}\n".format(irun+1))
+            for line in lines:
+                MF_hdl.write(line)
+            MF_hdl.write("\n")
+            MF_hdl.flush()
+            MF_hdl.close()
+
+            #store the function values in values array
+            for ifunc in range(self.nfunc):
+                name = self.functionNames[ifunc]
+                values[irun, ifunc] = self.funcs[name]
+
+        means = np.mean(values,axis=0)
+        stdDevs = np.std(values,axis=0)
+
+        #write these average results to MFavg.out
+        stats_file = os.path.join(self.dataFolder, "MFstats.out")
+        stats_hdl = open(stats_file, "w")
+        stats_hdl.write("Multiple forward analysis Statistics\n")
+        stats_hdl.write("=================================\n")
+        stats_hdl.write("nruns,{}\n\n".format(nruns))
+        for ifunc in range(self.nfunc):
+            name = self.functionNames[ifunc]
+            mean = means[ifunc]
+            stddev = stdDevs[ifunc]
+            stats_hdl.write("func,{},mean,{},stddev,{}\n".format(name,mean,stddev))
+        stats_hdl.flush()
+        stats_hdl.close()
 
     def runForward(self):
         
         mode = "forward"
 
         #write the F2F input file for adjoint mode
-        writeInput(self.DVdict, self.functions, mode=mode)
+        writeInput(self.DVdict, self.functionNames, mode=mode)
 
         #turnoff complex mode, this prob doesn't work
         #os.system("export CMPLX_MODE=0")
@@ -2010,7 +2076,7 @@ class Test():
         #run the adjoint mode
 
         #write the F2F input file for adjoint mode
-        writeInput(self.DVdict, self.functions, mode="adjoint")
+        writeInput(self.DVdict, self.functionNames, mode="adjoint")
 
         #turnoff complex mode, this prob doesn't work
         #os.system("export CMPLX_MODE=0")
@@ -2029,7 +2095,7 @@ class Test():
         x_dir = x_dir / np.linalg.norm(x_dir)
 
         #write the F2F input file for complex mode
-        writeInput(self.DVdict, self.functions, mode="complex_step", eps=h, x_direction=x_dir)
+        writeInput(self.DVdict, self.functionNames, mode="complex_step", eps=h, x_direction=x_dir)
 
         #run funtofem
         self.callCaps2fun()
@@ -2041,8 +2107,7 @@ class Test():
         #compare directional derivatives of adjoint vs complex step
 
         #make a derivative_check.out file in funtofem folder
-        funtofemFolder = os.path.join(os.getcwd(), "funtofem")
-        deriv_file = os.path.join(funtofemFolder, "derivative_check.out")
+        deriv_file = os.path.join(self.dataFolder, "derivative_check.out")
 
         deriv_handle = open(deriv_file, "w")
 
@@ -2053,12 +2118,13 @@ class Test():
             deriv_handle.write("Funtofem Derivative Check, Adjoint vs Complex Step\n")
             deriv_handle.write("----------------------------")
             deriv_handle.write("----------------------------\n")
+            deriv_handle.flush()
 
         adjoint_dderiv = {}
         complex_dderiv = {}
 
         #for each function in the analysis
-        for function in self.functions:
+        for function in self.functionNames:
             
             #write the function name "func,name"
             deriv_handle.write("func,{}\n".format(function))
@@ -2066,6 +2132,7 @@ class Test():
             #write the adjoint and complex_step functions (real part) to the file
             deriv_handle.write("\tadjoint func      = {}\n".format(self.adjoint_funcs[function]))
             deriv_handle.write("\tcomplex_step func = {}\n".format(self.complex_funcs[function].real))
+            deriv_handle.flush()
 
             #initialize directional derivative, and get this adjoint_grad
             adjoint_dderiv[function] = 0
@@ -2103,6 +2170,7 @@ class Test():
             #write relative error to a file
             line = "\relative error       = {}\n".format(relativeError)
             deriv_handle.write(line)
+            deriv_handle.flush()
 
 
         #close the derivative_check.out file

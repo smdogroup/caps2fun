@@ -10,7 +10,7 @@ from caps2fun import Test
 # despmtr taper 1.0
 
 #main script to run
-def makeDVdict():
+def makeDVdict(thickness=None):
     
     #settings
     shapeActive = False #def: False
@@ -93,7 +93,7 @@ def makeDVdict():
             zeroStr = zeroString(numZeros)
 
             #thickness = 0.001 * thickIndex #0.01
-            thickness = 0.01
+            if (thickness is None): thickness = 0.01
 
             DVname = "thick" + zeroStr + str(thickIndex)
             DVnames.append(DVname)
@@ -143,11 +143,12 @@ def makeDVdict():
 #-----------  Main Section, Run the Test -------------------#
 
 #make a DV dict
-DVdict = makeDVdict()
+DVdict = makeDVdict(thickness=0.01)
 
-functions = ["ksfailure", "cl", "cd", "mass"]
+functions = ["ksfailure", "temperature", "cl", "cd", "mass"]
 
 #start a derivative test
-mytest = Test(DVdict, functions=functions)
-mytest.runForward()
+mytest = Test(DVdict, functionNames=functions)
+#mytest.runForward()
+mytest.multiForward(25)
 #mytest.derivativeTest()
