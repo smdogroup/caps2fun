@@ -1,5 +1,6 @@
 #!/bin/bash
-rm -f *.pbs.o*
+rm -f run.pbs.o*
+rm -f diamondWing.o*
 rm -f CAPS_struct/Scratch/capsLock
 rm -f CAPS_fluid/Scratch/capsLock
 rm -f *.txt
