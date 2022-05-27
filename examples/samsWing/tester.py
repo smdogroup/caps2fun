@@ -150,7 +150,7 @@ DVdict = makeDVdict(thickness=0.01)
 functions = ["ksfailure", "temperature", "cl", "cd", "mass"]
 
 #start a derivative test
-mytest = Test(DVdict, functions=functions)
+mytest = Test(DVdict, functionNames=functions)
 mytest.runForward()
 #mytest.derivativeTest()
 #writeInput(DVdict, functions, mode="forward")

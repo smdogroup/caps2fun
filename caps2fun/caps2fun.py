@@ -1936,7 +1936,7 @@ class Optimize():
         return sens, self.fail
 
 class Test():
-    def __init__(self, DVdict, functions=None):
+    def __init__(self, DVdict, functionNames=None):
 
         self.root_dir = os.getcwd()
 
@@ -1947,10 +1947,10 @@ class Test():
         self.n_procs = readnprocs()
 
         #set the functions to check
-        self.functions = functions
-        if (functions is None): 
-            self.functions = ["ksfailure","temperature", "cl","cd","mass"]
-        self.nfunc = len(self.functions)
+        self.functionNames = functionNames
+        if (functionNames is None): 
+            self.functionNames = ["ksfailure","temperature", "cl","cd","mass"]
+        self.nfunc = len(self.functionNames)
 
         #count the number of active DV
         self.nDV = 0
@@ -2033,8 +2033,9 @@ class Test():
             MF_hdl.close()
 
             #store the function values in values array
-            for ifunc in len(self.nfunc):
-                values[irun, ifunc] = self.funcs[ifunc].value.real
+            for ifunc in range(self.nfunc):
+                name = self.functionNames[ifunc]
+                values[irun, ifunc] = self.funcs[name]
 
         means = np.mean(values,axis=0)
         stdDevs = np.std(values,axis=0)
@@ -2046,7 +2047,7 @@ class Test():
         stats_hdl.write("=================================\n")
         stats_hdl.write("nruns,{}\n\n".format(nruns))
         for ifunc in range(self.nfunc):
-            name = self.functions[ifunc]
+            name = self.functionNames[ifunc]
             mean = means[ifunc]
             stddev = stdDevs[ifunc]
             stats_hdl.write("func,{},mean,{},stddev,{}\n".format(name,mean,stddev))
@@ -2058,7 +2059,7 @@ class Test():
         mode = "forward"
 
         #write the F2F input file for adjoint mode
-        writeInput(self.DVdict, self.functions, mode=mode)
+        writeInput(self.DVdict, self.functionNames, mode=mode)
 
         #turnoff complex mode, this prob doesn't work
         #os.system("export CMPLX_MODE=0")
@@ -2074,7 +2075,7 @@ class Test():
         #run the adjoint mode
 
         #write the F2F input file for adjoint mode
-        writeInput(self.DVdict, self.functions, mode="adjoint")
+        writeInput(self.DVdict, self.functionNames, mode="adjoint")
 
         #turnoff complex mode, this prob doesn't work
         #os.system("export CMPLX_MODE=0")
@@ -2093,7 +2094,7 @@ class Test():
         x_dir = x_dir / np.linalg.norm(x_dir)
 
         #write the F2F input file for complex mode
-        writeInput(self.DVdict, self.functions, mode="complex_step", eps=h, x_direction=x_dir)
+        writeInput(self.DVdict, self.functionNames, mode="complex_step", eps=h, x_direction=x_dir)
 
         #run funtofem
         self.callCaps2fun()
@@ -2122,7 +2123,7 @@ class Test():
         complex_dderiv = {}
 
         #for each function in the analysis
-        for function in self.functions:
+        for function in self.functionNames:
             
             #write the function name "func,name"
             deriv_handle.write("func,{}\n".format(function))
