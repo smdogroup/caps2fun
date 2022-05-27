@@ -191,12 +191,10 @@ class Caps2Fun():
             default_cfg = os.path.join(self.src_dir, "default.cfg")
             parseFile(default_cfg)
 
-            funtofem_folder = os.path.join(self.root_dir, "funtofem")
-            if (not(os.path.exists(funtofem_folder))): os.mkdir(funtofem_folder)
-            funtofem_cfg = os.path.join(funtofem_folder, "funtofem.cfg")
-            if (not(os.path.exists(funtofem_cfg))): 
-                shutil.copy(default_cfg, funtofem_cfg)
-                sys.exit("The funtofem/funtofem.cfg file was missing. A copy has been created - edit and then run it again.\n")
+            caps2fun_cfg = os.path.join(self.root_dir, "caps2fun.cfg")
+            if (not(os.path.exists(caps2fun_cfg))): 
+                shutil.copy(default_cfg, caps2fun_cfg)
+                sys.exit("The caps2fun.cfg file was missing. A copy has been created - edit and then run it again.\n")
             parseFile(funtofem_cfg)
 
         #now broadcast results from reading the config file
@@ -1994,6 +1992,9 @@ class Test():
         os.system(callMessage)
 
         #sys.stdout = orig
+
+    def noiseForward(self, noise=0.0):
+        
 
     def multiForward(self, nruns):
         #run the forward analysis multiple times and store the funtofem.output files in a data folder
