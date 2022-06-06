@@ -95,8 +95,8 @@ SET twist_m_o   twist_m+((twist_t-twist_m)/dy_tm)*(y_m_o)
 SET ttc_m_o     ttc_m+((ttc_t-ttc_m)/dy_tm)*(y_m_o)
 SET y_m_o       y_m_o+dy_mr
 
-cfgpmtr nrib 10
-cfgpmtr nspar 2
+cfgpmtr nrib 40
+cfgpmtr nspar 10
 despmtr margin 100.0
 despmtr sparmargin 0.2
 

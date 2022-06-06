@@ -46,7 +46,7 @@ for dvname in ["area", "chord0","diamAngle0","diamAnglef","taper"]:
 
 ##--------------setup thick DVs------------------##
 #get csm file name from funtofem.cfg
-cfgFile = os.path.join(os.getcwd(),"funtofem", "funtofem.cfg")
+cfgFile = os.path.join(os.getcwd(),"caps2fun.cfg")
 cfghdl = open(cfgFile, "r")
 lines = cfghdl.readlines()
 csmPrefix = ""
@@ -160,7 +160,7 @@ capsOpt = CapsOptimize(DVdict, optimizationMode)
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", capsOpt.objCon)
 
-minThickness = 0.0005
+minThickness = 0.001
 # max_dthick = abs(initThickness - minThickness) / 10
 # max_dthick *= 5
 max_dthick = 10.0

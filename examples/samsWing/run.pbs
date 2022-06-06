@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Required PBS Directives --------------------------------------
 #PBS -A AFVAW00262F03
+#PBS -N samsWing
 #PBS -q debug
 #PBS -l select=4:ncpus=48:mpiprocs=48
 #PBS -l walltime=00:10:00

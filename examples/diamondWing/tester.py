@@ -36,7 +36,7 @@ def makeDVdict(thickness=None):
 
     ##--------------setup thick DVs------------------##
     #get csm file name from funtofem.cfg
-    cfgFile = os.path.join(os.getcwd(),"funtofem", "funtofem.cfg")
+    cfgFile = os.path.join(os.getcwd(),"caps2fun.cfg")
     cfghdl = open(cfgFile, "r")
     lines = cfghdl.readlines()
     csmPrefix = ""
@@ -145,10 +145,12 @@ def makeDVdict(thickness=None):
 #make a DV dict
 DVdict = makeDVdict(thickness=0.01)
 
-functions = ["ksfailure", "temperature", "cl", "cd", "mass"]
+#functions = ["ksfailure", "temperature", "cl", "cd", "mass"]
+functions = ["ksfailure","cl","cd"]
 
 #start a derivative test
 mytest = Test(DVdict, functionNames=functions)
 #mytest.runForward()
-mytest.multiForward(25)
+#mytest.multiForward(nruns=10,noiseVec=[10.0,1.0,0.0])
 #mytest.derivativeTest()
+mytest.runComplexStep()

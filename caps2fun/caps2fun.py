@@ -100,6 +100,9 @@ class Caps2Fun():
         #read the config file
         self.readConfig()
 
+        #initialize runtime (sec)
+        self.runtime = 0.0
+
         #read input from file
         self.readInput()
 
@@ -195,7 +198,7 @@ class Caps2Fun():
             if (not(os.path.exists(caps2fun_cfg))): 
                 shutil.copy(default_cfg, caps2fun_cfg)
                 sys.exit("The caps2fun.cfg file was missing. A copy has been created - edit and then run it again.\n")
-            parseFile(funtofem_cfg)
+            parseFile(caps2fun_cfg)
 
         #now broadcast results from reading the config file
         self.config = self.comm.bcast(self.config, root=0)        
@@ -223,6 +226,7 @@ class Caps2Fun():
     def writeTime(self):
         dt = time.time() - self.start_time
         dt = round(dt)
+        self.runtime += dt
         self.cwrite(", {} sec\n".format(dt))
 
     def commBarrier(self, location):
@@ -1084,7 +1088,7 @@ class Caps2Fun():
         self.writeOutput()
 
         #write that you finished the run
-        self.cwrite("Finished the funtofem call\n")
+        self.cwrite("Finished the funtofem call, total runtime - {} sec".format(self.runtime))
 
         #close status file
         if (self.comm.Get_rank() == 0): self.status.close()
@@ -1838,7 +1842,7 @@ class Optimize():
             #store the output file in optimization folder
             iteration_folder = os.path.join(self.optimization_folder, "iteration" + str(self.iteration))
             if (not(os.path.exists(iteration_folder))): os.mkdir(iteration_folder)
-            for filename in ["funtofem.in", "funtofem.out", "TACSoutput.f5"]:
+            for filename in ["funtofem.in", "funtofem.out", "TACSoutput.f5","status.txt"]:
                 src = os.path.join(self.root_dir, "funtofem", "run", filename)
                 chunks = filename.split(".")
                 newfilename = chunks[0] + str(self.iteration) + "." + chunks[1]
@@ -1994,66 +1998,74 @@ class Test():
         #sys.stdout = orig
 
     def noiseForward(self, noise=0.0):
+        #run single forward mode with slight noise/100% random fluctuation on each DV
+        origDVdict = self.DVdict
+        noise_frac = noise/100
+        self.DVdict = []
+        for DV in origDVdict:
+            if (DV["type"] == "struct"):
+                value = float(DV["value"])
+                value *= 1+noise_frac*(-0.5+np.random.rand(1)[0])
+                DV["value"] = value
+                self.DVdict.append(DV)
+            else:
+                self.DVdict.append(DV)
+        print(self.DVdict, flush=True)
         
+        #run forward analysis
+        self.runForward()
 
-    def multiForward(self, nruns):
+        #return original DV dict
+        self.DVdict = origDVdict        
+
+    def multiForward(self, nruns,noiseVec=None):
+        
+        #default runs with no noise
+        noiseless = noiseVec == None
+        if (noiseless): noiseVec = 0.0
+
         #run the forward analysis multiple times and store the funtofem.output files in a data folder
-
-        MF_file = os.path.join(self.dataFolder, "multiForward.out")
-        MF_hdl = open(MF_file, "w")
-        MF_hdl.write("Multiple forward analysis results\n")
-        MF_hdl.write("=================================\n")
-        MF_hdl.flush()
-        MF_hdl.close()
-        print("wrote to MF_file\n", flush=True)
-
-        values = np.zeros((nruns, self.nfunc))
-
-        for irun in range(nruns):
-            
-            #clean out run folder
-            os.system("rm -f ./funtofem/run/*")
-
-            #call the forward analysis
-            self.funcs = self.runForward()
-
-            #read the funtofem.out file
-            out_file = os.path.join(self.runFolder, "funtofem.out")
-            out_hdl = open(out_file, "r")
-            lines = out_hdl.readlines()
-            out_hdl.flush()
-            out_hdl.close()
-
-            #write funtofem.out contents into multiForward.out file
-            MF_hdl = open(MF_file, "a")
-            MF_hdl.write("run,{}\n".format(irun+1))
-            for line in lines:
-                MF_hdl.write(line)
-            MF_hdl.write("\n")
-            MF_hdl.flush()
-            MF_hdl.close()
-
-            #store the function values in values array
-            for ifunc in range(self.nfunc):
-                name = self.functionNames[ifunc]
-                values[irun, ifunc] = self.funcs[name]
-
-        means = np.mean(values,axis=0)
-        stdDevs = np.std(values,axis=0)
-
-        #write these average results to MFavg.out
         stats_file = os.path.join(self.dataFolder, "MFstats.out")
         stats_hdl = open(stats_file, "w")
         stats_hdl.write("Multiple forward analysis Statistics\n")
         stats_hdl.write("=================================\n")
-        stats_hdl.write("nruns,{}\n\n".format(nruns))
-        for ifunc in range(self.nfunc):
-            name = self.functionNames[ifunc]
-            mean = means[ifunc]
-            stddev = stdDevs[ifunc]
-            stats_hdl.write("func,{},mean,{},stddev,{}\n".format(name,mean,stddev))
-        stats_hdl.flush()
         stats_hdl.close()
+
+        for noise in noiseVec:
+
+            values = np.zeros((nruns, self.nfunc))
+
+            for irun in range(nruns):
+                
+                #clean out run folder
+                os.system("rm -f ./funtofem/run/*")
+
+                #call the forward analysis
+                if (noiseless):
+                    self.funcs = self.runForward()
+                else:
+                    self.funcs = self.noiseForward(noise)
+
+                #store the function values in values array
+                for ifunc in range(self.nfunc):
+                    name = self.functionNames[ifunc]
+                    values[irun, ifunc] = self.funcs[name]
+
+            means = np.mean(values,axis=0)
+            stdDevs = np.std(values,axis=0)
+
+            #write these average results to MFavg.out
+            stats_hdl = open(stats_file, "a")
+            stats_hdl.write("noise,{},percent\n".format(noise))
+            stats_hdl.write("nruns,{}\n".format(nruns))
+            for ifunc in range(self.nfunc):
+                name = self.functionNames[ifunc]
+                mean = means[ifunc]
+                stddev = stdDevs[ifunc]
+                stats_hdl.write("func,{},mean,{},stddev,{}\n".format(name,mean,stddev))
+            stats_hdl.write("\n\n")
+            stats_hdl.flush()
+            stats_hdl.close()
 
     def runForward(self):
         
