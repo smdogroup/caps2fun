@@ -4,14 +4,15 @@ import numpy as np
 nelems = np.array([4669, 16874, 75667])
 #log_nelems = np.log(nelems)
 
-conv_hdl = open("convergence_stats.txt", "r")
+filename = "conv_tess1.txt" #"convergence_stats.txt"
+conv_hdl = open(filename, "r")
 lines = conv_hdl.readlines()
 conv_hdl.close()
 
 cases = []
 mean_values = {}
 stddev_values = {}
-nelem_values = []
+mesh_values = {}
 inCases = False
 for line in lines:
     chunks = line.split(",")
@@ -26,8 +27,12 @@ for line in lines:
             caseDict["ind"] = caseind
         elif ("func" in chunk0):
             name = chunks[1]
-            mean = float(chunks[3])
-            stddev = float(chunks[5])
+            if (len(chunks) > 4): 
+                mean = float(chunks[3])
+                stddev = float(chunks[5])
+            else:
+                mean = float(chunks[2])
+                stddev = 0.0
             if (name == "temperature"):
                 mean /= 5.0 * 300
                 stddev /= 5.0 * 300
@@ -40,8 +45,16 @@ for line in lines:
             caseDict["stddev"] = stddev
         elif ("nelems" in chunk0):
             nelems = int(chunk1)
-            nelem_values.append(nelems)
+            if (caseind == 1):
+                mesh_values["nelems"] = []
+            mesh_values["nelems"].append(nelems)
             caseDict["nelems"] = nelems
+        elif ("tess1" in chunk0):
+            tess1 = float(chunk1)
+            if (caseind == 1):
+                mesh_values["tess1"] = []
+            mesh_values["tess1"].append(tess1)
+            caseDict["tess1"] = nelems
     else:
         if (inCases):
             inCases = False
@@ -49,22 +62,26 @@ for line in lines:
 
 print(cases)       
 
-colors = "kbcg"
+colors = "kbgr"
 colorind = 0
+mesh_string = "nelems" #nelems, tess1
 for name in ["ksfailure","cl","cd","temperature"]:
     color = colors[colorind]; colorind += 1
     if (name in ["ksfailure","temperature"]):
         linestyle = "-"
+        marker = "o"
     else:
         linestyle = "--"
-    stylestr = color + "o" + linestyle
-    plt.plot(nelem_values, mean_values[name], stylestr, label = name, linewidth=3)
+        marker = "s"
+    if (filename == "convergence_stats.txt"): linestyle = ""
+    stylestr = color + marker + linestyle
+    plt.plot(mesh_values[mesh_string], mean_values[name], stylestr, label = name, linewidth=3)
     #print(mean_values[name],stddev_values[name])
-    plt.errorbar(nelem_values, mean_values[name], yerr=stddev_values[name], fmt='o',ecolor = 'red',color=color)
+    plt.errorbar(mesh_values[mesh_string], mean_values[name], yerr=stddev_values[name], fmt=marker,ecolor = 'red',color=color)
 
-plt.xlabel("nelems struct mesh")
+plt.xlabel(mesh_string + " struct mesh")
 plt.ylabel("normalized function values")
-plt.axis([1e3, 1e5, -2, 6])
+if (mesh_string == "nelems"): plt.axis([1e3, 1e5, -2, 6])
 plt.xscale('log')
 plt.legend()
 plt.show()

@@ -46,7 +46,7 @@ for dvname in ["area", "chord0","diamAngle0","diamAnglef","taper"]:
 
 ##--------------setup thick DVs------------------##
 #get csm file name from funtofem.cfg
-cfgFile = os.path.join(os.getcwd(),"funtofem", "funtofem.cfg")
+cfgFile = os.path.join(os.getcwd(), "caps2fun.cfg")
 cfghdl = open(cfgFile, "r")
 lines = cfghdl.readlines()
 csmPrefix = ""
@@ -88,6 +88,8 @@ numMaxDigits = len(str(numThick))
 
 structind = 0
 
+structDVs = [0.11312370955854398, 0.12323839191357741, 0.10269760256106904, 0.10725568897895744, 0.10651424257137354, 0.15291892772360702, 0.09786800436899719, 0.10001384332302278, 0.10578030442454717, 0.09724700830657655, 0.08017634661569063, 0.06840077762091416, 0.05276026214523881, 0.06516268945239197, 0.0813119625598822, 0.03672199085999844, 0.028379821556791824, 0.02951277661014138, 0.022305419897651974, 0.023003101927643026]
+
 for igroup in range(3):
     group = groups[igroup]
     numDV = numDVs[igroup]
@@ -102,7 +104,7 @@ for igroup in range(3):
         zeroStr = zeroString(numZeros)
 
         #thickness = 0.001 * thickIndex #0.01
-        initThickness = 0.100
+        initThickness = structDVs[structind]
 
         DVname = "thick" + zeroStr + str(thickIndex)
         DVnames.append(DVname)
@@ -152,7 +154,7 @@ if (sorted):
 #mytest = Test(DVdict, functions=["ksfailure"])
 #functions = mytest.runForward()
 #maxStress = functions["ksfailure"]
-maxKSfailure = 0.23
+
 
 #initialize wing optimization class
 capsOpt = CapsOptimize(DVdict, optimizationMode)
@@ -160,7 +162,7 @@ capsOpt = CapsOptimize(DVdict, optimizationMode)
 #setup pyOptSparse
 sparseProb = Optimization("Stiffened Panel Aerothermoelastic Optimization", capsOpt.objCon)
 
-minThickness = 0.0005
+minThickness = 0.001
 # max_dthick = abs(initThickness - minThickness) / 10
 # max_dthick *= 5
 max_dthick = 10.0
@@ -170,7 +172,7 @@ names2 = DVnames
 lbnds2 = minThickness * np.ones(thickCt)
 init2 = initThickness*np.ones(thickCt)
 ubnds2 = 1.0*np.ones(thickCt)
-scales2 = 100 * np.ones(thickCt)
+scales2 = 1000 * np.ones(thickCt)
 
 for istruct in range(thickCt):
     name = names2[istruct]
@@ -184,6 +186,7 @@ for istruct in range(thickCt):
 #add functions, obj and constraint
 sparseProb.addObj("obj")
 #stress constraint upper bound 1/1.5/2.5 = 0.267
+maxKSfailure = 0.267
 sparseProb.addConGroup("con", 1,upper=maxKSfailure)
 
 #setup SLSQP optimizer

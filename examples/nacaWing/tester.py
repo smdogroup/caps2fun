@@ -28,7 +28,7 @@ def makeDVdict():
 
     ##--------------setup thick DVs------------------##
     #get csm file name from funtofem.cfg
-    cfgFile = os.path.join(os.getcwd(),"funtofem", "funtofem.cfg")
+    cfgFile = os.path.join(os.getcwd(),"caps2fun.cfg")
     cfghdl = open(cfgFile, "r")
     lines = cfghdl.readlines()
     csmPrefix = ""
