@@ -47,14 +47,14 @@ Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy
 
 from __future__ import print_function
 
-#import normal classes
+# Import standard libraries
 import os, shutil, sys
 import time
 import numpy as np
 import pyCAPS
 import f90nml
 
-#read whether to use complex mode or not from input file
+# Read whether to use complex mode or not from input file
 f2fin = os.path.join(os.getcwd(), "funtofem","run","funtofem.in")
 isComplex = False
 inputExists = os.path.exists(f2fin)
@@ -68,20 +68,21 @@ if (inputExists):
             isComplex = "complex_step" in line
     hdl.close()
 
-#turn on complex mode if sent in through input file
-#need to do this before importing pyfuntofem otherwise fun3d will import real flow solvers instead
+# Turn on complex mode if sent in through input file.
+# Need to do this before importing pyfuntofem otherwise 
+# fun3d will import real flow solvers instead.
 if (isComplex): 
     os.environ['CMPLX_MODE'] = "1"
 else: #otherwise set it to empty which means off
     os.environ["CMPLX_MODE"] = ""
 
-#import funtofem classes and functions
+# Import funtofem classes and functions
 from pyfuntofem.model  import *
 from pyfuntofem.driver import *
 from pyfuntofem.fun3d_interface import *
 from pyfuntofem.tacs_interface import TacsSteadyInterface
 
-#import from tacs
+# Import from tacs
 from tacs.pytacs import pyTACS
 from tacs import functions
 from tacs import TACS, functions, constitutive, elements, pyTACS, problems
@@ -1366,7 +1367,6 @@ class Caps2Fun():
         #update status
         self.cwrite("finished aero mesh contribution to shape DVs\n")
 
-
 #subclass for tacs steady interface
 class TACSinterface(TacsSteadyInterface):
     def __init__(self, comm, tacs_comm, model, n_tacs_procs, datFile, structDVs):
@@ -1484,7 +1484,6 @@ def readnprocs(root_dir=None):
             ntotprocs = ncpus * nprocs
 
     return ntotprocs    
-
 
 def writeInput(DVdict, functions, mode="adjoint", eps=None, x_direction=None):
     # script to write the design variables to funtofem
