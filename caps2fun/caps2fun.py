@@ -47,14 +47,14 @@ Authors: Sean Engelstad, Sejal Sahu, Graeme Kennedy
 
 from __future__ import print_function
 
-#import normal classes
+# Import standard libraries
 import os, shutil, sys
 import time
 import numpy as np
 import pyCAPS
 import f90nml
 
-#read whether to use complex mode or not from input file
+# Read whether to use complex mode or not from input file
 f2fin = os.path.join(os.getcwd(), "funtofem","run","funtofem.in")
 isComplex = False
 inputExists = os.path.exists(f2fin)
@@ -68,20 +68,21 @@ if (inputExists):
             isComplex = "complex_step" in line
     hdl.close()
 
-#turn on complex mode if sent in through input file
-#need to do this before importing pyfuntofem otherwise fun3d will import real flow solvers instead
+# Turn on complex mode if sent in through input file.
+# Need to do this before importing pyfuntofem otherwise 
+# fun3d will import real flow solvers instead.
 if (isComplex): 
     os.environ['CMPLX_MODE'] = "1"
 else: #otherwise set it to empty which means off
     os.environ["CMPLX_MODE"] = ""
 
-#import funtofem classes and functions
+# Import funtofem classes and functions
 from pyfuntofem.model  import *
 from pyfuntofem.driver import *
 from pyfuntofem.fun3d_interface import *
 from pyfuntofem.tacs_interface import TacsSteadyInterface
 
-#import from tacs
+# Import from tacs
 from tacs.pytacs import pyTACS
 from tacs import functions
 from tacs import TACS, functions, constitutive, elements, pyTACS, problems
@@ -177,6 +178,19 @@ class Caps2Fun():
                     self.config["struct_tess"][1] = float(chunk)
                 elif ("tess3" in line):
                     self.config["struct_tess"][2] = float(chunk)
+                # Fluid Mesh Settings
+                elif ("domain_max_layers" in line):
+                    self.config["domain_max_layers"] = int(chunk)
+                elif ("domain_growth_rate" in line):
+                    self.config["domain_growth_rate"] = float(chunk)
+                elif ("block_boundary_decay" in line):
+                    self.config["block_boundary_decay"] = float(chunk)
+                elif ("block_max_skew_angle" in line):
+                    self.config["block_max_skew_angle"] = float(chunk)
+                elif ("block_full_layers" in line):
+                    self.config["block_full_layers"] = int(chunk)
+                elif ("block_max_layers" in line):
+                    self.config["block_max_layers"] = int(chunk)
             handle.close()
 
 
@@ -524,20 +538,20 @@ class Caps2Fun():
 
             # Domain level
             self.pointwiseAim.input.Domain_Algorithm    = "AdvancingFront"
-            self.pointwiseAim.input.Domain_Max_Layers   = 15
-            self.pointwiseAim.input.Domain_Growth_Rate  = 1.75
+            self.pointwiseAim.input.Domain_Max_Layers   = self.config["domain_max_layers"]
+            self.pointwiseAim.input.Domain_Growth_Rate  = self.config["domain_growth_rate"]
             self.pointwiseAim.input.Domain_TRex_ARLimit = 40.0 #def 40.0, lower inc mesh size
             self.pointwiseAim.input.Domain_Decay        = 0.5
             self.pointwiseAim.input.Domain_Iso_Type = "Triangle" #"TriangleQuad"
             self.pointwiseAim.input.Domain_Wall_Spacing = wallSpacing
 
             # Block level
-            self.pointwiseAim.input.Block_Boundary_Decay       = 0.5
+            self.pointwiseAim.input.Block_Boundary_Decay       = self.config["block_boundary_decay"]
             self.pointwiseAim.input.Block_Collision_Buffer     = 1.0
-            self.pointwiseAim.input.Block_Max_Skew_Angle       = 170.0
+            self.pointwiseAim.input.Block_Max_Skew_Angle       = self.config["block_max_skew_angle"]
             self.pointwiseAim.input.Block_Edge_Max_Growth_Rate = 2.0
-            self.pointwiseAim.input.Block_Full_Layers          = 1
-            self.pointwiseAim.input.Block_Max_Layers           = 100
+            self.pointwiseAim.input.Block_Full_Layers          = self.config["block_full_layers"]
+            self.pointwiseAim.input.Block_Max_Layers           = self.config["block_max_layers"]
             self.pointwiseAim.input.Block_TRexType = "TetPyramid"
             #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms)        
 
@@ -1375,7 +1389,6 @@ class Caps2Fun():
         #update status
         self.cwrite("finished aero mesh contribution to shape DVs\n")
 
-
 #subclass for tacs steady interface
 class TACSinterface(TacsSteadyInterface):
     def __init__(self, comm, tacs_comm, model, n_tacs_procs, datFile, structDVs):
@@ -1493,7 +1506,6 @@ def readnprocs(root_dir=None):
             ntotprocs = ncpus * nprocs
 
     return ntotprocs    
-
 
 def writeInput(DVdict, functions, mode="adjoint", eps=None, x_direction=None):
     # script to write the design variables to funtofem
