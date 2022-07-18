@@ -472,7 +472,11 @@ class Caps2Fun():
                         print("applied boost factor to capsGroup {}".format(capsGroup))
 
                     #make the shell property
-                    
+                    shell = {"propertyType" : "Shell",
+                        "membraneThickness" : DV.value,
+                        "material"        : "aluminum",
+                        "bendingInertiaRatio" : 1.0 * boostFactor, # Default
+                        "shearMembraneRatio"  : 5.0/6.0 * boostFactor} # Default
 
                     
                     propDict[capsGroup] = shell

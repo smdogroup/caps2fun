@@ -5,11 +5,10 @@ Georgia Tech SMDO 2022
 Goal is to generate ESP/CAPS geometry files
 """
 
-from re import T
-from caps2fun.caps2fun.caps2fun import Caps2Fun
 import pyCAPS
-import mpi4py
-from typing import TYPE_CHECKING, List, TypedDict
+from typing import TYPE_CHECKING, List
+
+__all__ = ["ESPGeometry", "Material", "ShellProperty", "Constraint", "ESP_ThicknessDV", "StuctMesh"]
 
 class CAPS:
     """
@@ -26,6 +25,134 @@ class CAPS:
             pass
 
 # TODO : alternative wrapper classes CAPS_Fluid, CAPS_Struct that check not None
+
+#TODO : add extra classes for each of the struct, fluid AIM settings
+class Constraint:
+    def __init__(self, name : str, caps_constraint : str, dof_values : str):
+        self._name = name
+        self._caps_constraint = caps_constraint
+        self._dof_values = dof_values
+
+    @classmethod
+    def fixed(cls, name : str, caps_constraint : str):
+        return cls(name=name, caps_constraint=caps_constraint, dof_values = "123456")
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def dict(self):
+        return {"groupName" : self._caps_constraint,
+                "dofConstraint" : self._dof_values}
+
+class StructMesh:
+    def __init__(self, mesh_style : str, edge_pt_min : float, edge_pt_max : float, tess_params : List[float]):
+        assert(len(tess_params) == 3)
+
+        self._mesh_style = mesh_style
+        self._edge_pt_min = edge_pt_min
+        self._edge_pt_max = edge_pt_max
+        self._tess_params = tess_params
+
+    @classmethod
+    def default(cls):
+        return cls(mesh_style = "pointwise",edge_pt_min = 5, edge_pt_max = 100, tess_params = [0.03, 0.01, 15])
+
+    @property
+    def mesh_style(self):
+        return self._mesh_style
+
+    @property
+    def edge_pt_min(self) -> float:
+        return self._edge_pt_min
+
+    @property
+    def edge_pt_max(self) -> float:
+        return self._edge_pt_max
+
+    @property
+    def tess_params(self) -> List[int]:
+        return self.tess_params
+
+class ESP_ThicknessDV:
+    def __init__(self, name : str, caps_group : str, thickness : float, add_DVR : bool = True):
+        self._name = name
+        self._caps_group = caps_group
+        self._thickness = thickness
+        self._add_DVR = add_DVR
+
+    @property
+    def add_DVR(self) -> bool:
+        return self._add_DVR
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def dv_dict(self) -> dict:
+        return {"groupName" : self._caps_group,
+                "initialValue" : self._thickness,
+                "lowerBound" : self._thickness*0.5,
+                "upperBound" : self._thickness*1.5,
+                "maxDelta"   : self._thickness*0.1}
+    
+    @property
+    def dvr_dict(self) -> dict:
+        return {"variableType": "Property",
+                "fieldName" : "T",
+                "constantCoeff" : 0.0,
+                "groupName" : self._name,
+                "linearCoeff" : 1.0}
+
+class Material:
+    def __init__(self, name : str, young_modulus : float, poisson_ratio : float, 
+                        density : float, tension_allowed : float, material_type : str = "isotropic") -> None:
+        self.has_struct_materials = True
+
+        self._name = name
+        self._young_modulus = young_modulus
+        self._poisson_ratio = poisson_ratio
+        self._density = density
+        self._tension_allowed = tension_allowed
+        self._material_type = material_type
+
+    @classmethod
+    def aluminum(cls):
+        return cls(name = "aluminum", young_modulus = 72.0E9, \
+        poisson_ratio = "0.33", density="2.8E3", tension_allowed = 20.0E7, material_type = "isotropic")
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def dict(self):
+        return  {"materialType" : self._material_type,
+                "youngModulus" : self._young_modulus ,
+                "poissonRatio": self._poisson_ratio,
+                "density" : self._density,
+                "tensionAllow" :  self._tension_allowed}
+    
+class ShellProperty:
+    def __init__(self, caps_group : str, material : Material, thickness : float, boost_factor = 1.0):
+        self._caps_group = caps_group
+        self._material = material
+        self._thickness = thickness
+        self._boost_factor = boost_factor
+
+    @property
+    def dict(self) -> dict:
+        return {"propertyType" : "Shell",
+                "membraneThickness" : self._thickness,
+                "material"        : "aluminum",
+                "bendingInertiaRatio" : 1.0 * self._boost_factor, # Default, TODO : double-check which one boost_factor should be on or both
+                "shearMembraneRatio"  : 5.0/6.0 * self._boost_factor} # Default
+    
+    @property
+    def caps_group(self) -> str:
+        return self._caps_group
 
 class ESPGeometry:
     def __init__(self, csm_file : str, comm):
@@ -159,26 +286,20 @@ class ESPGeometry:
         self.fun3d_aim = self.caps_fluid.analysis.create(aim = "fun3dAIM",
                                     name = "fun3d")
 
-    def struct_mesh_settings(
-        self, mesh_style : str, 
-        edge_pt_min : float = 5,
-        edge_pt_max : float = 100,
-        tess_params : List[float] = [0.03, 0.01, 15],
-    ) -> None:
+    def struct_mesh_settings(self, struct_mesh : StructMesh) -> None:
 
         self.set_struct_mesh_settings = True
 
         #names the bdf and dat files as pointwise.ext or tetgen.ext
-        self.tacs_aim.input.Proj_Name = mesh_style
+        self.tacs_aim.input.Proj_Name = struct_mesh.mesh_style
         
         #Egads Aim section, for mesh
-        self.egads_struct_aim.input.Edge_Point_Min = edge_pt_min
-        self.egads_struct_aim.input.Edge_Point_Max = edge_pt_max
+        self.egads_struct_aim.input.Edge_Point_Min = struct_mesh.edge_pt_min
+        self.egads_struct_aim.input.Edge_Point_Max = struct_mesh.edge_pt_max
 
         self.egads_struct_aim.input.Mesh_Elements = "Quad"
 
-        assert(len(tess_params) == 3)
-        self.egads_struct_aim.input.Tess_Params = tess_params
+        self.egads_struct_aim.input.Tess_Params = struct_mesh.tess_params
 
         #increase the precision in the BDF file
         self.tacs_aim.input.File_Format = "Large"
@@ -187,16 +308,9 @@ class ESPGeometry:
         # Link the mesh
         self.tacs_aim.input["Mesh"].link(self.egadsAim.output["Surface_Mesh"])
 
-    def add_material(self, name : str, young_modulus : float, poisson_ratio : float, 
-                        density : float, tension_allowed : float, type : str = "isotropic") -> None:
+    def add_material(self, material : Material) -> None:
         self.has_struct_materials = True
-
-        material_dict = {"materialType" : type,
-                            "youngModulus" : young_modulus ,
-                            "poissonRatio": poisson_ratio,
-                            "density" : density,
-                            "tensionAllow" :  tension_allowed}
-        self._materials[name] = material_dict
+        self._materials[material.name] = material.dict
 
     @property
     def ready_for_struct_analysis(self):
@@ -217,42 +331,27 @@ class ESPGeometry:
         else:
             raise AssertionError("Haven't set up the struct problem correctly: need materials, constraints, properties, analysis, and mesh settings.")
 
-    def get_shell_property(self, thickness : float, material : str, boost_factor : float = 1.0) -> dict:
+    def add_shell_property(self, shell_property : ShellProperty) -> None:
         """
-        get a shell property dict
+        add a shell property
         """
-        return {"propertyType" : "Shell",
-                "membraneThickness" : thickness,
-                "material"        : "aluminum",
-                "bendingInertiaRatio" : 1.0 * boost_factor, # Default, TODO : double-check which one boost_factor should be on or both
-                "shearMembraneRatio"  : 5.0/6.0} # Default
+        self.has_struct_properties = True
+        self._properties[shell_property.caps_group] = shell_property.dict
 
-    def add_struct_constraint(self, name : str, caps_constraint : str, dof_values : List[int]) -> None:
+    def add_struct_constraint(self, constraint : Constraint) -> None:
         self.has_struct_constraints = True
-        self._constraints[name] = {"groupName" : caps_constraint,
-                "dofConstraint" : dof_values}
+        self._constraints[constraint.name] = constraint.dict
 
     def set_struct_analysis(self, analysis_type = "Static"):
         self.has_set_struct_analysis = True
         self.tacsAim.input.Analysis_Type = analysis_type
 
-    def add_thickness_DV(self, name : str, caps_group : str, thickness : float, add_DVR=True):
+    def add_thickness_DV(self, thick_DV : ESP_ThicknessDV) -> None:
         #thick DV dictionary for Design_Variable Dict
         self.has_struct_DVs = True
-        DVdict = {"groupName" : caps_group,
-                "initialValue" : thickness,
-                "lowerBound" : thickness*0.5,
-                "upperBound" : thickness*1.5,
-                "maxDelta"   : thickness*0.1}
 
-        DVRdict = {"variableType": "Property",
-                    "fieldName" : "T",
-                    "constantCoeff" : 0.0,
-                    "groupName" : name,
-                    "linearCoeff" : 1.0}
-
-        self._DVs[name] = DVdict
-        self._DVRs[name] = DVRdict
+        self._DVs[thick_DV.name] = thick_DV.dv_dict
+        if (thick_DV.add_DVR): self._DVRs[thick_DV.name] = thick_DV.dvr_dict
 
     def fluid_mesh_settings(self):
         #wall bc settings (wall is the OML)
