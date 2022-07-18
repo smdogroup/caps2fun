@@ -5,19 +5,20 @@ Georgia Tech SMDO 2022
 Goal is to generate ESP/CAPS geometry files
 """
 
-import pyCAPS
+#import pyCAPS
 from typing import TYPE_CHECKING, List
 
-__all__ = ["ESPGeometry", "Material", "ShellProperty", "Constraint", "ESP_ThicknessDV", "StuctMesh"]
+__all__ = ["ESPGeometry", "Material", "ShellProperty", "Constraint", "ESP_ThicknessDV", "StructMesh",
+"name_index_list"]
 
 class CAPS:
     """
     wrapper function class for Caps functions
     TODO : add wrapper function @CAPS for that only lets you run it for root procs or no procs
     """
-    def __init__(self, func, obj):
+    def __init__(self, func):
         self._func = func
-        self._obj = obj # something like this or func.__self__ is the obj
+        self._obj = None # something like this or func.__self__ is the obj
 
     def __call__(self):
         if (self._obj.can_use_caps):
@@ -25,6 +26,24 @@ class CAPS:
             pass
 
 # TODO : alternative wrapper classes CAPS_Fluid, CAPS_Struct that check not None
+
+def name_index_list(name : str or List[str], index : int or List[int],one_based=True) -> List[str]:
+    """
+    list of caps Groups or thickness DVs of similar type
+    etc: rib0, rib1, rib2, ..., ribN-1
+    """
+    if (isinstance(name, str)):
+        assert(isinstance(index, int))
+        if one_based:
+            indices = range(1,index+1)
+        else:
+            indices = range(0,index)
+        return [name + str(idx) for idx in indices]
+    else:
+        output_list = []
+        for idx in range(len(name)):
+            output_list += name_index_list(name[idx], index[idx])
+        return output_list
 
 #TODO : add extra classes for each of the struct, fluid AIM settings
 class Constraint:
