@@ -25,7 +25,7 @@ class Material:
         return self._name
 
     @property
-    def dictionary(self):
+    def dictionary(self) -> dict:
         """
         return dictionary of material settings
         """

@@ -56,11 +56,11 @@ class CapsStruct(CapsProblem):
 
     @property
     def tacsAim(self) -> TacsAim:
-        return TacsAim(caps_problem=self)
+        return TacsAim(caps_problem=self._caps_problem)
 
     @property
     def egadsAim(self) -> EgadsAim:
-        return EgadsAim(caps_problem=self)
+        return EgadsAim(caps_problem=self._caps_problem)
 
 class CapsFluid(CapsProblem):
     """
@@ -80,12 +80,12 @@ class CapsFluid(CapsProblem):
 
     @property
     def pointwiseAim(self) -> PointwiseAim:
-        return TacsAim(caps_problem=self)
+        return TacsAim(caps_problem=self._caps_problem)
 
     @property
     def egadsAim(self) -> EgadsAim:
-        return EgadsAim(caps_problem=self)
+        return EgadsAim(caps_problem=self._caps_problem)
 
     @property
     def fun3dAim(self) -> Fun3dAim:
-        return Fun3dAim(caps_problem=self)
+        return Fun3dAim(caps_problem=self._caps_problem)
