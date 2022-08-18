@@ -6,11 +6,12 @@ run "pip install -e ." in this dir to install package
 from setuptools import setup
 
 setup(
-    name="caps_to_funtofem",
-    version="0.1",
+    name="caps2fun",
+    version="1.0",
     author="Sean Engelstad",
     author_email="sengelstad312@gatech.edu",
     description="interface between ESP/CAPS, Funtofem, TACS, and FUN3D for Aerothermoelastic analysis of Aerospace Structures",
-    packages=["pycaps2fun"],
+    packages=["caps2fun","caps2tacs","capsWrapper"],
+    package_dir = {'': 'src'},
     python_requires=">=3.6",
 )
