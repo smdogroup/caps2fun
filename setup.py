@@ -11,7 +11,7 @@ setup(
     author="Sean Engelstad",
     author_email="sengelstad312@gatech.edu",
     description="interface between ESP/CAPS, Funtofem, TACS, and FUN3D for Aerothermoelastic analysis of Aerospace Structures",
-    packages=["caps2fun","caps2tacs","capsWrapper"],
+    packages=["caps2fun","caps2tacs","capsWrapper", "csmWriter"],
     package_dir = {'': 'src'},
     python_requires=">=3.6",
 )

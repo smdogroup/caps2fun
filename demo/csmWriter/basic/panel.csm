@@ -1,0 +1,8 @@
+despmtr	length	2.0
+despmtr	width	0.5
+
+patbeg  foo  3
+	box 3*foo 0 0 length width 0
+patend
+sphere 0 0 0 1 1 1 1.0
+
