@@ -24,6 +24,10 @@ class Material:
     def name(self) -> str:
         return self._name
 
+    @name.setter
+    def name(self, new_name:str):
+        self._name = new_name
+
     @property
     def dictionary(self) -> dict:
         """
@@ -43,6 +47,14 @@ class Material:
         # return all items that are not None
         return {k: v for k, v in m_dict.items() if v is not None}
         
+    @property
+    def young_modulus(self) -> float:
+        return self._young_modulus
+
+    @young_modulus.setter
+    def young_modulus(self, value:float):
+        self._young_modulus = value
+
 
 class Isotropic(Material):
     def __init__(self, 

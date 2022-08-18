@@ -1,8 +1,8 @@
 #csm file for Rohan
 # Design Parameters
-despmtr   plateLength       2.0
-despmtr   plateWidth        3.0
-despmtr stiffHeight         0.1
+despmtr   plateLength       5.0
+despmtr   plateWidth        8.0
+despmtr stiffHeight         0.2
 
 cfgpmtr nx 1
 cfgpmtr ny 8
@@ -51,7 +51,7 @@ patbeg istiff nstiff
         skend 0
         extrude 0 0 -stiffHeight
         select face
-         attribute capsGroup !$stiffener+stiffInd
+         attribute capsGroup !$stiffener+istiff
     patend
     join 0 1
     restore plate
@@ -62,26 +62,23 @@ restore plate
    
    
 select face
-   attribute capsGroup !$plate+iy
+    attribute capsLoad $plate
 select body
    attribute capsAIM $egadsTessAIM;tacsAIM
    
 patbeg i 5
    select edge !edges1[1,i]
    	   attribute capsConstraint $edge1
-   	   attribute capsLoad $edge1
 patend
 patbeg i 6
    select node !nodes1[1,i]
    	   attribute capsConstraint $edge1
-   	   attribute capsLoad $edge1
 patend 
    
    
 patbeg i 6
    select node !nodes2[1,i]
    	   attribute capsConstraint $edge2
-   	   attribute capsLoad $edge2
 patend 
 
 patbeg j 5
