@@ -43,7 +43,9 @@ class TacsAim:
         self._design_variables.append(variable)
         if isinstance(variable, ThicknessVariable):
             if variable.has_material:
-                self._properties.append(variable.shell_property)        
+                self._properties.append(variable.shell_property) 
+            else:
+                raise AssertionError("Did not set material for this property...")       
 
     def add_property(self, property:ShellProperty):
         assert(isinstance(property, ShellProperty))
