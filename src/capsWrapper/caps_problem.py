@@ -38,6 +38,10 @@ class CapsProblem:
     def view(self):
         self.geometry.view()
 
+    @property
+    def design_parameters(self):
+        return self.geometry.despmtr.keys()
+
 class CapsStruct(CapsProblem):
     """
     Base class for Structure problems with ESP/CAPS
@@ -61,6 +65,10 @@ class CapsStruct(CapsProblem):
     @property
     def egadsAim(self) -> EgadsAim:
         return EgadsAim(caps_problem=self._caps_problem)
+
+    @property
+    def design_parameters(self):
+        return self.geometry.despmtr.keys()
 
 class CapsFluid(CapsProblem):
     """

@@ -1,0 +1,22 @@
+
+cfgpmtr nplates 3
+
+despmtr   plateLength       0.5
+despmtr   plateWidth        1.0
+
+patbeg iplate nplates
+    box plateLength*(iplate-1) 0 0 plateLength plateWidth 0
+    select face
+        attribute capsGroup !$plate+iplate
+        attribute capsLoad $plate
+    select edge
+        attribute capsConstraint !$plate+iplate
+    select node
+        attribute capsConstraint !$plate+iplate
+    patbeg foo ifzero(iplate-1,0,1)
+        union
+    patend
+patend
+
+select body
+    attribute capsAIM $egadsTessAIM;tacsAIM    

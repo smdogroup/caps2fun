@@ -1,8 +1,6 @@
 
 __all__ = ["Constraint", "ZeroConstraint"]
 
-from doctest import DONT_ACCEPT_TRUE_FOR_1
-
 
 class Constraint:
     def __init__(self, name:str, caps_constraint:str, constraint_type:str, dof_constraint:int, grid_displacement:float=0.0):
