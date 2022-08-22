@@ -27,7 +27,7 @@ class ThicknessVariable:
     """
     shape variables are ESP/CAPS despmtr variables, etc.
     """
-    def __init__(self, name:str, caps_group:str, value:float, material:Material=None):
+    def __init__(self, name:str, caps_group:str, value:float, material:Material):
         self._name = name
         self._caps_group = caps_group
         self._value = value

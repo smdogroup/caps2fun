@@ -16,11 +16,11 @@ class EgadsAim:
         self._aim = caps_problem.analysis.create(aim="egadsTessAIM")
         self._is_setup = False
 
-    def set_mesh(self, edge_pt_min:int=15, edge_pt_max=20, mesh_elements:str="Quad", tess_params:List[float]=[.25,.01,15]):
+    def set_mesh(self, edge_pt_min:int=15, edge_pt_max=20, mesh_elements:str="Quad", global_mesh_size:float=0.25, max_surf_offset:float=0.01, max_dihedral_angle:float=15):
         self._aim.input.Edge_Point_Min = edge_pt_min
         self._aim.input.Edge_Point_Max = edge_pt_max
         self._aim.input.Mesh_Elements = mesh_elements
-        self._aim.input.Tess_Params = tess_params
+        self._aim.input.Tess_Params = [global_mesh_size, max_surf_offset, max_dihedral_angle]
         self._is_setup = True
 
     @property

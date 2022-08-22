@@ -33,6 +33,4 @@ egads_aim.set_mesh()
 caps_tacs = caps2tacs.CapsTacs(tacs_aim=tacs_aim, egads_aim=egads_aim)
 
 comm = MPI.COMM_WORLD
-tacs_reader = caps2tacs.TacsMeshLoader(comm=comm, dat_file=caps_tacs.dat_file, debug=True)
-tacs_reader.read_bdf()
-
+solver = caps2tacs.TacsSolver(comm=comm, dat_file=caps_tacs.dat_file)
