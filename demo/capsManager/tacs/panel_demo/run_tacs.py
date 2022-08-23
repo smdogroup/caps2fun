@@ -1,28 +1,28 @@
-import capsWrapper
+import capsManager
 from tacs.pytacs import pyTACS
 from tacs import functions
 import os
 
-panel_problem = capsWrapper.CapsStruct.default(csmFile="panel.csm")
+panel_problem = capsManager.CapsStruct.default(csmFile="panel.csm")
 tacs_aim = panel_problem.tacsAim
 egads_aim = panel_problem.egadsAim
 
-madeupium = capsWrapper.Isotropic.madeupium()
+madeupium = capsManager.Isotropic.madeupium()
 tacs_aim.add_material(material=madeupium)
 
 
-constraint = capsWrapper.ZeroConstraint(name="fixEdge", caps_constraint="edge")
+constraint = capsManager.ZeroConstraint(name="fixEdge", caps_constraint="edge")
 tacs_aim.add_constraint(constraint=constraint)
 
-load = capsWrapper.GridForce(name="load1", caps_load="plate", direction=[0,0,-1.], magnitude=1.0E3)    
+load = capsManager.GridForce(name="load1", caps_load="plate", direction=[0,0,-1.], magnitude=1.0E3)    
 tacs_aim.add_load(load=load)
 
-thick_DV = capsWrapper.ThicknessVariable(name="thick", caps_group="plate", value=0.01, material=madeupium)
+thick_DV = capsManager.ThicknessVariable(name="thick", caps_group="plate", value=0.01, material=madeupium)
 tacs_aim.add_variable(variable=thick_DV)
 
 despmtrs = ["plateLength", "plateWidth"]
 for despmtr in despmtrs:
-    shape_var = capsWrapper.ShapeVariable(name=despmtr)
+    shape_var = capsManager.ShapeVariable(name=despmtr)
     tacs_aim.add_variable(variable=shape_var)
 
 tacs_aim.setup_aim()

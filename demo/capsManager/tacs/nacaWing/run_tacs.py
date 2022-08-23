@@ -1,57 +1,57 @@
-import capsWrapper
+import capsManager
 from tacs.pytacs import pyTACS
 from tacs import functions
 import os
 
-panel_problem = capsWrapper.CapsStruct.default(csmFile="nacaWing.csm")
+panel_problem = capsManager.CapsStruct.default(csmFile="nacaWing.csm")
 tacs_aim = panel_problem.tacsAim
 egads_aim = panel_problem.egadsAim
 
-OML_madeupium = capsWrapper.Isotropic.madeupium()
+OML_madeupium = capsManager.Isotropic.madeupium()
 OML_madeupium.name = "OML-madeupium"
 tacs_aim.add_material(material=OML_madeupium)
 
-rib_madeupium = capsWrapper.Isotropic.madeupium()
+rib_madeupium = capsManager.Isotropic.madeupium()
 rib_madeupium.name = "rib-madeupium"
 rib_madeupium.young_modulus *= 1.5
 tacs_aim.add_material(material=rib_madeupium)
 
 
-spar_madeupium = capsWrapper.Isotropic.madeupium()
+spar_madeupium = capsManager.Isotropic.madeupium()
 spar_madeupium.name = "spar-madeupium"
 spar_madeupium.young_modulus *= 2.0
 tacs_aim.add_material(material=spar_madeupium)
 
 # add wing root constraint
-constraint = capsWrapper.ZeroConstraint(name="fixRoot", caps_constraint="wingRoot")
+constraint = capsManager.ZeroConstraint(name="fixRoot", caps_constraint="wingRoot")
 tacs_aim.add_constraint(constraint=constraint)
 
-load = capsWrapper.GridForce(name="load1", caps_load="fullWing", direction=[1.,0.,0.], magnitude=1.0E3)    
+load = capsManager.GridForce(name="load1", caps_load="fullWing", direction=[1.,0.,0.], magnitude=1.0E3)    
 tacs_aim.add_load(load=load)
 
 thick_idx = 0
 nribs = 16
 for rib_idx in range(1,nribs+1):
-    thick_DV = capsWrapper.ThicknessVariable(name=f"thick{thick_idx}", caps_group=f"rib{rib_idx}", value=0.2-0.005*rib_idx, material=rib_madeupium)
+    thick_DV = capsManager.ThicknessVariable(name=f"thick{thick_idx}", caps_group=f"rib{rib_idx}", value=0.2-0.005*rib_idx, material=rib_madeupium)
     tacs_aim.add_variable(variable=thick_DV)
     thick_idx += 1
 
 nspars = 2
 for spar_idx in range(1,nspars+1):
-    thick_DV = capsWrapper.ThicknessVariable(name=f"thick{thick_idx}", caps_group=f"spar{spar_idx}", value=0.4-0.08*spar_idx, material=spar_madeupium)
+    thick_DV = capsManager.ThicknessVariable(name=f"thick{thick_idx}", caps_group=f"spar{spar_idx}", value=0.4-0.08*spar_idx, material=spar_madeupium)
     tacs_aim.add_variable(variable=thick_DV)
     thick_idx += 1
 
 nOML = nribs-1
 for OML_idx in range(1,nOML+1):
-    thick_DV = capsWrapper.ThicknessVariable(name=f"thick{thick_idx}", caps_group=f"OML{OML_idx}", value=0.05-0.002*OML_idx, material=OML_madeupium)
+    thick_DV = capsManager.ThicknessVariable(name=f"thick{thick_idx}", caps_group=f"OML{OML_idx}", value=0.05-0.002*OML_idx, material=OML_madeupium)
     tacs_aim.add_variable(variable=thick_DV)
     thick_idx += 1
 
 despmtrs = panel_problem.geometry.despmtr.keys()
 print(despmtrs)
 for despmtr in despmtrs:
-    shape_var = capsWrapper.ShapeVariable(name=despmtr)
+    shape_var = capsManager.ShapeVariable(name=despmtr)
     tacs_aim.add_variable(variable=shape_var)
 
 tacs_aim.setup_aim()

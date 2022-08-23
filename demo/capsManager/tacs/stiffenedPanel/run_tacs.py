@@ -1,41 +1,41 @@
-import capsWrapper
+import capsManager
 from tacs.pytacs import pyTACS
 from tacs import functions
 import os
 
-panel_problem = capsWrapper.CapsStruct.default(csmFile="stiffPanel4.csm")
+panel_problem = capsManager.CapsStruct.default(csmFile="stiffPanel4.csm")
 tacs_aim = panel_problem.tacsAim
 egads_aim = panel_problem.egadsAim
 
-madeupium = capsWrapper.Isotropic.madeupium()
+madeupium = capsManager.Isotropic.madeupium()
 tacs_aim.add_material(material=madeupium)
 
-stronger_madeupium = capsWrapper.Isotropic.madeupium()
+stronger_madeupium = capsManager.Isotropic.madeupium()
 stronger_madeupium.name = "stronger-madeupium"
 stronger_madeupium.young_modulus *= 5.0
 tacs_aim.add_material(material=stronger_madeupium)
 
 # two constraints for this problem
 for idx in range(2):
-    constraint = capsWrapper.ZeroConstraint(name=f"fixEdge{idx}", caps_constraint=f"edge{idx+1}")
+    constraint = capsManager.ZeroConstraint(name=f"fixEdge{idx}", caps_constraint=f"edge{idx+1}")
     tacs_aim.add_constraint(constraint=constraint)
 
-load = capsWrapper.GridForce(name="load1", caps_load="plate", direction=[0,-1,-1.], magnitude=1.0E3)    
+load = capsManager.GridForce(name="load1", caps_load="plate", direction=[0,-1,-1.], magnitude=1.0E3)    
 tacs_aim.add_load(load=load)
 
 n_plates = 8
 for plate_idx in range(1,n_plates+1):
-    thick_DV = capsWrapper.ThicknessVariable(name=f"thick{plate_idx}", caps_group=f"plate{plate_idx}", value=0.01+abs(0.1-0.03*plate_idx), material=madeupium)
+    thick_DV = capsManager.ThicknessVariable(name=f"thick{plate_idx}", caps_group=f"plate{plate_idx}", value=0.01+abs(0.1-0.03*plate_idx), material=madeupium)
     tacs_aim.add_variable(variable=thick_DV)
 
 n_stiffeners = 4
 for stiff_idx in range(1,n_stiffeners+1):
-    thick_DV = capsWrapper.ThicknessVariable(name=f"thick{n_plates+1+stiff_idx}", caps_group=f"stiffener{stiff_idx}", value=0.2, material=stronger_madeupium)
+    thick_DV = capsManager.ThicknessVariable(name=f"thick{n_plates+1+stiff_idx}", caps_group=f"stiffener{stiff_idx}", value=0.2, material=stronger_madeupium)
     tacs_aim.add_variable(variable=thick_DV)
 
 despmtrs = ["plateLength", "plateWidth", "stiffHeight"]
 for despmtr in despmtrs:
-    shape_var = capsWrapper.ShapeVariable(name=despmtr)
+    shape_var = capsManager.ShapeVariable(name=despmtr)
     tacs_aim.add_variable(variable=shape_var)
 
 # setup both aims
