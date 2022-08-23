@@ -1,7 +1,7 @@
 
 __all__ = ["TacsAssembler"]
 
-from tacsWrapper.nastran_reader.mesh_loader import TacsMeshLoader
+from tacsManager.nastran_reader.mesh_loader import TacsMeshLoader
 from tacs.TACS import Creator
 
 class TacsAssembler:
@@ -26,7 +26,6 @@ class TacsAssembler:
         """
         self._creator = Creator(self.comm, self.vars_per_node)
         if self.comm.rank == 0:
-            
-        print(self._creator)
+            print(self._creator)
 
 

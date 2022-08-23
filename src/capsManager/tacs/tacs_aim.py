@@ -4,11 +4,12 @@ __all__ = ["TacsAim"]
 
 from typing import TYPE_CHECKING, List
 import pyCAPS
-from .material import Material
-from .property import ShellProperty
-from .constraint import Constraint
-from .load import *
-from .design_variable import ShapeVariable, ThicknessVariable
+import os
+from capsManager.tacs.material import Material
+from capsManager.tacs.property import ShellProperty
+from capsManager.tacs.constraint import Constraint
+from capsManager.tacs.load import *
+from capsManager.tacs.design_variable import ShapeVariable, ThicknessVariable
 
 class TacsAim:
     """
@@ -19,6 +20,8 @@ class TacsAim:
     
     def __init__(self, caps_problem:pyCAPS.Problem):
         self._aim = caps_problem.analysis.create(aim = "tacsAIM", name = "tacs")
+        self._design_parameters = caps_problem.geometry.despmtr.keys()
+        #print(self._design_parameters)
 
         self._materials = []
         self._loads = []
@@ -59,7 +62,7 @@ class TacsAim:
         assert(isinstance(load, Load))
         self._loads.append(load)   
 
-    def setup_aim(self, large_format:bool=True, static:bool=True):
+    def setup_aim(self, large_format:bool=True, static:bool=True, auto_shape_variables:bool=True):
         
         # make sure there is at least one material, property, constraint, etc.
         assert(len(self._materials) > 0)
@@ -89,12 +92,50 @@ class TacsAim:
         if len(self._loads) > 0:
             self._aim.input.Load = {load.name : load.dictionary for load in self._loads}
 
+        if auto_shape_variables:
+            for despmtr in self._design_parameters:
+                shape_var = ShapeVariable(name=despmtr)
+                self.add_variable(variable=shape_var)
+
         # add the design variables to the DesignVariable and DesignVariableRelation properties
         self._aim.input.Design_Variable_Relation = {dv.name : dv.DVR_dictionary for dv in self._design_variables if isinstance(dv, ThicknessVariable)}
         self._aim.input.Design_Variable = {dv.name : dv.DV_dictionary for dv in self._design_variables}
 
         # note that setup is finished now
         self._setup = True
+
+    def pre_analysis(self):
+        """
+        provide access to the tacs aim preAnalysis for running 
+        """
+        self.aim.preAnalysis()
+
+    @property
+    def analysis_dir(self) -> str:
+        return self.aim.analysisDir
+
+    @property
+    def dat_file(self) -> str:
+        return self.project_name + '.dat'
+
+    @property
+    def dat_file_path(self) -> str:
+        return os.path.join(self.analysis_dir, self.dat_file)
+
+    @property
+    def sens_file(self) -> str:
+        return self.project_name + ".sens"
+
+    @property
+    def sens_file_path(self) -> str:
+        return os.path.join(self.analysis_dir, self.sens_file)
+
+    @property
+    def project_name(self) -> str:
+        return self.aim.input.Proj_Name
+
+    def post_analysis(self):
+        self.aim.postAnalysis()
 
     @property
     def is_setup(self) -> bool:

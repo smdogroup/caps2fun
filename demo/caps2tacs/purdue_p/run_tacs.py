@@ -23,15 +23,13 @@ for group in ["front", "back", "boundary"]:
 load = caps2tacs.GridForce(name="load1", caps_load="front", direction=[0,0,-1.0], magnitude=1.0E3)    
 tacs_aim.add_load(load=load)
 
-for despmtr in problem.design_parameters:
-    shape_var = caps2tacs.ShapeVariable(name=despmtr)
-    tacs_aim.add_variable(variable=shape_var)
-
 tacs_aim.setup_aim()
-egads_aim.set_mesh(edge_pt_min=40, edge_pt_max=50, tess_params=[0.01,0.01,15])
+egads_aim.set_mesh(edge_pt_min=40, edge_pt_max=50, global_mesh_size=0.01)
 
 # start a caps tacs main problem
-caps_tacs = caps2tacs.CapsTacs(tacs_aim=tacs_aim, egads_aim=egads_aim)
+caps_tacs = caps2tacs.CapsTacs(tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=None)
+
+caps_tacs.tacs_pre_analysis()
 
 #initialize pytacs with that data file
 FEASolver = pyTACS(caps_tacs.dat_file)
