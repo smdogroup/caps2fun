@@ -17,10 +17,23 @@ class PytacsFunction(ABC):
         self._fea_solver = None
         self._function_names = []
         self._analysis_dir = None
+        self._write_idx = 0
 
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def f5_filename(self) -> str:
+        """
+        name of f5 file without .f5 extension
+        """
+        return f"{self.name}_{self._write_idx}"
+
+    @property
+    def f5_filepath(self) -> str:
+        load_set_str = "000"
+        return os.path.join(self.analysis_dir, f"{self.f5_filename}_{load_set_str}.f5")
 
     @property
     def num_functions(self) -> int:
@@ -47,8 +60,8 @@ class PytacsFunction(ABC):
         """
         returns node map where you input a bdf node index and outputs the tacs node index
         """
-        bdfNodes = range(1,self.num_nodes+1)
-        return self.fea_solver.meshLoader.getLocalNodeIDsFromGlobal(bdfNodes,nastranOrdering=True)
+        bdfNodes = range(self.num_nodes)
+        return self.fea_solver.meshLoader.getLocalNodeIDsFromGlobal(bdfNodes,nastranOrdering=False)
 
     @property
     def function_names(self) -> List[str]:
@@ -75,15 +88,11 @@ class PytacsFunction(ABC):
         """
         get f5tovtk command
         """
-        f5_file = self.name + ".f5"
-        commands = []
-        commands.append(f"cd {self.analysis_dir}")
-        commands.append(f"f5tovtk {f5_file}")
-        commands.append(f"paraview {self.name}.vtk")
-        commands.append("cd -")
-        print("\nHow to convert f5tovtk and view in paraview...")
-        for idx in range(len(commands)):
-            print(f"\t{idx+1} - {commands[idx]}")
+        conversion_script = "~/git/tacs/extern/f5tovtk/f5tovtk"
+        command = f"{conversion_script} {self.f5_filepath}"
+        print(command)
+        os.system(command)
+        self._write_idx += 1
         
 
 
@@ -96,6 +105,14 @@ class MassStress(PytacsFunction):
         self._safety_factor = safety_factor
         self._ks_weight = ks_weight
         self._function_names = ['mass', 'ks_vmfailure']
+
+        # for debugging
+        self._nodes = None
+
+    @property
+    def nodes(self):
+        assert(self._nodes is not None)
+        return self._nodes
 
     def __call__(self, dat_file:str, write_solution:bool=False):
 
@@ -119,8 +136,9 @@ class MassStress(PytacsFunction):
             SPs[caseID].solve()
             SPs[caseID].evalFunctions(func,evalFuncs=self.function_names)
             SPs[caseID].evalFunctionsSens(sens,evalFuncs=self.function_names)
+            self._nodes = SPs[caseID].getNodes()
             if write_solution:
-                SPs[caseID].writeSolution(baseName=self.name, outputDir=self.analysis_dir)
+                SPs[caseID].writeSolution(baseName=self.f5_filename, outputDir=self.analysis_dir)
                 self.f5_to_vtk()
         
         return func, sens

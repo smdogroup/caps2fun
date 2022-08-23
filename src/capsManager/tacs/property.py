@@ -44,6 +44,14 @@ class ShellProperty(Property):
         self._shear_membrane_ratio = shear_membrane_ratio
 
     @property
+    def membrane_thickness(self) -> float:
+        return self._membrane_thickness
+
+    @membrane_thickness.setter
+    def membrane_thickness(self, new_thickness:float):
+        self._membrane_thickness = new_thickness
+
+    @property
     def dictionary(self) -> dict:
         """
         return property dictionary to pass into tacsAim

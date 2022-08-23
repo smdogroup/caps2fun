@@ -29,11 +29,7 @@ pytacs_function = caps2tacs.MassStress()
 # start a caps tacs main problem
 caps_tacs = caps2tacs.CapsTacs(tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function)
 
-mass_grad,mass_grad_dict = caps_tacs.gradient(function_name="mass")
-print(f"mass gradient dict = {mass_grad_dict}\n")
-
-stress_grad,stress_grad_dict = caps_tacs.gradient(function_name="ks_vmfailure")
-print(f"stress gradient dict = {stress_grad_dict}\n")
-
-
+for i in range(1):
+    caps_tacs.tacs_aim.update_design(design_dict={"height" : i*0.3+0.5})
+    caps_tacs.analysis(write_solution=True)
 

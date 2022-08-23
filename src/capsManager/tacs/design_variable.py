@@ -36,7 +36,19 @@ class ThicknessVariable:
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def caps_group(self) -> str:
+        return self._caps_group
+
+    @property
+    def value(self) -> float:
+        return self._value
     
+    @value.setter
+    def value(self, new_value:float):
+        self._value = new_value
+
     @property
     def DV_dictionary(self) -> dict:
         """

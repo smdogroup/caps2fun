@@ -20,8 +20,10 @@ class TacsAim:
     
     def __init__(self, caps_problem:pyCAPS.Problem):
         self._aim = caps_problem.analysis.create(aim = "tacsAIM", name = "tacs")
+        
+        # geometry and design parameters to change the design of the CSM file during an optimization
         self._design_parameters = caps_problem.geometry.despmtr.keys()
-        #print(self._design_parameters)
+        self._geometry = caps_problem.geometry
 
         self._materials = []
         self._loads = []
@@ -31,6 +33,32 @@ class TacsAim:
 
         # build flags
         self._setup = False
+        self._first_setup = True
+
+    def update_design(self, design_dict:dict):
+        """
+        method to change the values of each design variable in tacs, caps
+        input x is a dictionary of values for each variable {"name" : value}
+        """
+        # change setup to False since we have a new design we have to set up the aim again
+        self._setup = False
+
+        for design_variable in self._design_variables:
+            if design_variable.name in design_dict:
+                new_value = design_dict[design_variable.name]
+                if isinstance(design_variable, ShapeVariable):
+                    self._geometry.despmtr[new_value].value = new_value
+                elif isinstance(design_variable, ThicknessVariable):
+                    design_variable.value = new_value
+                    # change that property
+                    matching_property = False
+                    for property in self._properties:
+                        if isinstance(property, ShellProperty):
+                            matching_property = property.membrane_thickness == design_variable.caps_group
+                            if matching_property:
+                                property.membrane_thickness = new_value
+                    if not matching_property:
+                        raise AssertionError("Couldn't find matching property...")
 
     def add_material(self, material:Material):
         """
@@ -92,10 +120,11 @@ class TacsAim:
         if len(self._loads) > 0:
             self._aim.input.Load = {load.name : load.dictionary for load in self._loads}
 
-        if auto_shape_variables:
+        if auto_shape_variables and self._first_setup:
             for despmtr in self._design_parameters:
                 shape_var = ShapeVariable(name=despmtr)
                 self.add_variable(variable=shape_var)
+            self._first_setup = False
 
         # add the design variables to the DesignVariable and DesignVariableRelation properties
         self._aim.input.Design_Variable_Relation = {dv.name : dv.DVR_dictionary for dv in self._design_variables if isinstance(dv, ThicknessVariable)}
@@ -103,6 +132,10 @@ class TacsAim:
 
         # note that setup is finished now
         self._setup = True
+
+    @property
+    def design_variables(self) -> List[ShapeVariable or ThicknessVariable]:
+        return self._design_variables
 
     def pre_analysis(self):
         """
