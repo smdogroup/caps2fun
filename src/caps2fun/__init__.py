@@ -1,4 +1,5 @@
 """
-Package to run coupled funtofem analyses btw TACS and FUN3D using ESP/CAPS geometries
+Package to run FUN3D analyses from ESP/CAPS geometries
 """
-from capsWrapper import *
+from capsManager import *
+from fun3dManager import *

@@ -1,7 +1,7 @@
 """
 Package to run TACS analyses from ESP/CAPS geometries
-caps2tacs automatically imports capsWrapper and tacsWrapper package for you
+caps2tacs automatically imports capsManager and tacsManager package for you
 """
-from capsWrapper import *
-from tacsWrapper import *
+from capsManager import *
+from tacsManager import *
 from .caps_tacs import *
