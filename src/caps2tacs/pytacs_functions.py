@@ -4,7 +4,7 @@ __all__ = ["PytacsFunction", "MassStress"]
 from typing import TYPE_CHECKING, List
 from tacs import functions, pyTACS
 from abc import ABC, abstractmethod
-import os
+import os, sys
 
 class PytacsFunction(ABC):
     """
@@ -18,22 +18,46 @@ class PytacsFunction(ABC):
         self._function_names = []
         self._analysis_dir = None
         self._write_idx = 0
+        self._load_set = 0
+
+    @property
+    def load_set_str(self):
+        set_str = str(self._load_set)
+        rem_zeros = 3 - len(set_str)
+        zero_str_list = ["0"] * rem_zeros
+        zero_str = "".join(zero_str_list)
+        return f"{zero_str}{set_str}"
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def f5_filename(self) -> str:
+    def f5_base_filename(self) -> str:
         """
         name of f5 file without .f5 extension
         """
         return f"{self.name}_{self._write_idx}"
 
     @property
-    def f5_filepath(self) -> str:
-        load_set_str = "000"
-        return os.path.join(self.analysis_dir, f"{self.f5_filename}_{load_set_str}.f5")
+    def paraview_group_name(self) -> str:
+        return f"{self.name}_{self.load_set_str}_..vtk"
+
+    @property
+    def f5_set_filename(self) -> str:
+        return f"{self.f5_base_filename}_{self.load_set_str}"
+
+    @property
+    def f5_fixed_filename(self) -> str:
+        return f"{self.name}_{self.load_set_str}_{self._write_idx}"
+
+    @property
+    def f5_fixed_filepath(self) -> str:
+        return os.path.join(self.analysis_dir, f"{self.f5_fixed_filename}.f5")
+
+    @property
+    def f5_set_filepath(self) -> str:
+        return os.path.join(self.analysis_dir, f"{self.f5_set_filename}.f5")
 
     @property
     def num_functions(self) -> int:
@@ -86,10 +110,15 @@ class PytacsFunction(ABC):
 
     def f5_to_vtk(self):
         """
-        get f5tovtk command
+        get f5tovtk command done for each file
+        ref for animation of a set of similar named paraview vtk files
+        https://docs.paraview.org/en/latest/UsersGuide/dataIngestion.html
         """
+
+        # first rename the f5 files to eliminate set extension
+        os.system(f"mv {self.f5_set_filepath} {self.f5_fixed_filepath}")
         conversion_script = "~/git/tacs/extern/f5tovtk/f5tovtk"
-        command = f"{conversion_script} {self.f5_filepath}"
+        command = f"{conversion_script} {self.f5_fixed_filepath}"
         print(command)
         os.system(command)
         self._write_idx += 1
@@ -133,12 +162,13 @@ class MassStress(PytacsFunction):
 
         func = {}; sens = {}
         for caseID in SPs:
+            self._load_set = caseID-1
             SPs[caseID].solve()
             SPs[caseID].evalFunctions(func,evalFuncs=self.function_names)
             SPs[caseID].evalFunctionsSens(sens,evalFuncs=self.function_names)
             self._nodes = SPs[caseID].getNodes()
             if write_solution:
-                SPs[caseID].writeSolution(baseName=self.f5_filename, outputDir=self.analysis_dir)
+                SPs[caseID].writeSolution(baseName=self.f5_base_filename, outputDir=self.analysis_dir)
                 self.f5_to_vtk()
         
         return func, sens

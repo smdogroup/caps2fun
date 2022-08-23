@@ -4,7 +4,7 @@ __all__ = ["TacsAim"]
 
 from typing import TYPE_CHECKING, List
 import pyCAPS
-import os
+import os, sys
 from capsManager.tacs.material import Material
 from capsManager.tacs.property import ShellProperty
 from capsManager.tacs.constraint import Constraint
@@ -44,10 +44,13 @@ class TacsAim:
         self._setup = False
 
         for design_variable in self._design_variables:
-            if design_variable.name in design_dict:
-                new_value = design_dict[design_variable.name]
+            dv_name = design_variable.name
+            if dv_name in design_dict:
+                new_value = design_dict[dv_name]
                 if isinstance(design_variable, ShapeVariable):
-                    self._geometry.despmtr[new_value].value = new_value
+                    #print(f"changing dv '{dv_name}' to {new_value}")
+                    self._geometry.despmtr[dv_name].value = new_value
+                    self.aim.geometry.despmtr[dv_name].value = new_value
                 elif isinstance(design_variable, ThicknessVariable):
                     design_variable.value = new_value
                     # change that property

@@ -262,9 +262,9 @@ class CapsTacs:
 
                 # write the struct design variable derivatives, write each design variable separately
                 struct_sens = self.struct_sensitivity(set_function_name)
-                print(struct_sens)
-                print(self.design_variable_names)
-                print(self.list_is_struct_design_variable)
+                #print(struct_sens)
+                #print(self.design_variable_names)
+                #print(self.list_is_struct_design_variable)
                 for idx,is_struct_dv in enumerate(self.list_is_struct_design_variable):
                     if is_struct_dv:
                         struct_dv_name = self.design_variable_names[idx]
@@ -278,6 +278,19 @@ class CapsTacs:
         """
         self.write_sensitivity_file()
         self.tacs_aim.post_analysis()
-        
+
+    def view_paraview_group(self):
+        os.system(f"paraview {self.tacs_aim.analysis_dir}/{self.pytacs_function.paraview_group_name}")
+
+    def __del__(self):
+        """
+        destructor for caps to tacs problem, tells how to view results after done
+        """
+        print(f"\nYou've now finished your caps2tacs analysis/optimization")
+        print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
+        print(f"\tcd {self.tacs_aim.analysis_dir}")
+        print(f"\tparaview {self.pytacs_function.paraview_group_name}")
+        print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation")
+        print(f"\tu*iHat+v*jHat+w*kHat")
 
         
