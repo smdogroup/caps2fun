@@ -1,0 +1,29 @@
+
+# symmetric airfoil design parameters w bezier curve
+
+despmtr xw 0.5
+despmtr yw 0.2
+set xr yw
+set r2 sqrt(2)/2
+
+skbeg xw+xr 0 0
+   cirarc xw+xr*r2 xr*r2 0 xw yw 0
+   linseg -xw yw 0
+   cirarc -xw-xr*r2 -xr*r2 0 -xw-xr 0 0
+   linseg xw+xr 0 0
+skend
+
+revolve 0 0 0 1.0 0 0 180
+store halfPill
+restore halfPill
+mirror 0 0 1
+restore halfPill
+union
+hollow 0
+
+
+rotatey 90 0 0
+
+despmtr ybox 0.4
+set zbox ybox
+box -1 -ybox/2.0 -zbox/2.0 1.5 ybox zbox

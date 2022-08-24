@@ -3,7 +3,7 @@ __all__ = ["CapsTacs"]
 
 from capsManager.tacs import TacsAim
 from capsManager.egads import EgadsAim
-from caps2tacs.pytacs_functions import PytacsFunction
+from tacsManager.pytacs_functions import PytacsFunction
 from typing import TYPE_CHECKING, List
 from capsManager.tacs.design_variable import ThicknessVariable
 import os, sys
@@ -375,8 +375,11 @@ class CapsTacs:
         print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
         print(f"\tcd {self.tacs_aim.analysis_dir}")
         print(f"\tparaview {self.pytacs_function.paraview_group_name}")
-        print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation")
+        print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation on the animation batch")
         print(f"\tu*iHat+v*jHat+w*kHat")
+        print(f"Once you save the deformation results or field output animations (have to save as group pngs) go to the following website to make a gif...")
+        print(f"\thttps://www.freeconvert.com/png-to-gif")
+        print(f"Then return to the orig directory with 'cd -'")
 
         if self._view_plots:
             self.view_paraview_group()

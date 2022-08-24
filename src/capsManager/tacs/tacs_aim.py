@@ -157,8 +157,11 @@ class TacsAim:
 
         if auto_shape_variables and self._first_setup:
             for despmtr in self._design_parameters:
-                shape_var = ShapeVariable(name=despmtr)
-                self.add_variable(variable=shape_var)
+                # TODO : setup for dv arrays too but not yet
+                new_value = self._geometry.despmtr[despmtr].value
+                if isinstance(new_value, float): # make sure not a list despmtr, not supported yet
+                    shape_var = ShapeVariable(name=despmtr, value=new_value)
+                    self.add_variable(variable=shape_var)
             self._first_setup = False
 
         # add the design variables to the DesignVariable and DesignVariableRelation properties
@@ -171,6 +174,14 @@ class TacsAim:
     @property
     def design_variables(self) -> List[ShapeVariable or ThicknessVariable]:
         return self._design_variables
+
+    @property
+    def shape_design_variables(self) -> List[ShapeVariable]:
+        return [dv for dv in self.design_variables if isinstance(dv, ShapeVariable)]
+
+    @property
+    def thickness_design_variables(self) -> List[ThicknessVariable]:
+        return [dv for dv in self.design_variables if isinstance(dv, ThicknessVariable)]
 
     def pre_analysis(self):
         """

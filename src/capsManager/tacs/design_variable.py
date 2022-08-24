@@ -10,6 +10,7 @@ class ShapeVariable:
     """
     def __init__(self, name:str, value:float):
         self._name = name
+        self._value = value
 
     @property
     def name(self) -> str:

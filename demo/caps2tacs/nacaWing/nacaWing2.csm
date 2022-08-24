@@ -1,0 +1,37 @@
+
+# symmetric airfoil design parameters w bezier curve
+despmtr chord0 2.0
+despmtr tc0 0.1
+despmtr tcf 0.05
+despmtr camber0 0.1
+despmtr camberf 0.1
+despmtr maxloc0 0.4
+despmtr maxlocf 0.4
+
+# span design parameters
+despmtr sspan 5.0
+despmtr dihedral 2.0
+despmtr lesweep 2.0
+despmtr taper 0.5
+
+set chordf taper*chord0
+
+# root airfoil
+mark
+udprim naca thickness tc0 camber camber0 maxloc maxloc0 sharpTE 0
+scale chord0 0 0 0
+udprim naca thickness tcf camber camberf maxloc maxlocf sharpTE 0
+scale chordf 0 0 0
+   
+# tip airofil
+set dx sspan*tand(lesweep)
+set dy sspan*tand(dihedral)
+
+translate dx dy -sspan
+loft 0
+store wing
+
+restore wing
+restore wing
+mirror 0 0 1
+union
