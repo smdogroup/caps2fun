@@ -34,34 +34,66 @@ class TacsAim:
         # build flags
         self._setup = False
         self._first_setup = True
+        self._first_analysis = True
 
     def update_design(self, design_dict:dict):
         """
         method to change the values of each design variable in tacs, caps
         input x is a dictionary of values for each variable {"name" : value}
         """
-        # change setup to False since we have a new design we have to set up the aim again
-        self._setup = False
 
-        for design_variable in self._design_variables:
+        changed_design:bool = False
+
+        # change setup to False since we have a new design we have to set up the aim again
+        
+
+        for idx,design_variable in enumerate(self._design_variables):
             dv_name = design_variable.name
             if dv_name in design_dict:
-                new_value = design_dict[dv_name]
+
+                new_value = float(design_dict[dv_name])
+
                 if isinstance(design_variable, ShapeVariable):
-                    #print(f"changing dv '{dv_name}' to {new_value}")
-                    self._geometry.despmtr[dv_name].value = new_value
-                    self.aim.geometry.despmtr[dv_name].value = new_value
+                    same_value:bool= self._geometry.despmtr[dv_name].value == new_value
+                    if not same_value:
+                        print(f"changing dv '{dv_name}' to {new_value}")
+                        design_variable.value = new_value
+                        self._geometry.despmtr[dv_name].value = new_value
+                        changed_design = True
+                        #self.aim.geometry.despmtr[dv_name].value = new_value
+
                 elif isinstance(design_variable, ThicknessVariable):
-                    design_variable.value = new_value
+                    
+                    # change the thickness design variable
+                    same_value = design_variable.value == new_value
+                    if not same_value:
+                        self._design_variables[idx].value = new_value
+
                     # change that property
                     matching_property = False
-                    for property in self._properties:
+
+                    for idx,property in enumerate(self._properties):
+
                         if isinstance(property, ShellProperty):
-                            matching_property = property.membrane_thickness == design_variable.caps_group
+                            matching_property = property.caps_group == design_variable.caps_group
+
                             if matching_property:
-                                property.membrane_thickness = new_value
+                                same_value:bool=property.membrane_thickness == new_value
+
+                                if not same_value:
+                                    self._properties[idx].membrane_thickness = new_value
+                                    changed_design = True
+                                break
+
                     if not matching_property:
-                        raise AssertionError("Couldn't find matching property...")
+                        raise AssertionError(f"Couldn't find matching property '{dv_name}'...")
+
+        self._setup = not(changed_design)
+        if self._first_analysis: 
+            self._first_analysis = False
+            return True
+        else:
+            return changed_design
 
     def add_material(self, material:Material):
         """
@@ -114,7 +146,7 @@ class TacsAim:
         self._aim.input.Material = {material.name : material.dictionary for material in self._materials}
 
         # add properties to tacsAim
-        self._aim.input.Property = {prop.capsGroup : prop.dictionary for prop in self._properties}
+        self._aim.input.Property = {prop.caps_group : prop.dictionary for prop in self._properties}
 
         # add constraints to tacsAim
         self._aim.input.Constraint = {con.name : con.dictionary for con in self._constraints}

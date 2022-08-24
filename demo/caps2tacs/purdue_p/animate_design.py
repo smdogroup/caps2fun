@@ -29,7 +29,7 @@ pytacs_function = caps2tacs.MassStress()
 # start a caps tacs main problem
 caps_tacs = caps2tacs.CapsTacs(tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function)
 
-for i in range(2):
+for i in range(8):
     caps_tacs.tacs_aim.update_design(design_dict={"height1" : i*0.2+0.5})
     caps_tacs.analysis(write_solution=True)
 

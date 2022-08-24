@@ -12,7 +12,7 @@ class Property:
         self._property_type = property_type
 
     @property
-    def capsGroup(self) -> str:
+    def caps_group(self) -> str:
         """
         return capsGroup attribute associated with this property
         """

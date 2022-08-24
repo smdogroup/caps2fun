@@ -6,14 +6,16 @@ from capsManager.egads import EgadsAim
 from caps2tacs.pytacs_functions import PytacsFunction
 from typing import TYPE_CHECKING, List
 from capsManager.tacs.design_variable import ThicknessVariable
-import os
+import os, sys
+import matplotlib.pyplot as plt
 
 
 class CapsTacs:
     """
     Module to handle caps and tacs interface problems
     """
-    def __init__(self, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, compute_gradients:bool=True):
+    def __init__(self, name:str, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, 
+        compute_gradients:bool=True, write_solution:bool=True, view_plots:bool=False):
         """
         Module to handle caps and tacs interface problems
             tacs_aim : provide a fully setup tacs aim wrapper object
@@ -29,6 +31,8 @@ class CapsTacs:
         assert(isinstance(egads_aim, EgadsAim))
         assert(isinstance(pytacs_function, PytacsFunction) or pytacs_function is None)
 
+        self._name = name
+
         # get the aim wrappers and pytacs function wrapper
         self._tacs_aim = tacs_aim
         self._egads_aim = egads_aim
@@ -39,11 +43,16 @@ class CapsTacs:
 
         # boolean of whether not to use derivatives
         self._compute_gradients = compute_gradients
+        self._write_solution = write_solution
 
         # func, gradient analysis counter to alternate analyses
         self._odd_analysis = True
         self._funcs = None
         self._sens = None
+
+        # boolean to view paraview group on destructor
+        self._view_plots = view_plots
+        self._function_history = {}
 
         # link the meshes
         self.tacs_aim.aim.input["Mesh"].link(self.egads_aim.aim.output["Surface_Mesh"])
@@ -57,6 +66,10 @@ class CapsTacs:
             return [item[0] for item in sorted_ziplist]
         else: # otherwise bool output
             return [item[1] for item in sorted_ziplist]
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @property
     def design_variable_names(self) -> List[str]:
@@ -118,23 +131,29 @@ class CapsTacs:
     def struct_sensitivity(self, function_name:str):
         return self.sensitivity_dict[function_name]['struct']
 
-    def reduced_analysis(self):
+    def analysis_gatekeeper(self, design_dict:dict=None) -> bool:
         """
-        only compute the analysis every other time for function, gradient calls
+        gatekeeper function for the analysis, that ensures to not rerun the analysis when the design hasn't changed
+        returns bool whether the design was changed or not
         """
-        if self._odd_analysis:
-            self.analysis()
-            self._odd_analysis = False
-        else:
-            self._odd_analysis = True
-
-    def analysis(self, design_variables:List[float]=None, write_solution:bool=False):
-        assert(self.pytacs_function is not None)
+        changed_design = False
+        if design_dict is not None:
+            #design_dict = self.design_variable_dictionary(design_variables)
+            changed_design = self.tacs_aim.update_design(design_dict)
+            if changed_design:
+                #self.tacs_aim._geometry.view()
+                self.analysis()
         
-        if design_variables is not None:
-            design_dict = self.design_variable_dictionary(design_variables)
-            self.tacs_aim.update_design(design_dict)
-            
+        else: # run the analysis again if not design dict
+            if self._funcs is None or self._sens is None:
+                self.analysis()
+                changed_design = True # probably first design
+
+        return changed_design
+
+    def analysis(self):
+        assert(self.pytacs_function is not None)
+
         if not self.tacs_aim.is_setup:
             # if the tacs aim has been reconfigured then you have to setup the aim again
             self.tacs_aim.setup_aim()
@@ -143,7 +162,7 @@ class CapsTacs:
         self.tacs_aim.pre_analysis()
 
         # run the pytacs function
-        funcs, sens = self.pytacs_function(dat_file=self.tacs_aim.dat_file_path, write_solution=write_solution)
+        funcs, sens = self.pytacs_function(dat_file=self.tacs_aim.dat_file_path, write_solution=self._write_solution)
 
         # update funcs, sens dicts
         self._funcs = funcs
@@ -162,29 +181,38 @@ class CapsTacs:
         else:
             return {self.design_variable_names[idx] : design_variables[idx] for idx in range(self.num_design_variables)}
 
-    def function(self, function_name:str, design_variables:List[float]=None):
+    def function(self, function_name:str, design_dict:dict=None):
         """
         return function values of TACS analysis
         """
         assert(function_name in self.function_names or function_name in self.load_set_function_names)
-        self.analysis(design_variables)
-        set_function_name = self.set_function_name(function_name=function_name)
-        return self.functions_dict[set_function_name]
+        self.analysis_gatekeeper(design_dict)
 
-    def gradient(self, function_name:str, design_variables:List[float]=None):
+        set_function_name = self.set_function_name(function_name=function_name)
+        function_value = self.functions_dict[set_function_name]
+
+        self.register_history(name=function_name, value=function_value)
+        return function_value
+
+    def register_history(self, name:str, value:float):
+        if not (name in self._function_history):
+            self._function_history[name] = []
+        self._function_history[name].append(value)
+
+    def gradient(self, function_name:str, design_dict:dict=None):
         """
         Compute and report gradient values of TACS analysis for given function name
         returns grad_list, grad_dict
         """
         assert(function_name in self.function_names or function_name in self.load_set_function_names)
-        self.analysis(design_variables)
+        self.analysis_gatekeeper(design_dict)
         grad_dict = {}
-        grad_list = []
-        for dv_name in self.design_variable_names:
-            set_function_name = self.set_function_name(function_name)
-            grad_dict[dv_name] = self.tacs_aim.aim.dynout[set_function_name].deriv(dv_name)
-            grad_list.append(grad_dict[dv_name])
-        return grad_list, grad_dict
+        #grad_list = []
+        for dv_name in design_dict:
+            load_set_function_name = self.set_function_name(function_name)
+            grad_dict[dv_name] = self.tacs_aim.aim.dynout[load_set_function_name].deriv(dv_name)
+            #grad_list.append(grad_dict[dv_name])
+        return grad_dict 
 
     def write_coordinates_test(self):
         """
@@ -282,15 +310,79 @@ class CapsTacs:
     def view_paraview_group(self):
         os.system(f"paraview {self.tacs_aim.analysis_dir}/{self.pytacs_function.paraview_group_name}")
 
+    def plot_function_history(self):
+        """
+        plot the function history and save it during the __del__ step
+        had this function in the __del__ destructor but doesn't work very well bc matplotlib doesn't work in this __del__ stage
+        """
+        history = self._function_history
+        #print(history)
+        num_iters = min([len(history[key]) for key in history])
+        max_vals = {key:max(history[key]) for key in history}
+        if num_iters > 0:
+            #fig = plt.figure("CapsTacs")
+            iterations = [idx+1 for idx in range(num_iters)]
+            colors="kbg"
+            color_ind = 0
+            for key in history:
+                values = history[key][:num_iters]
+                norm_values = [value/max_vals[key] for value in values]
+                style = colors[color_ind] + "-"
+                color_ind += 1
+                label=f"{key}/{max_vals[key]:.2f}"
+                print(iterations, norm_values)
+                plt.plot(iterations, norm_values, style, label=label, lw=3)
+                
+            plt.legend()
+            plt.xlabel("iterations")
+            plt.ylabel("functions")
+            plt.title(f"Caps2tacs optimization of '{self.name}'")
+            
+            #plt.show()
+            filepath = os.path.join(self.tacs_aim.analysis_dir, f"{self.name}_opt.png")
+            plt.savefig(filepath)
+        else:
+            raise AssertionError("Can't plot function history when no iterations have been recorded yet...")
+
+    def print_function_history(self):
+        history = self._function_history
+        #print(history)
+        num_iters = min([len(history[key]) for key in history])
+        if num_iters > 0:
+            for key in history:
+                values = history[key][:num_iters]
+                print(f"{key} history:")
+                print(f"\t{values}")
+        else:
+            raise AssertionError("Can't plot function history when no iterations have been recorded yet...")
+
+    def print_final_design(self):
+        """
+        TODO : make it save the best design from each step
+        for now just outputs the last design
+        """
+        optimal_design_dict = {dv.name : dv.value for dv in self.tacs_aim.design_variables}
+        print(f"optimal design = {optimal_design_dict}")
+
     def __del__(self):
         """
         destructor for caps to tacs problem, tells how to view results after done
         """
+
+        self.print_function_history()
+        self.print_final_design()
         print(f"\nYou've now finished your caps2tacs analysis/optimization")
         print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
         print(f"\tcd {self.tacs_aim.analysis_dir}")
         print(f"\tparaview {self.pytacs_function.paraview_group_name}")
         print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation")
         print(f"\tu*iHat+v*jHat+w*kHat")
+
+        if self._view_plots:
+            self.view_paraview_group()
+
+        
+
+        
 
         

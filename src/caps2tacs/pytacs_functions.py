@@ -4,7 +4,7 @@ __all__ = ["PytacsFunction", "MassStress"]
 from typing import TYPE_CHECKING, List
 from tacs import functions, pyTACS
 from abc import ABC, abstractmethod
-import os, sys
+import os
 
 class PytacsFunction(ABC):
     """
@@ -128,6 +128,7 @@ class PytacsFunction(ABC):
 class MassStress(PytacsFunction):
     """
     Mass and stress Pytacs analysis function
+        available function_names = [mass, ks_vmfailure]
     """
     def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0):
         super(MassStress,self).__init__(name="mass_stress")

@@ -8,7 +8,7 @@ class ShapeVariable:
     """
     shape variables are ESP/CAPS despmtr variables, etc.
     """
-    def __init__(self, name:str):
+    def __init__(self, name:str, value:float):
         self._name = name
 
     @property
@@ -18,6 +18,14 @@ class ShapeVariable:
     @property
     def DV_dictionary(self) -> dict:
         return {}
+
+    @property
+    def value(self) -> float:
+        return self._value
+
+    @value.setter
+    def value(self, new_value:float):
+        self._value = new_value
 
     @property
     def is_thickness_DV(self) -> bool:
