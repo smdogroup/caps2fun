@@ -88,7 +88,7 @@ class CapsFluid(CapsProblem):
 
     @property
     def pointwiseAim(self) -> PointwiseAim:
-        return TacsAim(caps_problem=self._caps_problem)
+        return PointwiseAim(caps_problem=self._caps_problem)
 
     @property
     def egadsAim(self) -> EgadsAim:

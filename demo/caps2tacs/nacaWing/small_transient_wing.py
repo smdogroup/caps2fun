@@ -36,10 +36,10 @@ for OML_idx in range(1,nOML+1):
     thick_idx += 1
 
 tacs_aim.setup_aim()
-egads_aim.set_mesh(edge_pt_min=20, edge_pt_max=30, global_mesh_size=0.10, max_surf_offset=0.01, max_dihedral_angle=5)
+egads_aim.set_mesh(edge_pt_min=5, edge_pt_max=10, global_mesh_size=0.50, max_surf_offset=0.01, max_dihedral_angle=15)
 
 # make a pytacs function
-pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=50, amplitude=lambda t : np.sin(0.5*t))
+pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=10, amplitude=lambda t : np.sin(0.5*t))
 
 caps_tacs = caps2tacs.CapsTacs(
     name="naca_wing_struct", tacs_aim=tacs_aim, 
