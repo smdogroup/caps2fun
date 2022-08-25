@@ -1,10 +1,11 @@
 
-__all__ = ["PytacsFunction", "MassStress"]
+__all__ = ["PytacsFunction", "MassStress", "MassStressTransient"]
 
 from typing import TYPE_CHECKING, List
 from tacs import functions, pyTACS
 from abc import ABC, abstractmethod
 import os
+import numpy as np
 
 class PytacsFunction(ABC):
     """
@@ -130,11 +131,12 @@ class MassStress(PytacsFunction):
     Mass and stress Pytacs analysis function
         available function_names = [mass, ks_vmfailure]
     """
-    def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0):
+    def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0, steady:bool=True):
         super(MassStress,self).__init__(name="mass_stress")
         self._safety_factor = safety_factor
         self._ks_weight = ks_weight
         self._function_names = ['mass', 'ks_vmfailure']
+        self._steady = steady
 
         # for debugging
         self._nodes = None
@@ -170,6 +172,61 @@ class MassStress(PytacsFunction):
             self._nodes = SPs[caseID].getNodes()
             if write_solution:
                 SPs[caseID].writeSolution(baseName=self.f5_base_filename, outputDir=self.analysis_dir)
+                self.f5_to_vtk()
+        
+        return func, sens
+
+class MassStressTransient(PytacsFunction):
+    """
+    Mass and stress Pytacs analysis function
+        available function_names = [mass, ks_vmfailure]
+    """
+    def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0, t0:float=0.0, tf:float=1.0, num_steps:int=100, amplitude=None):
+        super(MassStressTransient,self).__init__(name="mass_stress")
+        self._safety_factor = safety_factor
+        self._ks_weight = ks_weight
+        self._t0 = t0
+        self._tf = tf
+        self._num_steps = num_steps
+        self._amplitude = amplitude
+
+        # for debugging
+        self._nodes = None
+
+    @property
+    def nodes(self):
+        assert(self._nodes is not None)
+        return self._nodes
+
+    def __call__(self, dat_file:str, write_solution:bool=False):
+
+        #initialize pytacs with that data file
+        self.fea_solver = pyTACS(dat_file)
+            
+        # Set up TACS Assembler
+        self.fea_solver.initialize()
+
+        #read the bdf & dat file into pytacs FEAsolver
+        #SPs represents "StructuralProblems"
+        #SPs = self.fea_solver.createTACSProbsFromBDF()
+
+        transientOptions = {'printlevel':1}
+        TPs = self.fea_solver.createBDFtransientProb(tInit=self._t0, tFinal=self._tf, numSteps=self._num_steps, options=transientOptions, amplitude=self._amplitude)
+
+        # Read in forces from BDF and create tacs struct problems
+        for caseID in TPs:
+            TPs[caseID].addFunction('mass', functions.StructuralMass)
+            TPs[caseID].addFunction('ks_vmfailure', functions.KSFailure, safetyFactor=1.5, ksWeight=1000.0)
+
+        func = {}; sens = {}
+        for caseID in TPs:
+            self._load_set = 0
+            TPs[caseID].solve()
+            TPs[caseID].evalFunctions(func,evalFuncs=self.function_names)
+            TPs[caseID].evalFunctionsSens(sens,evalFuncs=self.function_names)
+            self._nodes = TPs[caseID].getNodes()
+            if write_solution:
+                TPs[caseID].writeSolution(baseName=self.f5_base_filename, outputDir=self.analysis_dir)
                 self.f5_to_vtk()
         
         return func, sens
