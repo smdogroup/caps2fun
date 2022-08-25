@@ -1,0 +1,27 @@
+interface .all
+
+despmtr width 2.0/3.0
+despmtr height 1.0
+despmtr spacingFr 0.2
+despmtr xfrac1 0.4
+
+set vertFr (1-2*spacingFr)/3.0
+set spacing spacingFr*height
+set vert vertFr*height
+set x1 width*xfrac1
+set x2 width*(1-xfrac1)
+
+skbeg 0 0 0
+   linseg width 0 0
+   linseg width vert 0
+   linseg x1 vert 0
+   linseg x1 vert+spacing 0
+   linseg width vert+spacing 0
+   linseg width 2*vert+spacing 0
+   linseg x1 2*vert+spacing 0
+   linseg x1 2*(vert+spacing) 0
+   linseg width 2*(vert+spacing) 0
+   linseg width 3*vert+2*spacing 0
+   linseg 0 3*vert+2*spacing 0
+   linseg 0 0 0
+skend

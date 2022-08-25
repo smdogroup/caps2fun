@@ -1,0 +1,27 @@
+despmtr yfr 0.2
+despmtr xfr 0.2
+despmtr height 1.0
+despmtr widthFr 2.0/3.0
+
+set yspacingFr (1-yfr*3)/2.0
+
+set width widthFr*height
+set dx xfr*width
+set dxRem width-dx
+set yspace yspacingFr*height
+set dy yfr*height
+
+skbeg 0 0 0
+   linseg width 0 0
+   linseg width 2*dy+yspace 0
+   linseg dx 2*dy+yspace 0
+   linseg dx 2*(dy+yspace) 0
+   linseg width 2*(dy+yspace) 0
+   linseg width 3*dy+2*yspace 0
+   linseg 0 3*dy+2*yspace 0
+   linseg 0 dy+yspace 0
+   linseg width-dx dy+yspace 0
+   linseg width-dx dy 0
+   linseg 0 dy 0
+   linseg 0 0 0
+skend

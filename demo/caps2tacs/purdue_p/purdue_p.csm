@@ -1,0 +1,269 @@
+cfgpmtr showOuterPts 0
+cfgpmtr showCornerPts 0
+cfgpmtr showInnerCornerPts 0
+cfgpmtr showInnerPts 0
+
+despmtr length1 3.0
+despmtr slantRate 0.25
+despmtr height1 0.8
+despmtr length2 0.8
+despmtr height2 0.4
+despmtr dlength 2.3
+despmtr dheight 2.0
+despmtr mid_dheight 0.8
+despmtr drop1 0.2
+despmtr drop2 0.4
+despmtr thickness 1.0
+
+despmtr drx1 0.8
+despmtr dry1 0.2
+
+despmtr yfr_inner 0.33
+despmtr xfr_inner 0.6
+
+skbeg 0 0 0
+    set x1 length1
+    set y1 0
+    linseg x1 y1 0
+    
+    set y2 height1+y1
+    set shear1 slantRate*height1
+    set x2 x1+shear1
+    linseg x2 y2 0
+
+    set x3 x2-length2
+    set y3 y2
+    linseg x3 y3 0
+
+    set y4 y3+height2
+    set shear2 height2*slantRate
+    set x4 x3+shear2
+    linseg x4 y4 0
+
+   
+   set x5 x4+dlength-drx1
+   set y5 y4
+   linseg x5 y5 0
+   
+   set x6_corner x5+drx1
+   set y6_corner y5
+   
+   set x6 x5+drx1/2+dry1*(0.5-drop1)*slantRate
+   set y6 y5+dry1*(0.5-drop1)
+   spline x6 y6 0
+   
+   set x7 x5+drx1+dry1*slantRate
+   set y7 y5+dry1
+   spline x7 y7 0
+   
+   set x8_corner x6_corner+dheight*slantRate
+   set y8_corner y6_corner+dheight
+   #linseg x8_corner y8_corner 0
+   
+   set y8 y8_corner-dry1
+   set x8 x8_corner-dry1*slantRate
+   spline x8 y8 0
+   
+   set x9 x8-drx1/2+dry1*(0.5+drop2)*slantRate
+   set y9 y8+dry1*(0.5+drop2)
+   spline x9 y9 0
+   
+   set y10 y8+dry1
+   set x10 x8-drx1+dry1*slantRate
+   spline x10 y10 0
+   
+   set x11 x10-dlength+drx1
+   set y11 y10
+   linseg x11 y11 0
+   
+   set midlength length1-length2*2
+   set x12 x11-midlength
+   set y12 y11
+   linseg x12 y12 0
+   
+   set x13 x12-length2
+   set y13 y12
+   linseg x13 y13 0
+   
+   set topheight 0.5*(dheight-mid_dheight)
+   set y14 y13-topheight
+   set x14 x13-topheight*slantRate
+   linseg x14 y14 0
+
+   set x15 x14+length2
+   set y15 y14
+   linseg x15 y15 0
+
+   set tot_height height1+height2+dheight
+   set dy16 tot_height-height1-topheight
+   set y16 y15-dy16
+   set x16 x15-dy16*slantRate
+   linseg x16 y16 0
+   
+   set x17 x16-length2
+   set y17 y16
+   linseg x17 y17 0
+   
+   linseg 0 0 0   
+skend
+
+store outer_p
+
+patbeg foo ifzero(showOuterPts-1,1,0)
+   point 0 0 0
+   point x1 y1 0
+   point x2 y2 0
+   point x3 y3 0
+   point x4 y4 0
+   point x5 y5 0
+   point x6 y6 0
+   point x7 y7 0
+   point x8 y8 0
+   point x9 y9 0
+   point x10 y10 0
+   point x11 y11 0
+   point x12 y12 0
+   point x13 y13 0
+   point x14 y14 0
+   point x15 y15 0
+   point x16 y16 0
+   point x17 y17 0
+patend
+
+
+# make the inner portion of the p and subtract it
+set x1_corner x4
+set y1_corner y4
+set x2_corner x6_corner
+set y2_corner y6_corner
+set x3_corner x8_corner
+set y3_corner y8_corner
+set x4_corner x11
+set y4_corner y11
+
+# four corners of the 
+patbeg foo ifzero(showCornerPts-1,1,0)
+   point x1_corner y1_corner 0
+   point x2_corner y2_corner 0
+   point x3_corner y3_corner 0
+   point x4_corner y4_corner 0
+patend
+   
+#now interior points 1-4 by interpolations
+set yinner_margin 0.5*(1-yfr_inner)
+set yinner1 (1-yinner_margin)*y1_corner+yinner_margin*y4_corner
+set dyinner1 yinner1-y1_corner
+set xinner1 x1_corner+dyinner1*slantRate
+set yinner4 yinner_margin*y1_corner+(1-yinner_margin)*y4_corner
+set dyinner4 yinner4-y1_corner
+set xinner4 x1_corner+dyinner4*slantRate
+set dxinner dlength*xfr_inner
+set yinner2 yinner1
+set xinner2 xinner1+dxinner
+set xinner3 xinner4+dxinner
+set yinner3 yinner4
+
+patbeg foo ifzero(showInnerCornerPts-1,1,0)
+   point xinner1 yinner1 0
+   point xinner2 yinner2 0
+   point xinner3 yinner3 0
+   point xinner4 yinner4 0
+patend
+
+set drx2 drx1*xfr_inner-0.1
+set dry2 dry1*yfr_inner
+
+set xi1 xinner1
+set yi1 yinner1
+set xi2 xinner2-drx2
+set yi2 yinner2
+set xi3 xi2+drx2*0.5+dry2*(0.5-drop1)*slantRate
+set yi3 yi2+dry2*(0.5-drop1)
+set xi4 xi2+drx2+dry2*slantRate
+set yi4 yi2+dry2
+set xi7 xinner3-drx2
+set yi7 yinner4
+set xi8 xinner4
+set yi8 yinner4
+set xi6 xi7+drx2*0.5-dry2*(0.5-drop2)*slantRate
+set yi6 yi7-dry2*(0.5-drop2)
+set xi5 xi7+drx2-dry2*slantRate
+set yi5 yi7-dry2
+
+patbeg foo ifzero(showInnerPts-1,1,0)
+   point xi1 yi1 0
+   point xi2 yi2 0
+   point xi3 yi3 0
+   point xi4 yi4 0
+   point xi6 yi6 0
+   point xi5 yi5 0
+   point xi7 yi7 0
+   point xi8 yi8 0
+patend
+
+# sketch of inner portion of P
+skbeg xi1 yi1 0
+   linseg xi2 yi2 0
+   spline xi3 yi3 0
+   spline xi4 yi4 0
+   spline xi5 yi5 0
+   spline xi6 yi6 0
+   spline xi7 yi7 0
+   linseg xi8 yi8 0
+   linseg xi1 yi1 0
+skend
+store inner_p
+
+restore outer_p
+restore inner_p
+subtract
+
+extrude 0 0 thickness
+
+skbeg x16 y16 0
+   linseg x3 y3 0
+   linseg x11 y11 0
+   linseg x12 y12 0
+   linseg x16 y16 0
+skend
+extrude 0 0 thickness
+union
+
+
+
+select face
+	attribute capsGroup $boundary
+	attribute _color $black
+
+select face 1
+	attribute capsConstraint $bottom
+	attribute _color $green
+
+dimension frontFaces 1 4
+cfgpmtr frontFaces "5;9;16;17"
+dimension backFaces 1 4
+cfgpmtr backFaces "4;8;12;14"
+patbeg foo 4
+   select face !frontFaces[foo]
+       attribute capsGroup $front
+       attribute _color $blue
+       attribute capsLoad $front
+   select face !backFaces[foo]
+       attribute capsGroup $back
+       attribute _color $blue
+       attribute capsLoad $back
+patend
+
+
+udprim editAttr filename <<
+	EDGE ADJ2FACE capsGroup=boundary
+	SET _color=blue
+
+	EDGE ADJ2FACE capsConstraint=bottom
+	SET capsConstraint=bottom
+	NODE ADJ2FACE capsConstraint=bottom
+	SET capsConstraint=bottom
+>>
+
+select body
+	attribute capsAIM $egadsTessAIM;tacsAIM

@@ -1,0 +1,52 @@
+
+despmtr   length       0.5
+despmtr   width        3.0
+despmtr   height       1.5
+
+box 0 0 0 length width height
+hollow 0
+
+select face
+    attribute capsGroup $middle
+
+select face 4
+    attribute capsGroup $top
+
+select face 3
+    attribute capsGroup $bottom
+
+udprim editAttr filename <<
+    FACE HAS capsGroup=top
+    SET _color=blue
+
+    FACE HAS capsGroup=bottom
+    SET _color=red
+
+    FACE HAS capsGroup=middle
+    SET _color=green
+
+    EDGE ADJ2FACE capsGroup=top
+    SET _color=blue
+    SET capsConstraint=top
+
+    EDGE ADJ2FACE capsGroup=bottom
+    SET _color=red
+    SET capsConstraint=bottom
+
+    NODE ADJ2FACE capsGroup=top
+    SET _color=blue
+    SET capsConstraint=top
+
+    NODE ADJ2FACE capsGroup=bottom
+    SET _color=red
+    SET capsConstraint=bottom
+>>
+
+select face 1
+    attribute capsLoad $leftLoad
+
+select face 2
+    attribute capsLoad $rightLoad
+
+select body
+    attribute capsAIM $egadsTessAIM;tacsAIM    

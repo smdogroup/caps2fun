@@ -473,10 +473,10 @@ class Caps2Fun():
 
                     #make the shell property
                     shell = {"propertyType" : "Shell",
-                        "membraneThickness" : DV["value"],
+                        "membraneThickness" : DV.value,
                         "material"        : "aluminum",
-                        "bendingInertiaRatio" : bendingInertiaRatio, # Default
-                        "shearMembraneRatio"  : shearMembraneRatio} # Default
+                        "bendingInertiaRatio" : 1.0 * boostFactor, # Default
+                        "shearMembraneRatio"  : 5.0/6.0 * boostFactor} # Default
 
                     
                     propDict[capsGroup] = shell
@@ -752,7 +752,8 @@ class Caps2Fun():
         self.wing = Body('wing', analysis_type=self.config["f2f_analysis_type"], group=0,boundary=2)
 
         for i in range(num_tacs_dvs):
-            self.wing.add_variable('structural',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
+            #add variables to struct discipline
+            self.wing.add_variable('struct',Variable('thickness '+ str(i),value=structDVs[i],lower = 0.0001, upper = 1.0))
 
         self.model.add_body(self.wing)
 
@@ -1225,6 +1226,7 @@ class Caps2Fun():
         #initialize shape gradient again at zero
         self.initShapeGrad()
 
+        #write each of the sens files and compute shape derivatives from chain rule product
         if (self.comm.Get_rank() == 0):
 
             #add struct_mesh_sens part to shape DV derivatives#struct shape derivatives
@@ -1232,6 +1234,8 @@ class Caps2Fun():
 
             #add aero_mesh_sens part to shape DV derivatives
             self.applyAeroMeshSens()
+
+            
 
         return self.shapeGrad
 
@@ -1252,7 +1256,10 @@ class Caps2Fun():
 
         self.cwrite("initialized shape gradient\n")
 
-    def applyStructMeshSens(self):
+    def write_struct_sens_file(self):
+
+        #deprecated method of writing struct sens file
+
         #print struct mesh sens to struct mesh sens file
         #where to print .sens file
         structSensFile = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+".sens")
@@ -1284,8 +1291,14 @@ class Caps2Fun():
         
             f.close()
 
+    def applyStructMeshSens(self):
+
         #update status
         self.cwrite("\tprinted struct.sens file, ")
+
+        # write tacs sens file
+        tacs_sens_file = os.path.join(self.tacsAim.analysisDir, self.tacsAim.input.Proj_Name+".sens")
+        self.model.write_sensitivity_file(self.comm, tacs_sens_file, discipline="struct")
 
         #run aim postanalysis
         self.tacsAim.postAnalysis()
@@ -1305,7 +1318,10 @@ class Caps2Fun():
         self.cwrite("finished struct mesh contribution to shape DVs\n")
 
 
-    def applyAeroMeshSens(self):
+    def write_aero_sens_file(self):
+
+        #deprecated method of writing fun3d sens file
+
         #print aero mesh sens to aero mesh sens file
         #where to print .sens file
         aeroSensFile = os.path.join(self.fun3dAim.analysisDir, self.fun3dAim.input.Proj_Name+".sens")
@@ -1346,6 +1362,12 @@ class Caps2Fun():
                     ct += 1
 
             f.close()
+
+    def applyAeroMeshSens(self):
+
+        # write fun3d sens file
+        fun3d_sens_file = os.path.join(self.fun3dAim.analysisDir, self.fun3dAim.input.Proj_Name+".sens")
+        self.model.write_sensitivity_file(self.comm, fun3d_sens_file, discipline="aero")
 
         #update status
         self.cwrite("\tprinted aero.sens file, ")
