@@ -29,19 +29,14 @@ tacs_aim.setup_aim()
 egads_aim.set_mesh()
 
 
-pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=3, amplitude=lambda t : np.sin(0.5*t))
+pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=100, amplitude=lambda t : np.sin(0.5*t))
 
 # start a caps tacs main problem
-caps_tacs = caps2tacs.CapsTacs(name="transient_panel", tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function, compute_gradients=False)
+caps_tacs = caps2tacs.CapsTacs(name="transient_stiff_panel", 
+tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function, 
+compute_gradients=False, view_plots=True)
 
 caps_tacs.analysis()
-
-# convert all f5 to vtk in analysis dir 
-for filename in os.listdir(tacs_aim.analysis_dir):
-    filepath = os.path.join(tacs_aim.analysis_dir, filename)
-    os.system(f"~/git/tacs/extern/f5tovtk/f5tovtk {filepath}")
-
-print(f"paraview ./capsStruct/Scratch/tacs/mass_stress_0_000..vtk")
 
 
 

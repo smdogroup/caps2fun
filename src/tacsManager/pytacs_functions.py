@@ -13,13 +13,15 @@ class PytacsFunction(ABC):
         can create your own custom analysis functions as well and use them in caps2tacs
         however need it to be subclass so that it will provide these properties -> coordinate derivatives, etc.
     """
-    def __init__(self, name:str):
+    def __init__(self, name:str, transient:bool=False):
         self._name = name
         self._fea_solver = None
         self._function_names = []
         self._analysis_dir = None
         self._write_idx = 0
         self._load_set = 0
+
+        self._transient = transient
 
     @property
     def load_set_str(self):
@@ -42,7 +44,10 @@ class PytacsFunction(ABC):
 
     @property
     def paraview_group_name(self) -> str:
-        return f"{self.name}_{self.load_set_str}_..vtk"
+        if self._transient:
+            return f"{self.name}_{0}_{self.load_set_str}_..vtk"
+        else:
+            return f"{self.name}_{self.load_set_str}_..vtk"
 
     @property
     def f5_set_filename(self) -> str:
@@ -117,12 +122,17 @@ class PytacsFunction(ABC):
         """
 
         # first rename the f5 files to eliminate set extension
-        os.system(f"mv {self.f5_set_filepath} {self.f5_fixed_filepath}")
         conversion_script = "~/git/tacs/extern/f5tovtk/f5tovtk"
-        command = f"{conversion_script} {self.f5_fixed_filepath}"
-        print(command)
-        os.system(command)
-        self._write_idx += 1
+        if not self._transient:
+            os.system(f"mv {self.f5_set_filepath} {self.f5_fixed_filepath}")
+            command = f"{conversion_script} {self.f5_fixed_filepath}"
+            print(command)
+            os.system(command)
+            self._write_idx += 1
+        if self._transient:
+            for filename in os.listdir(self.analysis_dir):
+                if self.f5_base_filename in filename:
+                    os.system(f"{conversion_script} {self.analysis_dir}/{filename}")
         
 
 
@@ -132,7 +142,7 @@ class MassStress(PytacsFunction):
         available function_names = [mass, ks_vmfailure]
     """
     def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0, steady:bool=True):
-        super(MassStress,self).__init__(name="mass_stress")
+        super(MassStress,self).__init__(name="mass_stress", transient=False)
         self._safety_factor = safety_factor
         self._ks_weight = ks_weight
         self._function_names = ['mass', 'ks_vmfailure']
@@ -182,7 +192,7 @@ class MassStressTransient(PytacsFunction):
         available function_names = [mass, ks_vmfailure]
     """
     def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0, t0:float=0.0, tf:float=1.0, num_steps:int=100, amplitude=None):
-        super(MassStressTransient,self).__init__(name="mass_stress")
+        super(MassStressTransient,self).__init__(name="mass_stress", transient=True)
         self._safety_factor = safety_factor
         self._ks_weight = ks_weight
         self._t0 = t0

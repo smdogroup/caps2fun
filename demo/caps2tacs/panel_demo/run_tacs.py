@@ -1,7 +1,6 @@
 import caps2tacs
-from tacs.pytacs import pyTACS
-from tacs import functions
 import os
+import numpy as np
 
 # all the capsWrapper package modules/classes are also available 
 # in caps2tacs since caps2tacs package imports the whole capsWrapper package\
@@ -23,44 +22,19 @@ tacs_aim.add_load(load=load)
 thick_DV = caps2tacs.ThicknessVariable(name="thick", caps_group="plate", value=0.01, material=madeupium)
 tacs_aim.add_variable(variable=thick_DV)
 
-despmtrs = ["plateLength", "plateWidth"]
-for despmtr in despmtrs:
-    shape_var = caps2tacs.ShapeVariable(name=despmtr)
-    tacs_aim.add_variable(variable=shape_var)
-
 tacs_aim.setup_aim()
 egads_aim.set_mesh()
 
+pytacs_function = caps2tacs.MassStress()
+
 # start a caps tacs main problem
-caps_tacs = caps2tacs.CapsTacs(tacs_aim=tacs_aim, egads_aim=egads_aim)
+caps_tacs = caps2tacs.CapsTacs(name="static_panel", tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function, compute_gradients=False)
 
-#initialize pytacs with that data file
-FEASolver = pyTACS(caps_tacs.dat_file)
-    
-# Set up TACS Assembler
-FEASolver.initialize()
+caps_tacs.analysis()
 
-#choose the functions to evaluate
-evalFuncs = ['wing_mass', 'ks_vmfailure']
+# convert all f5 to vtk in analysis dir 
+for filename in os.listdir(tacs_aim.analysis_dir):
+    filepath = os.path.join(tacs_aim.analysis_dir, filename)
+    os.system(f"~/git/tacs/extern/f5tovtk/f5tovtk {filepath}")
 
-#read the bdf & dat file into pytacs FEAsolver
-#SPs represents "StructuralProblems"
-SPs = FEASolver.createTACSProbsFromBDF()
-
-# Read in forces from BDF and create tacs struct problems
-for caseID in SPs:
-    SPs[caseID].addFunction('wing_mass', functions.StructuralMass)
-    SPs[caseID].addFunction('ks_vmfailure', functions.KSFailure, safetyFactor=1.5, ksWeight=1000.0)
-
-# Solve each structural problem and write solutions
-func = {}; sens = {}
-for caseID in SPs:
-    SPs[caseID].solve()
-    SPs[caseID].evalFunctions(func,evalFuncs=evalFuncs)
-    SPs[caseID].evalFunctionsSens(sens,evalFuncs=evalFuncs)
-    SPs[caseID].writeSolution(outputDir=os.path.dirname(__file__))
-
-
-
-
-
+#print(f"paraview ./capsStruct/Scratch/tacs/mass_stress_0_000..vtk")

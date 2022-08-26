@@ -39,15 +39,11 @@ tacs_aim.setup_aim()
 egads_aim.set_mesh(edge_pt_min=5, edge_pt_max=10, global_mesh_size=0.50, max_surf_offset=0.01, max_dihedral_angle=15)
 
 # make a pytacs function
-pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=10, amplitude=lambda t : np.sin(0.5*t))
+pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=100, amplitude=lambda t : np.sin(0.5*t))
 
 caps_tacs = caps2tacs.CapsTacs(
     name="naca_wing_struct", tacs_aim=tacs_aim, 
-    egads_aim=egads_aim, pytacs_function=pytacs_function, write_solution=True, view_plots=False
+    egads_aim=egads_aim, pytacs_function=pytacs_function, write_solution=True, 
+    view_plots=False
     )
 caps_tacs.analysis()
-
-# convert all f5 to vtk in analysis dir 
-for filename in os.listdir(tacs_aim.analysis_dir):
-    filepath = os.path.join(tacs_aim.analysis_dir, filename)
-    os.system(f"~/git/tacs/extern/f5tovtk/f5tovtk {filepath}")
