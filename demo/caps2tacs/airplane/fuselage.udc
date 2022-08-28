@@ -1,0 +1,121 @@
+
+interface nstations IN 10
+interface internal_structure IN 0
+interface name IN $fuselage
+
+interface OMLcolor IN $blue
+interface station_color IN $green
+
+interface windward IN 1
+
+interface xlength IN 10.0
+interface yscale IN 1.0
+interface zscale IN 1.0
+interface nscale IN 1.0
+
+interface y0 IN 0.0
+
+interface yloc_a IN 0.0
+interface yloc_mloc IN 0.0
+
+interface ry_a IN 0.0
+interface ry_mloc IN 0.0
+
+interface rz_a IN 0.0
+interface rz_mloc IN 0.0
+
+interface n_a IN 0.0
+interface n_mloc IN 0.0
+
+set yloc_b -2*yloc_a*yloc_mloc
+set yloc_c y0-yloc_a*yloc_mloc
+
+set ry_b -2*ry_a*ry_mloc
+set ry_c yscale-ry_a*ry_mloc
+
+set rz_b -2*rz_a*rz_mloc
+set rz_c zscale-rz_a*rz_mloc
+
+set n_b -2*n_a*n_mloc
+set n_c nscale-n_a*n_mloc
+
+set sign 1.0
+patbeg foo ifzero(windward,1,0)
+   set sign -1.0
+patend
+
+
+set xloc 0.0
+mark
+patbeg istation nstations
+   set xfrac (istation-1)/(nstations-1)
+   set xfrac2 xfrac*xfrac
+   set xloc xlength*xfrac
+   set yloc yscale*(yloc_a*xfrac2+yloc_b*xfrac+yloc_c)
+   set rz rz_a*xfrac2+rz_b*xfrac+rz_c
+   set ry ry_a*xfrac2+ry_b*xfrac+ry_c
+   set n 2.0*(n_a*xfrac2+n_b*xfrac+n_c)
+   
+   udprim supell rx rz ry ry n n
+   rotatey 90 0 0
+   
+   translate sign*xloc yloc 0
+   
+   
+patend
+   
+loft 0
+store name
+
+patbeg foo ifzero(internal_structure,1,0)
+   restore name
+patend
+
+
+patbeg foo ifzero(internal_structure-1,1,0)
+   
+   # fuselage OML
+   mark
+   patbeg istation nstations
+      set xfrac (istation-1)/(nstations-1)
+      set xfrac2 xfrac*xfrac
+      set xloc xlength*xfrac
+      set yloc yscale*(yloc_a*xfrac2+yloc_b*xfrac+yloc_c)
+      set rz rz_a*xfrac2+rz_b*xfrac+rz_c
+      set ry ry_a*xfrac2+ry_b*xfrac+ry_c
+      set n 2.0*(n_a*xfrac2+n_b*xfrac+n_c)
+
+      udprim supell rx rz ry ry n n
+      rotatey 90 0 0
+      
+      hollow 0
+
+      translate sign*xloc yloc 0
+
+
+   patend
+   loft 0
+   select face
+      attribute capsGroup !name+$:OML
+      attribute _color OMLcolor
+   
+   patbeg istation nstations
+      set xfrac (istation-1)/(nstations-1)
+      set xfrac2 xfrac*xfrac
+      set xloc xlength*xfrac
+      set yloc yscale*(yloc_a*xfrac2+yloc_b*xfrac+yloc_c)
+      set rz rz_a*xfrac2+rz_b*xfrac+rz_c
+      set ry ry_a*xfrac2+ry_b*xfrac+ry_c
+      set n 2.0*(n_a*xfrac2+n_b*xfrac+n_c)
+
+      udprim supell rx rz ry ry n n
+      rotatey 90 0 0
+      
+      select face
+         attribute capsGroup !name+$:station+istation
+         attribute _color station_color
+   
+   	  translate sign*xloc yloc 0
+      union
+   patend
+patend

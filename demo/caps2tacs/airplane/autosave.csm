@@ -1,0 +1,60 @@
+# autosave.csm written by ocsmSave (v1.22)
+
+# Constant, Design, and Output Parameters:
+CFGPMTR   view:fluid       1.00000
+CFGPMTR   view:structure       0.00000
+DESPMTR   ff     100.00000
+
+# Global Attributes:
+
+# Branches:
+UDPARG    $/fuselage   nstations   10   xlength   16   yscale   0.5
+UDPARG    $/fuselage   zscale   0.4   nscale   0.8   yloc_a   0.2
+UDPARG    $/fuselage   yloc_mloc   -0.2   ry_a   -0.5   ry_mloc   0.2
+UDPARG    $/fuselage   rz_a   -0.5   rz_mloc   0.2   nscale   1.0
+UDPRIM    $/fuselage   internal_structure   0
+STORE     fuselage_solid   0   0
+PATBEG    foo   ifzero(view:fluid-1,1,0)
+   BOX       -ff   -ff   -ff   2*ff   2*ff   2*ff
+   RESTORE   fuselage_solid   0
+   UDPARG    $/wing   internal_structure   0
+   UDPARG    $/wing   span   15.0   chord0   3.0   lesweep   20.0
+   UDPARG    $/wing   toverc0   0.12
+   UDPRIM    $/wing   both   1
+   TRANSLATE 3.5   0   0
+   UNION     0   0   0
+   UDPARG    $/wing   internal_structure   0
+   UDPARG    $/wing   span   5.0   name   $htail   both   1
+   UDPRIM    $/wing   toverc0   0.12   lesweep   30.0   chord0   2.0
+   TRANSLATE 14.0   0   0
+   UNION     0   0   0
+   SUBTRACT  none   1   0
+PATEND
+PATBEG    foo   ifzero(view:structure-1,1,0)
+   UDPARG    $/wing   internal_structure   1
+   UDPARG    $/wing   span   15.0   chord0   3.0   lesweep   20.0
+   UDPARG    $/wing   toverc0   0.12
+   UDPRIM    $/wing   both   0
+   TRANSLATE 3.5   0   0
+   RESTORE   fuselage_solid   0
+   SUBTRACT  none   1   0
+   UDPARG    $/wing   internal_structure   1   nrib   8   nspar   2
+   UDPARG    $/wing   span   5.0   name   $htail   both   0
+   UDPRIM    $/wing   toverc0   0.12   lesweep   30.0   chord0   2.0
+   TRANSLATE 14.0   0   0
+   RESTORE   fuselage_solid   0
+   SUBTRACT  none   1   0
+   UDPARG    $/fuselage   nstations   10   xlength   16   yscale   0.5
+   UDPARG    $/fuselage   zscale   0.4   nscale   0.8   yloc_a   0.2
+   UDPARG    $/fuselage   yloc_mloc   -0.2   ry_a   -0.5   ry_mloc   0.2
+   UDPARG    $/fuselage   rz_a   -0.5   rz_mloc   0.2   nscale   1.0
+   UDPRIM    $/fuselage   internal_structure   1
+   UNION     0   0   0
+   UNION     0   0   0
+   STORE     half_plane_structure   0   0
+   RESTORE   half_plane_structure   0
+   MIRROR    0   0   1   0
+   RESTORE   half_plane_structure   0
+PATEND
+
+END
