@@ -91,9 +91,5 @@ class CapsFluid(CapsProblem):
         return PointwiseAim(caps_problem=self._caps_problem)
 
     @property
-    def egadsAim(self) -> EgadsAim:
-        return EgadsAim(caps_problem=self._caps_problem)
-
-    @property
     def fun3dAim(self) -> Fun3dAim:
         return Fun3dAim(caps_problem=self._caps_problem)

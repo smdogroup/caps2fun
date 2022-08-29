@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, List
 
 class EgadsAim:
     """
+    only for structure mesh
     egadsAim.input.Edge_Point_Min = 15
     egadsAim.input.Edge_Point_Max = 20
     egadsAim.input.Mesh_Elements = "Quad"

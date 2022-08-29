@@ -1,4 +1,3 @@
-from curses import panel
 import capsWrapper
 
 panel_problem = capsWrapper.CapsStruct.default(csmFile="panel.csm")

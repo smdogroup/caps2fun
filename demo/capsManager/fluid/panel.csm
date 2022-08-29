@@ -1,0 +1,50 @@
+despmtr   plateLength       0.5
+despmtr   plateWidth        1.0
+
+set ff 20.0
+
+cfgpmtr view:fluid 1
+cfgpmtr view:structure 0
+
+# plate segments
+skbeg     0   0   0
+   linseg    plateLength   0   0
+skend     0
+extrude   0   plateWidth   0
+store panel
+
+
+patbeg foo ifzero(view:fluid-1,1,0)
+    box -ff -ff -ff 2*ff 2*ff 2*ff
+    select face
+        attribute capsGroup $Farfield
+        attribute capsMesh $Farfield
+        attribute capsMeshLength 3.0
+
+    restore panel
+    select face
+        attribute capsGroup $wall
+        attribute capsMesh $wall
+        attribute capsMeshLength 0.1
+    subtract
+
+    select body
+        attribute capsAIM $egadsTessAIM;pointwiseAIM;fun3dAIM
+
+patend # end of view:fluid
+
+patbeg foo ifzero(view:structure-1,1,0)
+    select face
+        attribute capsGroup $plate
+        attribute capsLoad   $plate
+    select body
+        attribute capsAIM $egadsTessAIM;tacsAIM    
+        
+        
+    patbeg    i  4
+    select edge i 
+    attribute capsConstraint $edge
+    select node i 
+    attribute capsConstraint $edge     
+    patend   
+patend # end of view:structure
