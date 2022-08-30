@@ -10,10 +10,10 @@ import pyCAPS
 from typing import TYPE_CHECKING
 
 # import each of the aim modules here
-from .tacs.tacs_aim import TacsAim
-from .egads.egads_aim import EgadsAim
-from .pointwise.pointwise_aim import PointwiseAim
-from .fun3d.fun3d_aim import Fun3dAim
+from capsManager.tacs.tacs_aim import TacsAim
+from capsManager.egads.egads_aim import EgadsAim
+from capsManager.pointwise.pointwise_aim import PointwiseAim
+from capsManager.fun3d.fun3d_aim import Fun3dAim
 
 class CapsProblem:
     """
@@ -77,6 +77,9 @@ class CapsFluid(CapsProblem):
     """
     def __init__(self, problem:pyCAPS.Problem):
         super(CapsFluid,self).__init__(problem=problem)
+
+        # set to not overwrite fun3d nml analysis
+        self._caps_problem.analysis["fun3d"].input.Overwrite_NML = False
 
     @classmethod
     def default(cls, csmFile:str, problemName:str="capsFluid"):

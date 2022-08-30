@@ -60,12 +60,13 @@ patbeg foo ifzero(internal_structure-1,1,0)
          linseg c_xtip -max_thickness ztip
       skend
       extrude 0.0 2*max_thickness 0.0
-      patbeg foo ifzero(ispar-1,nrib,1)
-         union
-      patend
       select face
       	attribute capsGroup !name+$:spar+ispar
       	attribute _color sparcolor
+      patbeg foo ifzero(ispar-1,nrib,1)
+         union
+      patend
+      
    patend
    intersect
    
