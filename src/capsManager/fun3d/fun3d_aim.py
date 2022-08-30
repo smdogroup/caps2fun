@@ -1,27 +1,27 @@
 
-import os
-from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings
-from funtofemManager.analysis import Analysis
 __all__ = ["Fun3dAim"]
 
 
 from typing import TYPE_CHECKING
-import pyCAPS
-from capsManager.fun3d.flow_settings import FlowSettings
+import pyCAPS, os
+from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings
 
 
 class Fun3dAim:
-    def __init__(self, caps_problem:pyCAPS.Problem, flow_settings:FlowSettings, motion_settings:MotionSettings):
+    def __init__(self, caps_problem:pyCAPS.Problem, flow_settings:FlowSettings=None, motion_settings:MotionSettings=None):
         self._aim = caps_problem.analysis.create(aim = "fun3dAIM",
                                     name = "fun3d")
         self._flow_settings = flow_settings
         self._motion_settings = motion_settings
-
-        self._is_setup = True
+        # set to not overwrite fun3d nml analysis
+        self.aim.input.Overwrite_NML = False
+        #fun3d design sensitivities settings
+        self.aim.input.Design_SensFile = True
+        self.aim.input.Design_Sensitivity = True
 
     @property
     def is_setup(self) -> bool:
-        return self._is_setup
+        return self._flow_settings is not None and self._motion_settings is not None
                                     
     @property
     def aim(self):
@@ -31,9 +31,17 @@ class Fun3dAim:
     def flow_settings(self) -> FlowSettings:
         return self._flow_settings
 
+    @flow_settings.setter
+    def flow_settings(self, new_settings:FlowSettings):
+        self._flow_settings = new_settings
+
     @property
     def motion_settings(self) -> MotionSettings:
         return self._motion_settings
+
+    @motion_settings.setter
+    def motion_settings(self, new_settings:MotionSettings):
+        self._motion_settings = new_settings
 
     @property
     def analysis_type(self) -> str:
@@ -53,7 +61,7 @@ class Fun3dAim:
 
     @property
     def project_name(self) -> str:
-        return self.aim.projName
+        return self.aim.input.Proj_Name
 
     def pre_analysis(self):
         self.aim.preAnalysis()
@@ -61,5 +69,14 @@ class Fun3dAim:
     def post_analysis(self):
         self.aim.postAnalysis()
 
-    
+    def set_boundary_condition(self, boundary_condition_dict:dict):
+        self.aim.input.Boundary_Condition = boundary_condition_dict
+
+    def write(self):
+        """
+        generate the writer classes for fun3d.nml and moving_body.input files and then write them
+        """
+        from capsManager.fun3d.namelist_writer import Fun3dNamelistWriter, MovingBodyInputWriter
+        Fun3dNamelistWriter(fun3d_aim=self).write()
+        MovingBodyInputWriter(fun3d_aim=self).write()
         

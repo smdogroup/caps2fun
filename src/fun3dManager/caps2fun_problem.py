@@ -9,17 +9,21 @@ import os
 
 class CapsFun3d:
     def __init__(self, pointwise_aim:PointwiseAim, fun3d_aim:Fun3dAim):
-        assert(pointwise_aim.is_setup and fun3d_aim.is_setup)
+        assert(pointwise_aim.is_setup)
+        assert(fun3d_aim.is_setup)
         self._pointwise_aim = pointwise_aim 
         self._fun3d_aim = fun3d_aim
 
+        # add fun3d BC identical to pointwise
+        self.fun3d_aim.set_boundary_condition(self.pointwise_aim.boundary_condition)
+
     @property
     def pointwise_aim(self) -> PointwiseAim:
-        self._pointwise_aim
+        return self._pointwise_aim
 
     @property
     def fun3d_aim(self) -> Fun3dAim:
-        self._fun3d_aim
+        return self._fun3d_aim
 
     def build_mesh(self):
         """
@@ -42,6 +46,8 @@ class CapsFun3d:
         # add appropriate bc names to mapbc file
         if add_to_map_bc:
             self._write_map_bc()
+
+        self.fun3d_aim.write()
 
         """
         for complex step have to add perturb.input file

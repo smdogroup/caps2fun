@@ -40,6 +40,10 @@ class FlowSettings:
         return self._flow_type
 
     @property
+    def reference_temperature(self) -> float:
+        return self._temperature_ref
+
+    @property
     def reynolds_number(self) -> float:
         return self._reynolds_number
 

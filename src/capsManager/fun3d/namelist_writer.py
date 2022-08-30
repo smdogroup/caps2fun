@@ -52,7 +52,7 @@ class Fun3dNamelistWriter:
         self.fun3d_nml["reference_physical_properties"]["mach_number"] = self.aim.flow_settings.mach_number
         self.fun3d_nml["reference_physical_properties"]["angle_of_attack"] = self.aim.flow_settings.angle_of_attack
         self.fun3d_nml["reference_physical_properties"]["reynolds_number"] = self.aim.flow_settings.reynolds_number
-        self.fun3d_nml["reference_physical_properties"]["temperature"] = self.config["temperature"]
+        self.fun3d_nml["reference_physical_properties"]["temperature"] = self.aim.flow_settings.reference_temperature
         self.fun3d_nml["reference_physical_properties"]["temperature_units"] = "Kelvin"
         
         #inviscid flux method section
@@ -66,7 +66,7 @@ class Fun3dNamelistWriter:
         self.fun3d_nml["nonlinear_solver_parameters"] = f90nml.Namelist()
         self.fun3d_nml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 80]
         self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cfl"] = [2, 100]
-        if (not(self.config["fun3d_analysis_type"] == "inviscid")):
+        if (self.aim.flow_settings.flow_type == "inviscid"):
             self.fun3d_nml["nonlinear_solver_parameters"]["time_accuracy"] = "steady"
             self.fun3d_nml["nonlinear_solver_parameters"]["time_step_nondim"] = 0.1
             self.fun3d_nml["nonlinear_solver_parameters"]["subiterations"] = 0
@@ -131,7 +131,7 @@ class Fun3dNamelistWriter:
         writes the fun3d namelist file 'fun3d.nml' in the fun3d Flow directory
         """
         fun3d_nml_file = os.path.join(self.aim.flow_directory, "fun3d.nml")
-        self.fun3dnml.write(fun3d_nml_file, force=True)
+        self.fun3d_nml.write(fun3d_nml_file, force=True)
 
 class MovingBodyInputWriter:
     """

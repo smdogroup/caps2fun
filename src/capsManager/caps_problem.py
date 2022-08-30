@@ -78,9 +78,6 @@ class CapsFluid(CapsProblem):
     def __init__(self, problem:pyCAPS.Problem):
         super(CapsFluid,self).__init__(problem=problem)
 
-        # set to not overwrite fun3d nml analysis
-        self._caps_problem.analysis["fun3d"].input.Overwrite_NML = False
-
     @classmethod
     def default(cls, csmFile:str, problemName:str="capsFluid"):
         """

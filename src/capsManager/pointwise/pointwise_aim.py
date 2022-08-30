@@ -6,10 +6,7 @@ import pyCAPS
 import os
 
 class PointwiseAim:
-    def __init__(self, 
-        caps_problem:pyCAPS.Problem, 
-        
-        ):
+    def __init__(self, caps_problem:pyCAPS.Problem):
         """
         Pointwise AIM wrapper object which builds automatic fluid meshes through pointwise
             use run_pointwise() method to 
@@ -18,7 +15,7 @@ class PointwiseAim:
         # initialize the pointwise aim
         self._aim = caps_problem.analysis.create(aim = "pointwiseAIM", name = "pointwise")
 
-        self.is_setup = False
+        self._is_setup = False
         self._built_mesh = False
 
         self._wall_bc = None
@@ -69,7 +66,7 @@ class PointwiseAim:
         #T-Rex cell type (TetPyramid, TetPyramidPrismHex, AllAndConvertWallDoms)        
 
         # maybe change the constraint names or something or have a class for this?
-        self.aim.input.Mesh_Sizing = self.mesh_sizing
+        self.aim.input.Mesh_Sizing = self.boundary_condition
 
         if inviscid:
             self._wall_bc = {"bcType" : "inviscid"}
@@ -85,8 +82,8 @@ class PointwiseAim:
         return self._aim
 
     @property
-    def is_setup(self) -> bool:
-        return self._setup_settings and self._setup_mesh
+    def built_mesh(self) -> bool:
+        return self._built_mesh
 
     @property
     def analysis_dir(self) -> str:
@@ -120,6 +117,6 @@ class PointwiseAim:
 
 
     @property
-    def mesh_sizing(self) -> dict:
+    def boundary_condition(self) -> dict:
         return {"wall": self._wall_bc,
             "Farfield": {"bcType":"Farfield"}}
