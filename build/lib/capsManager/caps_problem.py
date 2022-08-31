@@ -49,12 +49,6 @@ class CapsStruct(CapsProblem):
     """
     def __init__(self, problem:pyCAPS.Problem):
         super(CapsStruct,self).__init__(problem=problem)
-        try:
-            # required to have view:structure and view:fluid cfgpmtrs in the csm file
-            self._caps_problem.geometry.cfgpmtr["view:structure"].value = 1
-            self._caps_problem.geometry.cfgpmtr["view:fluid"].value = 0
-        except:
-            raise AssertionError("The CSM file is missing view:structure and/or view:fluid cfgpmtrs.")
 
     @classmethod
     def default(cls, csmFile:str, problemName:str="capsStruct"):
@@ -83,12 +77,9 @@ class CapsFluid(CapsProblem):
     """
     def __init__(self, problem:pyCAPS.Problem):
         super(CapsFluid,self).__init__(problem=problem)
-        try:
-            # required to have view:structure and view:fluid cfgpmtrs in the csm file
-            self._caps_problem.geometry.cfgpmtr["view:structure"].value = 0
-            self._caps_problem.geometry.cfgpmtr["view:fluid"].value = 1
-        except:
-            raise AssertionError("The CSM file is missing view:structure and/or view:fluid cfgpmtrs.")
+
+        # set to not overwrite fun3d nml analysis
+        self._caps_problem.analysis["fun3d"].input.Overwrite_NML = False
 
     @classmethod
     def default(cls, csmFile:str, problemName:str="capsFluid"):
