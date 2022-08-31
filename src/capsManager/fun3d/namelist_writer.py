@@ -60,7 +60,7 @@ class Fun3dNamelistWriter:
         self.fun3d_nml["inviscid_flux_method"]["flux_construction"] = "roe"
         self.fun3d_nml["inviscid_flux_method"]["flux_limiter"] = "hminmod"
         self.fun3d_nml["inviscid_flux_method"]["smooth_limiter_coeff"] = 1.0
-        self.fun3d_nml["inviscid_flux_method"]["freeze_limiter_iteration"] = int(5.0/6 * self.aim.flow_settings.num_steps)
+        self.fun3d_nml["inviscid_flux_method"]["freeze_limiter_iteration"] = self.aim.flow_settings.freeze_limiter_iteration
 
         #nonlinear solver parameters section
         self.fun3d_nml["nonlinear_solver_parameters"] = f90nml.Namelist()
@@ -167,3 +167,30 @@ class MovingBodyInputWriter:
     def write(self):
         moving_body_input_file = os.path.join(self.aim.flow_directory, "moving_body.input")
         self._moving_body_input.write(moving_body_input_file, force=True)
+
+perturb_file = """   PERTURB   EPSILON GRIDPOINT
+        0    1e-30       666
+
+0 = No perturbation
+1 = Mach number
+2 = Alpha
+3 = Shape
+4 = x-rotation rate
+5 = y-rotation rate
+6 = z-rotation rate
+7 = Grid point x
+8 = Grid point y
+9 = Grid point z
+10 = Yaw
+11 = error transport (truncation error)
+12 = RCS jet plenum pressure, p0
+100+ = add an imaginary source term to equation
+        PERTURB-100 of node GRIDPOINT
+        (to verify the adjoint lambda value)
+"""
+def print_perturb_input(path:str, comm=None):
+    if comm is None or comm.Get_rank() == 0:
+        filepath = os.path.join(path, "perturb.input")
+        file_hdl = open(filepath, "w")
+        file_hdl.write(perturb_file)
+        file_hdl.close()

@@ -17,6 +17,7 @@ class FlowSettings:
         temperature_ref:float=300.0,
         ref_area:float=1.0,
         num_steps:int=10.0,
+        freeze_limiter_iteration:int=None
         ):
         assert(flow_type in FlowSettings.FLOW_TYPES)
         self._flow_type = flow_type
@@ -26,6 +27,9 @@ class FlowSettings:
         self._temperature_ref = temperature_ref
         self._ref_area = ref_area
         self._num_steps = num_steps
+        if freeze_limiter_iteration is None or freeze_limiter_iteration > num_steps:
+            freeze_limiter_iteration = int(5/6 * num_steps)
+        self._freeze_limiter_iteration = freeze_limiter_iteration
 
     @property
     def mach_number(self) -> float:
@@ -54,6 +58,10 @@ class FlowSettings:
     @property
     def num_steps(self) -> int:
         return self._num_steps
+
+    @property
+    def freeze_limiter_iteration(self) -> int:
+        return self._freeze_limiter_iteration
 
 class MotionSettings:
     def __init__(self,

@@ -4,15 +4,19 @@ __all__ = ["Fun3dAim"]
 
 from typing import TYPE_CHECKING
 import pyCAPS, os
-from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings
+from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings, print_perturb_input
 
 
 class Fun3dAim:
-    def __init__(self, caps_problem:pyCAPS.Problem, flow_settings:FlowSettings=None, motion_settings:MotionSettings=None):
+    def __init__(self, caps_problem:pyCAPS.Problem, flow_settings:FlowSettings=None, motion_settings:MotionSettings=None, build_complex:bool=False):
         self._aim = caps_problem.analysis.create(aim = "fun3dAIM",
                                     name = "fun3d")
         self._flow_settings = flow_settings
         self._motion_settings = motion_settings
+        
+        self._perturb_fn = print_perturb_input
+        self._build_complex = build_complex
+
         # set to not overwrite fun3d nml analysis
         self.aim.input.Overwrite_NML = False
         #fun3d design sensitivities settings
@@ -26,6 +30,10 @@ class Fun3dAim:
     @property
     def aim(self):
         return self._aim
+
+    def make_perturb_input(self):
+        flow_dir = os.path.join(self.analysis_dir, "Flow")
+        self._perturb_fn(path=flow_dir)
 
     @property
     def flow_settings(self) -> FlowSettings:
@@ -42,6 +50,16 @@ class Fun3dAim:
     @motion_settings.setter
     def motion_settings(self, new_settings:MotionSettings):
         self._motion_settings = new_settings
+
+    @property
+    def build_complex(self) -> bool:
+        return self._build_complex
+
+    @build_complex.setter
+    def build_complex(self, new_bool:bool):
+        self._build_complex = new_bool
+        if new_bool is True:
+            self._print_perturb = True
 
     @property
     def analysis_type(self) -> str:
@@ -79,4 +97,6 @@ class Fun3dAim:
         from capsManager.fun3d.namelist_writer import Fun3dNamelistWriter, MovingBodyInputWriter
         Fun3dNamelistWriter(fun3d_aim=self).write()
         MovingBodyInputWriter(fun3d_aim=self).write()
+        if self.build_complex:
+            self.make_perturb_input()
         
