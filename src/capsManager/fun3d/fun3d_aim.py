@@ -4,7 +4,7 @@ __all__ = ["Fun3dAim"]
 
 from typing import TYPE_CHECKING
 import pyCAPS, os
-from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings, print_perturb_input
+from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings
 
 
 class Fun3dAim:
@@ -13,8 +13,6 @@ class Fun3dAim:
                                     name = "fun3d")
         self._flow_settings = flow_settings
         self._motion_settings = motion_settings
-        
-        self._perturb_fn = print_perturb_input
         self._build_complex = build_complex
 
         # set to not overwrite fun3d nml analysis
@@ -30,10 +28,6 @@ class Fun3dAim:
     @property
     def aim(self):
         return self._aim
-
-    def make_perturb_input(self):
-        flow_dir = os.path.join(self.analysis_dir, "Flow")
-        self._perturb_fn(path=flow_dir)
 
     @property
     def flow_settings(self) -> FlowSettings:
@@ -94,9 +88,9 @@ class Fun3dAim:
         """
         generate the writer classes for fun3d.nml and moving_body.input files and then write them
         """
-        from capsManager.fun3d.namelist_writer import Fun3dNamelistWriter, MovingBodyInputWriter
+        from capsManager.fun3d.namelist_writer import Fun3dNamelistWriter, MovingBodyInputWriter, print_perturb_input
         Fun3dNamelistWriter(fun3d_aim=self).write()
         MovingBodyInputWriter(fun3d_aim=self).write()
         if self.build_complex:
-            self.make_perturb_input()
+            print_perturb_input(path=self.flow_directory)
         
