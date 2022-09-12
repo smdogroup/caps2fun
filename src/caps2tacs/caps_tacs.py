@@ -39,7 +39,8 @@ class CapsTacs:
         self._pytacs_function = pytacs_function
 
         # set the analysis directory of the pytacs function
-        self.pytacs_function.analysis_dir = self.tacs_aim.analysis_dir
+        if pytacs_function is not None:
+            self.pytacs_function.analysis_dir = self.tacs_aim.analysis_dir
 
         # boolean of whether not to use derivatives
         self._compute_gradients = compute_gradients
@@ -373,17 +374,19 @@ class CapsTacs:
         if self._report_history:
             self.print_function_history()
             self.print_final_design()
+            
         print(f"\nYou've now finished your caps2tacs analysis/optimization")
-        print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
-        print(f"\tcd {self.tacs_aim.analysis_dir}")
-        print(f"\tparaview {self.pytacs_function.paraview_group_name}")
-        print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation on the animation batch")
-        print(f"\tu*iHat+v*jHat+w*kHat")
-        print(f"Once you save the deformation results or field output animations (have to save as group pngs) go to the following website to make a gif...")
-        print(f"\thttps://www.freeconvert.com/png-to-gif")
-        print(f"Then return to the orig directory with 'cd -'")
-
+        
         if self._view_plots:
+            print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
+            print(f"\tcd {self.tacs_aim.analysis_dir}")
+            print(f"\tparaview {self.pytacs_function.paraview_group_name}")
+            print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation on the animation batch")
+            print(f"\tu*iHat+v*jHat+w*kHat")
+            print(f"Once you save the deformation results or field output animations (have to save as group pngs) go to the following website to make a gif...")
+            print(f"\thttps://www.freeconvert.com/png-to-gif")
+            print(f"Then return to the orig directory with 'cd -'")
+
             self.view_paraview_group()
 
         
