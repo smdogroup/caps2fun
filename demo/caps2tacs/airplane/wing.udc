@@ -1,0 +1,87 @@
+
+interface span IN 10.0
+interface dihedral IN 0.0
+interface lesweep IN 0.0
+interface chord0 IN 2.0
+interface taper IN 0.4
+interface toverc0 IN 0.12
+interface tovercf IN 0.12
+interface camb0 IN 0.00
+interface cambf IN 0.00
+interface maxloc0 IN 0.4
+interface maxlocf IN 0.4
+
+interface name IN $wing
+interface OMLcolor IN $red
+interface ribcolor IN $green
+interface sparcolor IN $green
+
+interface internal_structure IN 0
+interface both IN 0
+
+interface nrib IN 16
+interface nspar IN 3
+
+
+set ytip span/2.0*tand(dihedral)
+set xtip span/2.0*tand(lesweep)
+
+set chordf taper*chord0
+
+mark
+udprim naca thickness toverc0 camber camb0 maxloc maxloc0 sharpte 0
+scale chord0
+
+udprim naca thickness tovercf camber cambf maxloc maxlocf sharpte 0
+scale chordf
+translate xtip ytip -span/2.0
+
+loft 0
+store wing_solid
+restore wing_solid
+
+patbeg foo ifzero(internal_structure-1,1,0)
+   set xmax max(xtip+chordf,chord0)*1.2
+   set max_thickness max(toverc0*chord0,tovercf*chordf)*2.0+ytip
+   patbeg irib nrib
+      set zfrac irib/(nrib+1)
+      set zval zfrac*span/2.0
+      box 0.0 -max_thickness -zval xmax 2*max_thickness 0.0
+      select face
+      	attribute capsGroup !name+$:rib+irib
+      	attribute _color ribcolor
+   patend
+   patbeg ispar nspar
+      set xfrac ispar/(nspar+1)
+      set c_xtip chordf*xfrac+xtip
+      set c_xroot chord0*xfrac
+      set ztip -span/2.0*1.2
+      skbeg c_xroot -max_thickness 0.0 
+         linseg c_xtip -max_thickness ztip
+      skend
+      extrude 0.0 2*max_thickness 0.0
+      select face
+      	attribute capsGroup !name+$:spar+ispar
+      	attribute _color sparcolor
+      patbeg foo ifzero(ispar-1,nrib,1)
+         union
+      patend
+      
+   patend
+   intersect
+   
+   restore wing_solid
+   hollow 0
+   select face
+   	  attribute capsGroup !name+$:OML
+   	  attribute _color OMLcolor
+   union
+patend
+
+store name
+restore name
+patbeg foo both
+   mirror 0 0 1
+   restore name
+   union
+patend

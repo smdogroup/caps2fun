@@ -1,0 +1,29 @@
+
+cfgpmtr nstations 10
+
+dimension xspace 1 10
+despmtr xspace "1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0"
+
+dimension yloc 1 10
+despmtr yloc "0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;0.0;"
+
+dimension rx 1 10
+despmtr rx "1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0"
+
+dimension ry 1 10
+despmtr ry "1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0"
+
+dimension n 1 10
+despmtr n "2.0;2.0;2.0;2.0;2.0;2.0;2.0;2.0;2.0;2.0;"
+
+set xloc 0.0
+mark
+patbeg istation nstations
+   udprim supell rx !rx[istation] ry !ry[istation] n !n[istation]
+   rotatey 90 0 0
+   set xloc xloc+!xspace[istation]
+   translate xloc !yloc[istation] 0
+patend
+   
+loft 0
+

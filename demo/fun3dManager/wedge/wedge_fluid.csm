@@ -1,0 +1,52 @@
+# simple wedge fluid volume for funtofem unit tests
+# author: Sean Engelstad, Georgia Tech
+
+despmtr wedgeAngle 5
+despmtr xlength 1
+despmtr span 3
+despmtr farfield 3
+
+cfgpmtr view:fluid 1
+cfgpmtr view:structure 0
+
+# only do view fluid for now
+# fun3d coordinates are +x downstream, z is vertical, y is spanwise along a wing for instance
+
+# generate the farfield box
+box -farfield -farfield -farfield 2*farfield 2*farfield 2*farfield
+
+# set caps attributes on the farfield box face
+select face
+    attribute capsGroup $Farfield
+    attribute capsMesh $Farfield
+    attribute capsMeshLength 1.0
+    attribute _color $blue
+
+# compute remaining wedge dimensions
+set sspan span*0.5
+set height xlength*sind(wedgeAngle)
+
+# sketch the wedge
+skbeg -xlength*0.5 sspan -height*0.5
+   linseg xlength*0.5 sspan -height*0.5
+   linseg xlength*0.5 sspan height*0.5
+   linseg -xlength*0.5 sspan -height*0.5
+skend
+
+# extrude the wedge solid
+extrude 0 -sspan 0
+
+# set caps attributes on the wedge face (as fun3d wall)
+select face
+    attribute capsGroup $wall
+    attribute capsMesh $wall
+    attribute capsMeshLength 1.0
+    attribute _color $red
+
+# subtract the wedge solid from the farfield box (though small farfield since this is simple test case)
+subtract
+
+# set caps body attributes for the fluid volume
+select body
+    attribute capsAIM $pointwiseAIM;fun3dAIM
+    attribute capsMeshLength 1.0

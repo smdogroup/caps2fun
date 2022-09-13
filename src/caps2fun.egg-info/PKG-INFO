@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: caps2fun
+Version: 1.0
+Summary: interface between ESP/CAPS, Funtofem, TACS, and FUN3D for Aerothermoelastic analysis of Aerospace Structures
+Author: Sean Engelstad
+Author-email: sengelstad312@gatech.edu
+Requires-Python: >=3.6

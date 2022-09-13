@@ -10,10 +10,10 @@ import pyCAPS
 from typing import TYPE_CHECKING
 
 # import each of the aim modules here
-from .tacs.tacs_aim import TacsAim
-from .egads.egads_aim import EgadsAim
-from .pointwise.pointwise_aim import PointwiseAim
-from .fun3d.fun3d_aim import Fun3dAim
+from capsManager.tacs.tacs_aim import TacsAim
+from capsManager.egads.egads_aim import EgadsAim
+from capsManager.pointwise.pointwise_aim import PointwiseAim
+from capsManager.fun3d.fun3d_aim import Fun3dAim
 
 class CapsProblem:
     """
@@ -49,6 +49,12 @@ class CapsStruct(CapsProblem):
     """
     def __init__(self, problem:pyCAPS.Problem):
         super(CapsStruct,self).__init__(problem=problem)
+        try:
+            # required to have view:structure and view:fluid cfgpmtrs in the csm file
+            self._caps_problem.geometry.cfgpmtr["view:structure"].value = 1
+            self._caps_problem.geometry.cfgpmtr["view:fluid"].value = 0
+        except:
+            raise AssertionError("The CSM file is missing view:structure and/or view:fluid cfgpmtrs.")
 
     @classmethod
     def default(cls, csmFile:str, problemName:str="capsStruct"):
@@ -77,6 +83,12 @@ class CapsFluid(CapsProblem):
     """
     def __init__(self, problem:pyCAPS.Problem):
         super(CapsFluid,self).__init__(problem=problem)
+        try:
+            # required to have view:structure and view:fluid cfgpmtrs in the csm file
+            self._caps_problem.geometry.cfgpmtr["view:structure"].value = 0
+            self._caps_problem.geometry.cfgpmtr["view:fluid"].value = 1
+        except:
+            raise AssertionError("The CSM file is missing view:structure and/or view:fluid cfgpmtrs.")
 
     @classmethod
     def default(cls, csmFile:str, problemName:str="capsFluid"):
@@ -88,11 +100,7 @@ class CapsFluid(CapsProblem):
 
     @property
     def pointwiseAim(self) -> PointwiseAim:
-        return TacsAim(caps_problem=self._caps_problem)
-
-    @property
-    def egadsAim(self) -> EgadsAim:
-        return EgadsAim(caps_problem=self._caps_problem)
+        return PointwiseAim(caps_problem=self._caps_problem)
 
     @property
     def fun3dAim(self) -> Fun3dAim:

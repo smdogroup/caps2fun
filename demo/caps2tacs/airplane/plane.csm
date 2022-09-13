@@ -1,0 +1,140 @@
+
+cfgpmtr view:fluid 0
+cfgpmtr view:structure 1
+
+despmtr ff 100.0
+
+UDPARG $/fuselage nstations 10 xlength 16 yscale 0.5
+UDPARG $/fuselage zscale 0.4 nscale 0.8 yloc_a 0.2
+UDPARG $/fuselage  yloc_mloc -0.2 ry_a -0.5 ry_mloc 0.2
+UDPARG $/fuselage  rz_a -0.5 rz_mloc 0.2 nscale 1.0
+UDPRIM $/fuselage internal_structure 0
+translate 3 0 0
+store fuselage_solid
+
+UDPARG $/fuselage nstations 3 xlength 3 windward 0
+UDPARG $/fuselage yscale 0.5 zscale 0.4 nscale 0.8
+UDPARG $/fuselage yloc_a 0.2
+UDPARG $/fuselage yloc_mloc -0.2 ry_a -0.6 ry_mloc 0.2
+UDPARG $/fuselage rz_a -0.6 rz_mloc 0.2 nscale 1.0
+UDPARG $/fuselage name $nose
+UDPRIM $/fuselage internal_structure 0
+translate 3 0 0
+store nose_solid
+
+
+# fluid volume
+patbeg foo ifzero(view:fluid-1,1,0)
+   # farfield box
+   box -ff -ff -ff 2*ff 2*ff 2*ff
+   
+   select face
+       attribute capsGroup $Farfield
+       attribute capsMesh $Farfield
+       attribute capsMeshLength 3.0
+   
+   restore fuselage_solid
+   
+   restore nose_solid
+   union
+   
+   UDPARG $/wing internal_structure 0
+   UDPARG $/wing span 15.0 chord0 3.0 lesweep 20.0
+   UDPARG $/wing toverc0 0.12 
+   UDPRIM $/wing both 1
+   translate 5.0 0 0
+   union
+
+   UDPARG $/wing internal_structure 0
+   UDPARG $/wing span 5.0 name $htail both 1
+   UDPRIM $/wing toverc0 0.12 lesweep 30.0 chord0 2.0
+   translate 17.0 0 0
+   union
+   
+   select face
+        attribute capsGroup $wall
+        attribute capsMesh $wall
+        attribute capsMeshLength 0.1
+   
+   subtract
+   
+    select body
+        attribute capsAIM $pointwiseAIM;fun3dAIM
+        #attribute capsMeshLength 1.0
+   
+patend
+
+# aircraft structure view
+patbeg foo ifzero(view:structure-1,1,0)
+
+   # wing structure and remove fuselage section
+   UDPARG $/wing internal_structure 1
+   UDPARG $/wing span 15.0 chord0 3.0 lesweep 20.0
+   UDPARG $/wing toverc0 0.12 
+   UDPRIM $/wing both 0 
+   translate 5.0 0 0
+   
+   restore fuselage_solid
+   subtract
+   
+   
+   # htail structure and remove fuselage section
+   UDPARG $/wing internal_structure 1 nrib 8 nspar 2
+   UDPARG $/wing span 5.0 name $htail both 0
+   UDPRIM $/wing toverc0 0.12 lesweep 30.0 chord0 2.0
+   translate 17.0 0 0
+   
+   restore fuselage_solid
+   subtract
+   
+   # fuselage structure and union together
+   UDPARG $/fuselage nstations 10 xlength 16 yscale 0.5
+   UDPARG $/fuselage zscale 0.4 nscale 0.8 yloc_a 0.2
+   UDPARG $/fuselage  yloc_mloc -0.2 ry_a -0.5 ry_mloc 0.2
+   UDPARG $/fuselage  rz_a -0.5 rz_mloc 0.2 nscale 1.0
+   UDPRIM $/fuselage internal_structure 1
+   translate 3 0 0
+   
+   union
+   union
+   
+   UDPARG $/fuselage nstations 3 xlength 3 windward 0
+   UDPARG $/fuselage yscale 0.5 zscale 0.4 nscale 0.8
+   UDPARG $/fuselage yloc_a 0.2
+   UDPARG $/fuselage yloc_mloc -0.2 ry_a -0.5 ry_mloc 0.2
+   UDPARG $/fuselage rz_a -0.5 rz_mloc 0.2 nscale 1.0
+   UDPARG $/fuselage name $nose
+   UDPRIM $/fuselage internal_structure 1
+   translate 3 0 0
+   union
+   
+   store half_plane_structure
+   
+   restore half_plane_structure
+   mirror 0 0 1
+   restore half_plane_structure
+   union
+   
+   select body
+   	attribute capsAIM $egadsTessAIM;tacsAIM 
+   
+   udprim editAttr filename <<
+       FACE HAS capsGroup=!$htail+$:OML
+       SET capsLoad=wing
+
+       FACE HAS capsGroup=!$wing+$:OML
+       SET capsLoad=wing
+
+       FACE HAS capsGroup=!$fuselage:station+10
+       SET capsConstraint=rear
+       SET _color=red
+
+       EDGE ADJ2FACE capsConstraint=rear
+       SET capsConstraint=rear
+       SET _color=red
+
+       NODE ADJ2FACE capsConstraint=rear
+       SET capsConstraint=rear
+       SET _color=red
+   >>
+patend

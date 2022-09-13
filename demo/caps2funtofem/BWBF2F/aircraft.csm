@@ -1,0 +1,909 @@
+######################################################################################################
+# TITLE: Hybrid (Blended) Wing Body Aircraft
+#------Author: Srujal Patel:srujal.patel@aerospace.gatech.edu
+# - All dimensions are in mm
+######################################################################################################
+######################################################################################################
+DESPMTR export_aircraft_geom    0    #if EQ 1 then export the geometry(with or without domain based on parameter value set below)
+DESPMTR CFD_domain_flag         0      #if NE 0 then generate the domain
+DESPMTR domain_r        480000 #CFD domain radius
+DESPMTR rule_factor    0   #Ruled surfaces if not 0
+DESPMTR skeleton_view   0  #On if not 0
+#--- #------------------------------------------------------------------------------#
+# Configuration Variables
+#------------------------------------------------------------------------------#
+#--- # WingBody Configuration
+CONPMTR winglet_flag    1
+#--- #------------------------------------------------------------------------------#
+#--- # Scaling Factors
+#--- #------------------------------------------------------------------------------#
+CONPMTR in_mm_conversion        25.4 # inch -> mm conversion
+CONPMTR global_scale_factor     1.
+CONPMTR deg_to_rad 				3.14159265359/180	# degree -> radians conversion
+#--- # ====================================================================================================
+#--- # DESIGN PARAMETERS
+#--- # ====================================================================================================
+#--- #-----------Main Multi-Bubble Cabin-----------------------------------------------------------------------------
+DESPMTR R1_bubble 1925.066    			#radius of middle and adjacent cylinders
+DESPMTR R2_bubble 1600.2      			#radius of end cylinder
+DESPMTR t_bubble  3      				#wall thickness(outwards)
+
+DESPMTR y1_bubble 797.814    			#y-center location of the middle cylinder
+DESPMTR y2_bubble 2565.4  				#y-center location of the end cylidner
+DESPMTR	floor_bubblecenter_dist	330.2   #z-distance between the floor and center of bubbles
+#--- #----------Cargo bay dimensions(LD3-45)-----------------------------------------------
+DESPMTR w_cargo_top 	2438
+DESPMTR w_cargo_bot 	1562
+DESPMTR h_cargo_rect	610
+DESPMTR h_cargo  		1219.2
+#--------------Fuel tank----------------------------------------------
+DESPMTR  t_tank			111.76		#fuel tank shell thickness
+DESPMTR  vol_fuel_ft3	3800 		#total fuel volume ft^3
+DESPMTR  n_tank			4			#Number of tanks
+
+DESPMTR d_tank1			1877.22     #Tank_diameter includes tolerance thickness
+DESPMTR h_tank1 		1853.83 	#Tank height_includes tolerance thickness
+DESPMTR l_tank1 		18855.76 	#Tank Length_includes tolerance thickness
+
+DESPMTR d_tank2			1632.36     #Tank_diameter includes tolerance thickness
+DESPMTR h_tank2 		1612.02 	#Tank height_includes tolerance thickness
+DESPMTR l_tank2 		18783.08	#Tank Length_includes tolerance thickness
+
+DESPMTR spacing_tank	304.8		#Clearance between two tanks
+
+#----------Adopted from BWB layout of "HWB216" model in following paper------------------------------------------------
+#Nickol, Craig. "Hybrid wing body configuration scaling study." 50th AIAA aerospace sciences meeting including the new horizons forum and aerospace exposition. 2012.
+DESPMTR cabin_start_loc	0.04 #in % of fuselage length at centerline
+DESPMTR l_cabin			29922.6224	 #Cabin length:994.056:  Desired >=26932.32
+DESPMTR w_cabin  		8331.2      #Cabin Width 408in
+DESPMTR rear_spar_loc	0.8  #As percentage of Fuselage length
+DESPMTR l_cabin_rect	21488.4 #Economy cabin length in mm (rectangle of the homeplate)
+DESPMTR h_cabin			2082.8 #82inches
+#--- 
+#--- #-------------Airfoil sections-----------------------------------
+#--- #fuselage sections
+DESPMTR sweep_fuse_deg     	60 
+DESPMTR n_sec_fuse     	5 
+DESPMTR cst_te_fuse 			    1.178200e-03 
+DESPMTR cst_degree_fuse 11 
+DIMENSION cst_coef_u_fuse  n_sec_fuse cst_degree_fuse  0 
+DESPMTR cst_coef_u_fuse           " 0.395822;0.200016;0.200011;0.200010;0.200010;0.200011;0.200012;0.200018;0.200043;0.771672;0.439421;\ 
+ 	 	 	 	 	 	 	 	 	0.409394;0.200017;0.200011;0.200010;0.200010;0.200011;0.200013;0.200019;0.200046;0.921838;0.201048;\ 
+ 	 	 	 	 	 	 	 	 	0.363649;0.200001;0.200001;0.200001;0.200001;0.200001;0.200001;0.200001;0.200001;0.784921;0.200037;\ 
+ 	 	 	 	 	 	 	 	 	0.395875;0.200002;0.200001;0.200001;0.200001;0.200001;0.200001;0.200002;0.200002;0.859051;0.200037;\ 
+ 	 	 	 	 	 	 	 	 	0.291389;0.200003;0.200003;0.200002;0.200002;0.200003;0.200003;0.200003;0.200005;0.200012;0.857046;"
+DIMENSION cst_coef_l_fuse   n_sec_fuse cst_degree_fuse  0 
+DESPMTR cst_coef_l_fuse           " -0.249926;-0.200016;-0.200011;-0.200010;-0.200010;-0.200011;-0.200012;-0.200018;-0.200043;-0.377431;-0.464167;\ 
+ 	 	 	 	 	 	 	 	 	-0.258085;-0.200017;-0.200011;-0.200010;-0.200010;-0.200011;-0.200013;-0.200018;-0.200046;-0.528171;-0.201046;\ 
+ 	 	 	 	 	 	 	 	 	-0.279267;-0.200001;-0.200001;-0.200001;-0.200001;-0.200001;-0.200001;-0.200001;-0.200003;-0.565424;-0.200035;\ 
+ 	 	 	 	 	 	 	 	 	-0.303359;-0.200002;-0.200001;-0.200001;-0.200001;-0.200001;-0.200002;-0.200003;-0.200008;-0.614594;-0.200033;\ 
+ 	 	 	 	 	 	 	 	 	-0.291389;-0.200003;-0.200003;-0.200002;-0.200002;-0.200003;-0.200003;-0.200003;-0.200005;-0.200012;-0.857046;"
+DIMENSION le_y_fuse	          	1  n_sec_fuse  0
+DESPMTR le_y_fuse           " 0.000000;797.814000;2565.400000;4165.600000;8256.503279;"
+DIMENSION chord_fuse             	1  n_sec_fuse  0
+DESPMTR chord_fuse                   	" 37403.278000;36021.423617;32959.874858;30188.247156;20792.335345;"
+DIMENSION twist_fuse_deg             	1  n_sec_fuse  0
+DESPMTR twist_fuse_deg                   	" 0.000000;0.000000;0.000000;0.000000;0.000000;"
+DIMENSION dihedral_fuse_deg             	1  n_sec_fuse  0
+DESPMTR dihedral_fuse_deg                   	" 0.000000;0.000000;0.000000;0.000000;0.000000;"
+
+#wing sections
+DESPMTR wing_halfspan     	25000 
+DESPMTR sweep_wing_deg     	45 
+DESPMTR n_sec_wing     	7 
+DESPMTR cst_te_wing 			    1.178200e-03 
+DESPMTR cst_degree_wing 4 
+DIMENSION cst_coef_u_wing  n_sec_wing cst_degree_wing  0 
+DESPMTR cst_coef_u_wing           " 0.230953;0.168017;0.081758;0.365103;\ 
+ 	 	 	 	 	 	 	 	 	0.200806;0.141604;0.087400;0.266597;\ 
+ 	 	 	 	 	 	 	 	 	0.170660;0.115190;0.093041;0.168090;\ 
+ 	 	 	 	 	 	 	 	 	0.170660;0.115190;0.093041;0.168090;\ 
+ 	 	 	 	 	 	 	 	 	0.230953;0.168017;0.081758;0.365103;\ 
+ 	 	 	 	 	 	 	 	 	0.200806;0.141604;0.087400;0.266597;\ 
+ 	 	 	 	 	 	 	 	 	0.170660;0.115190;0.093041;0.168090;"
+DIMENSION cst_coef_l_wing   n_sec_wing cst_degree_wing  0 
+DESPMTR cst_coef_l_wing           " -0.224866;-0.221624;-0.134528;-0.344200;\ 
+ 	 	 	 	 	 	 	 	 	-0.188633;-0.248817;-0.192939;-0.224790;\ 
+ 	 	 	 	 	 	 	 	 	-0.152400;-0.276010;-0.251350;-0.105380;\ 
+ 	 	 	 	 	 	 	 	 	-0.152400;-0.276010;-0.251350;-0.105380;\ 
+ 	 	 	 	 	 	 	 	 	-0.224866;-0.221624;-0.134528;-0.344200;\ 
+ 	 	 	 	 	 	 	 	 	-0.188633;-0.248817;-0.192939;-0.224790;\ 
+ 	 	 	 	 	 	 	 	 	-0.152400;-0.276010;-0.251350;-0.105380;"
+DIMENSION le_y_wing	          	1  n_sec_wing  0
+DESPMTR le_y_wing           " 9671.002186;11085.501093;12500.000000;16250.000000;19166.666667;22083.333333;25000.000000;"
+DIMENSION chord_wing             	1  n_sec_wing  0
+DESPMTR chord_wing                   	" 18528.223563;16264.111782;14000.000000;10000.000000;8000.000000;6000.000000;4000.000000;"
+DIMENSION twist_wing_deg             	1  n_sec_wing  0
+DESPMTR twist_wing_deg                   	" 0.000000;0.000000;0.000000;0.000000;0.000000;0.000000;0.000000;"
+DIMENSION dihedral_wing_deg             	1  n_sec_wing  0
+DESPMTR dihedral_wing_deg                   	" 0.000000;0.000000;0.000000;0.000000;0.000000;0.000000;0.000000;"
+
+#winglet sections
+DESPMTR winglet_span     	2500 
+DESPMTR sweep_winglet_deg     	45 
+DESPMTR n_sec_winglet     	3 
+DESPMTR cst_te_winglet 			    1.178200e-03 
+DESPMTR cst_degree_winglet 4 
+DIMENSION cst_coef_u_winglet  n_sec_winglet cst_degree_winglet  0 
+DESPMTR cst_coef_u_winglet           " 0.170660;0.115190;0.093041;0.168090;\ 
+ 	 	 	 	 	 	 	 	 	0.170660;0.115190;0.093041;0.168090;\ 
+ 	 	 	 	 	 	 	 	 	0.170660;0.115190;0.093041;0.168090;"
+DIMENSION cst_coef_l_winglet   n_sec_winglet cst_degree_winglet  0 
+DESPMTR cst_coef_l_winglet           " -0.152400;-0.276010;-0.251350;-0.105380;\ 
+ 	 	 	 	 	 	 	 	 	-0.152400;-0.276010;-0.251350;-0.105380;\ 
+ 	 	 	 	 	 	 	 	 	-0.152400;-0.276010;-0.251350;-0.105380;"
+DIMENSION le_y_winglet	          	1  n_sec_winglet  0
+DESPMTR le_y_winglet           " 25750.000000;26625.000000;27500.000000;"
+DIMENSION chord_winglet             	1  n_sec_winglet  0
+DESPMTR chord_winglet                   	" 3000.000000;2500.000000;2000.000000;"
+DIMENSION twist_winglet_deg             	1  n_sec_winglet  0
+DESPMTR twist_winglet_deg                   	" 0.000000;0.000000;0.000000;"
+DIMENSION dihedral_winglet_deg             	1  n_sec_winglet  0
+DESPMTR dihedral_winglet_deg                   	" 30.000000;60.000000;70.000000;"
+#--- 
+#--- # ====================================================================================================
+#--- # SETUP LOCAL PARAMETERS
+# ====================================================================================================
+SET 	l_fuse l_cabin/rear_spar_loc   			#Length of the center section from nose to the end of the fuselage
+SET 	l_cabin_tri	    l_cabin-l_cabin_rect    #Length of triangle shape of the homeplate
+
+SET output_format          $stp
+IFTHEN CFD_domain_flag NE 0
+   SET aircraft_filename    path($csm)+$aircraft_w_domain.+!output_format
+ELSE
+   SET aircraft_filename    path($csm)+$aircraft.+!output_format
+ENDIF
+#--- # ====================================================================================================
+#--- # GENERATE ALL BODIES
+#--- # ====================================================================================================
+DIMENSION class                         1   2   0
+DIMENSION ztail                         1   2   0
+DIMENSION aupper_fuse                   1   cst_degree_fuse   0
+DIMENSION alower_fuse                   1   cst_degree_fuse   0
+DIMENSION aupper_wing                        1   cst_degree_wing   0
+DIMENSION alower_wing                        1   cst_degree_wing   0
+DIMENSION aupper_winglet                        1   cst_degree_winglet   0
+DIMENSION alower_winglet                        1   cst_degree_winglet   0
+#generate fuselage airfoil stack
+MARK
+set xtemp 0
+set ytemp 0
+set ztemp 0    
+PATBEG i n_sec_fuse
+      SET  class     "0.5; 1.0"
+      SET  ztail  "cst_te_fuse;-cst_te_fuse;"
+   	  PATBEG ii cst_degree_fuse
+      		SET aupper_fuse[1,ii] cst_coef_u_fuse[i,ii] 
+            SET alower_fuse[1,ii] cst_coef_l_fuse[i,ii]
+      PATEND
+      UDPARG    kulfan    class     class
+      UDPARG    kulfan    ztail     ztail
+      UDPARG    kulfan    aupper    aupper_fuse
+      UDPRIM    kulfan    alower    alower_fuse
+      SCALE chord_fuse[i]
+      ROTATEZ -twist_fuse_deg[i] 0 0         
+      ROTATEX 90 0 0
+      SET xtemp xtemp+(le_y_fuse[1,i]-ytemp)*tand(sweep_fuse_deg)
+      SET ztemp ztemp+(le_y_fuse[1,i]-ytemp)*tand(dihedral_fuse_deg[1,i])
+      SET ytemp le_y_fuse[1,i]
+      TRANSLATE xtemp	ytemp	ztemp
+      STORE $section+i
+      RESTORE $section+i
+PATEND
+#generate wing airfoil stack   
+PATBEG j n_sec_wing
+      SET  class     "0.5; 1.0"
+      SET  class     "0.5; 1.0"
+      SET  ztail  "cst_te_wing;-cst_te_wing;"
+   	  PATBEG jj cst_degree_wing
+      		SET aupper_wing[1,jj] cst_coef_u_wing[j,jj] 
+            SET alower_wing[1,jj] cst_coef_l_wing[j,jj]
+      PATEND
+      UDPARG    kulfan    class     class
+      UDPARG    kulfan    ztail     ztail
+      UDPARG    kulfan    aupper    aupper_wing
+      UDPRIM    kulfan    alower    alower_wing
+   	  SCALE 	chord_wing[j]
+      ROTATEZ -twist_wing_deg[j] 0 0         
+      ROTATEX 90 0 0
+      SET xtemp xtemp+(le_y_wing[1,j]-ytemp)*tand(sweep_wing_deg)
+      SET ztemp ztemp+(le_y_wing[1,j]-ytemp)*tand(dihedral_wing_deg[1,j])
+      SET ytemp le_y_wing[1,j]
+      TRANSLATE xtemp	ytemp	ztemp
+      SET dummy i+j
+      STORE $section+dummy
+      RESTORE $section+dummy
+   PATEND
+GROUP   
+STORE stack_wingbody	   
+#generate winglet airfoil stack    
+IFTHEN winglet_flag eq 1
+MARK
+   PATBEG k n_sec_winglet
+      SET  class     "0.5; 1.0"
+      SET  class     "0.5; 1.0"
+      SET  ztail  "cst_te_winglet;-cst_te_winglet;"
+   	  PATBEG kk cst_degree_winglet
+      		SET aupper_winglet[1,kk] cst_coef_u_winglet[k,kk] 
+            SET alower_winglet[1,kk] cst_coef_l_winglet[k,kk]
+      PATEND
+      UDPARG    kulfan    class     class
+      UDPARG    kulfan    ztail     ztail
+      UDPARG    kulfan    aupper    aupper_winglet
+      UDPRIM    kulfan    alower    alower_winglet
+      SCALE chord_winglet[k]
+      ROTATEZ -twist_winglet_deg[k] 0 0         
+      ROTATEX 90 0 0
+      SET xtemp xtemp+(le_y_winglet[1,k]-ytemp)*tand(sweep_winglet_deg)
+      SET ztemp ztemp+(le_y_winglet[1,k]-ytemp)*tand(dihedral_winglet_deg[1,k])
+      SET ytemp le_y_winglet[1,k]
+      TRANSLATE xtemp	ytemp	ztemp
+      SET dummy i+j+k
+      STORE $winglet_section+dummy
+      RESTORE $winglet_section+dummy
+   PATEND
+   GROUP
+   STORE stack_winglet
+ENDIF
+
+#Generate 3D wingbody----------------------  
+SET n_sec_wingbody n_sec_fuse+n_sec_wing
+MARK
+PATBEG counter n_sec_wingbody
+   SET l n_sec_wingbody+1-counter
+   IFTHEN l NE 1
+   		RESTORE $section+l
+   	    MIRROR 0 1 0
+  ENDIF
+PATEND
+RESTORE stack_wingbody   
+
+IFTHEN rule_factor GT 0
+	RULE
+ELSE
+	BLEND
+ENDIF
+SELECT face
+SELECT sub 170 1 1
+SELECT sub 170 2 1
+EXTRACT @sellist
+SCALE global_scale_factor
+STORE aircraft
+#--- #Generate 3D winglet---------------------- 
+IFTHEN winglet_flag eq 1
+   MARK   
+   RESTORE $section+n_sec_wingbody   
+   RESTORE stack_winglet
+   GROUP   
+   IFTHEN rule_factor GT 0
+       RULE
+   ELSE
+       BLEND
+   ENDIF
+   SCALE global_scale_factor
+   SELECT face
+   SELECT sub 177 1 1
+   EXTRACT @sellist
+   STORE winglet_right
+   RESTORE winglet_right
+   MIRROR 0 1 0
+   STORE winglet_left
+   MARK
+   RESTORE winglet_left
+   RESTORE aircraft
+   RESTORE winglet_right
+   COMBINE
+   STORE aircraft
+ENDIF
+
+IFTHEN skeleton_view ne 0
+   RESTORE stack_wingbody
+   IFTHEN winglet_flag eq 1
+       RESTORE stack_winglet
+   ENDIF
+ENDIF
+
+#--- #--- # ====================================================================================================
+#--- #--- # GENERATE CFD DOMAIN
+#--- #--- # ====================================================================================================
+IFTHEN CFD_domain_flag NE 0
+	SET domain_x	domain_r+10000
+    SPHERE 0 0 0 domain_r
+    RESTORE aircraft
+    SUBTRACT
+    BOX -domain_x -domain_x -domain_x 2.*domain_x domain_x 2.*domain_x
+    SUBTRACT #Halve the Sphere
+	STORE aircraft
+ENDIF
+
+RESTORE aircraft
+# ====================================================================================================
+# EXPORT GEOMETRY
+# ====================================================================================================
+IFTHEN export_aircraft_geom EQ 1
+	DUMP !aircraft_filename
+ENDIF
+
+# ====================================================================================================
+# GENERATE INTERIOR SHAPE VOLUMES
+# ====================================================================================================
+# ====================================================================================================
+# MULT-BUBBLE MAIN CABIN
+# ====================================================================================================
+SET l_bubble  l_cabin_rect     #arbitrary length of the section
+MARK
+#-----------CREATE A LARGER MULTI-CYLINDER SHAPE---------------------------------
+CYLINDER   0  0  0  l_bubble  0  0  R1_bubble+t_bubble
+STORE cylinder1
+RESTORE cylinder1
+TRANSLATE  0 y1_bubble 0
+RESTORE cylinder1
+TRANSLATE  0 -y1_bubble 0
+CYLINDER   0  0  0  l_bubble  0  0  R2_bubble+t_bubble
+STORE cylinder2
+RESTORE cylinder2
+TRANSLATE 0 y2_bubble 0
+RESTORE cylinder2
+TRANSLATE 0 -y2_bubble 0
+UNION 1
+#-----------CREATE MULTI-CYLINDER SHAPE---------------------------------
+MARK
+CYLINDER   0  0  0  l_bubble  0  0  R1_bubble
+STORE cylinder1
+#--- RESTORE cylinder1
+RESTORE cylinder1
+TRANSLATE  0 y1_bubble 0
+RESTORE cylinder1
+TRANSLATE  0 -y1_bubble 0
+CYLINDER   0  0  0  l_bubble  0  0  R2_bubble
+STORE cylinder2
+RESTORE cylinder2
+TRANSLATE 0 y2_bubble 0
+RESTORE cylinder2
+TRANSLATE 0 -y2_bubble 0
+UNION 1
+#----------HOLLOW THE MAIN CYLINDER SHAPE BY SUBTRACT----------------------------------
+SUBTRACT
+TRANSLATE l_cabin_tri+cabin_start_loc*l_fuse 0 floor_bubblecenter_dist 
+SELECT FACE
+ATTRIBUTE _color $white  
+
+#Store the pressurized fuselage for future use
+store pressurized_fuselage
+restore pressurized_fuselage
+# ====================================================================================================
+# CARGO
+# ====================================================================================================
+SET dy  0.5*(w_cargo_top-w_cargo_bot)
+SET dz h_cargo-h_cargo_rect
+SKBEG 0 dy 0
+	LINSEG	0 dy+w_cargo_bot	0	  		#1-2
+    LINSEG  0 w_cargo_top 	dz 			#2-3
+    LINSEG  0 w_cargo_top 	h_cargo          #3-4
+    LINSEG	0  0   h_cargo 		#4-5
+    LINSEG  0  0   dz   			#5-6
+    LINSEG  0 dy 0														  
+    SKEND
+EXTRUDE l_cabin_rect 0	0 #+0.2*l_cabin_tri
+TRANSLATE l_cabin_tri+cabin_start_loc*l_fuse -dy-w_cargo_bot/2 -h_cargo
+SELECT FACE
+ATTRIBUTE _color $green
+STORE cargo
+#duplicate and translate
+RESTORE cargo
+TRANSLATE 0 -w_cargo_top/2 0
+RESTORE cargo
+TRANSLATE 0 w_cargo_top/2 0
+
+# ====================================================================================================
+# FUEL TANKS
+# ====================================================================================================
+SET vol_fuel		vol_fuel_ft3*2.832E+7 #total fuel volume in mm^3
+SET d_tank1_inner d_tank1-2*t_tank
+SET h_tank1_inner h_tank1-2*t_tank
+SET l_tank1_inner l_tank1-2*t_tank
+
+SET d_tank2_inner d_tank2-2*t_tank
+SET h_tank2_inner h_tank2-2*t_tank
+SET l_tank2_inner l_tank2-2*t_tank
+
+#-Calculate position for tanks in the first column
+SET y_tank1 w_cabin/2+0.5*d_tank1+spacing_tank*0.5
+SET x_tank1 y_tank1*tand(sweep_fuse_deg)+0.1*chord_fuse[1,n_sec_fuse]
+SET z_tank1 d_tank1/20   
+#--- 
+#-Calculate position for tanks in the second column
+SET y_tank2 w_cabin/2+d_tank1+d_tank2+spacing_tank-0.5*d_tank2 
+SET x_tank2 y_tank2*tand(sweep_fuse_deg)+0.07*chord_fuse[1,n_sec_fuse]
+SET z_tank2 0
+
+udprim    ellipse   ry d_tank1/2   rz h_tank1/2 
+EXTRUDE l_tank1 0 0
+ 
+SELECT FACE
+ATTRIBUTE _color $cyan
+STORE fueltank1
+
+udprim    ellipse   ry d_tank2/2   rz h_tank2/2 
+EXTRUDE l_tank2 0 0
+SET output_format          $stp
+SELECT FACE
+ATTRIBUTE _color $blue
+STORE fueltank2
+#duplicate and translate
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 y_tank2  z_tank2    
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+
+
+despmtr structure_scale .01
+cfgpmtr cfdOn 0
+restore aircraft
+scale structure_scale
+scale structure_scale
+set scaled_area .5*@area
+outpmtr aredfgera 0
+set aredfgera scaled_area
+store sclaed_wing
+
+
+
+patbeg foo ifzero(cfdOn,1,0)
+
+   #-------------------------------------------------------------
+   #This section creates the OML and attributes it
+   #-------------------------------------------------------------
+group
+store aircraft_with_tanks
+restore aircraft
+despmtr blueface 2
+box 0 0 0 100000 -100000 10000
+translate 0 0 -3000
+intersect
+mirror 0 1 0
+hollow 0
+select face
+   attribute capsGroup $OML
+   attribute capsMesh $OML
+   attribute compGroup $OML
+
+
+select face blueface
+   attribute capsGroup $rib1
+   attribute capsMesh $rib1
+   attribute compGroup $rib
+
+store oml
+
+restore aircraft
+
+
+
+
+
+#-------------------------------------------------------------
+#This section creted the mid-wing trapezodial structure
+#-------------------------------------------------------------
+despmtr nspar_trap 20
+despmtr nrib_trap 10
+
+set shift 4000
+set xmin @xmin
+set xmax @xmax
+set ymin @ymin
+set ymax @ymax
+set zmin @zmin
+set zmax @zmax
+set ybreak 2000 #y value at which the break hapens
+STORE .
+
+set dx (35000-14500)/(nspar_trap+1)
+set dy (le_y_wing[3]-le_y_fuse[5])/(nrib_trap-1)
+set dx_trap dx
+set dy_trap dy
+
+patbeg ispar nspar_trap
+   set index3 ispar
+   udprim waffle filename << depth (zmax-zmin)+shift
+   POINT C AT 14500+(ispar*dx) le_y_wing[3]
+   POINT D AT 14500+(ispar*dx) le_y_fuse[5]
+   LINE . C D myName=lineCD
+   >>
+   translate 0 0 -shift
+   restore pressurized_fuselage
+   subtract 
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+   subtract
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+   subtract
+   restore aircraft
+   intersect
+   select face
+      attribute capsGroup !$spar+index3
+      attribute capsMesh !$spar+index3
+      attribute compGroup $spar
+
+patend
+
+
+patbeg irib nrib_trap
+   set index1 irib+1
+   set irib irib-1
+   udprim waffle filename << depth (zmax-zmin)+shift
+   POINT C AT xmin le_y_fuse[5]+(irib*dy)
+   POINT D AT xmax+2000 le_y_fuse[5]+(irib*dy)
+   LINE . C D myName=lineCD
+   >>
+   translate 0 0 -shift
+   restore pressurized_fuselage
+   subtract 
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+   subtract
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+   subtract
+   restore aircraft
+   intersect
+   select face
+      attribute capsGroup !$rib+index1
+      attribute capsMesh !$rib+index1
+      attribute compGroup $rib
+   patbeg foo ifzero(irib-1,nspar_trap,1)
+      union
+   patend
+
+patend
+
+
+
+
+#-------------------------------------------------------------
+#This section creted the fuselage middle structure
+#-------------------------------------------------------------
+despmtr nspar_mid 10
+despmtr nrib_mid 10
+
+
+set dx (xmax-xmin+1000)/(nspar_mid+1)
+set dy (le_y_fuse[5])/(nrib_mid)
+set dx_center dx
+set dy_center dy
+
+patbeg ispar nspar_mid
+   set index4 index3+ispar
+   udprim waffle filename << depth (zmax-zmin)+shift
+   POINT C AT xmin+(ispar*dx) 0
+   POINT D AT xmin+(ispar*dx) le_y_fuse[5]
+   LINE . C D myName=lineCD
+   >>
+   translate 0 0 -shift
+   restore pressurized_fuselage
+   subtract 
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+   subtract
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+   subtract
+
+
+   restore aircraft
+   intersect
+   select face
+      attribute capsGroup !$spar+index4
+      attribute capsMesh !$spar+index4
+      attribute compGroup $spar
+
+patend
+#--- 
+
+patbeg irib nrib_mid
+   set index2 index1+irib
+
+   set irib irib#-1
+   udprim waffle filename << depth (zmax-zmin)+shift
+   POINT C AT xmin 0+(irib*dy)
+   POINT D AT xmax+10000 0+(irib*dy)
+   LINE . C D myName=lineCD
+   >>
+   translate 0 0 -shift
+   restore pressurized_fuselage
+   subtract 
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+   subtract
+   RESTORE fueltank1
+   TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+   subtract
+   RESTORE fueltank2
+   TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+   subtract
+   restore aircraft
+   intersect
+   select face
+      attribute capsGroup !$rib+index2
+      attribute capsMesh !$rib+index2
+      attribute compGroup $rib
+   patbeg foo ifzero(irib-1,nspar_mid,1)
+      union
+   patend
+
+patend
+union
+scale structure_scale
+store home_trap_struct
+
+
+
+
+
+
+#-------------------------------------------------------------
+#This section creates the outboard wing structure
+#-------------------------------------------------------------
+
+despmtr nrib_out 15
+
+
+restore aircraft
+box 0 0 0 (xmax-xmin) (ymax-ymin)+10000 (zmax-zmin)+10000
+translate 0 0 -6000
+translate 0 le_y_wing[3]+900-dy 0
+intersect 
+box 3000 le_y_wing[7] 0 (xmax-xmin) -(ymax-ymin)+10000 (zmax-zmin)+10000
+translate 0 0 -6000
+intersect
+set xmin @xmin
+set xmax @xmax
+set ymin @ymin
+set ymax @ymax
+set zmin @zmin
+set zmax @zmax
+store solid_wing
+restore solid_wing
+hollow (0)
+store oml_wing
+
+
+set dy (le_y_wing[3]+17000)/(nrib_out+1)
+
+mark
+
+   #--- restore oml_wing
+   patbeg irib nrib_out
+
+      set index5 index2+irib
+      udprim waffle filename << depth (zmax-zmin)+shift
+      POINT C AT xmin le_y_fuse[3]+(irib*dy)
+      POINT D AT xmax+2000 le_y_fuse[4]+(irib*dy)-le_y_wing[3]*tan(sweep_wing_deg)
+      LINE . C D myName=lineCD
+      >>
+      translate 0 10000 -shift
+      restore solid_wing
+      intersect
+
+      #---    union
+
+      select face
+         attribute capsGroup !$rib+index5
+         attribute capsMesh !$rib+index5
+         attribute compGroup $rib
+
+
+   patend
+group
+scale structure_scale
+store wing_ribs
+
+
+
+#-------------------------------------------------------------
+#This section creates the outboard wing structure
+#-------------------------------------------------------------
+
+# Forward Main spar
+
+udprim waffle filename << depth (zmax-zmin)+shift
+POINT C AT 4*dx_center+.5*dx_center 0
+POINT D AT 4*dx_center+.5*dx_center 10*dy_center
+LINE . C D myName=lineCD
+>>
+translate 0 0 -.7*shift
+restore pressurized_fuselage
+subtract 
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+subtract
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+subtract
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+subtract
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+subtract
+scale structure_scale
+
+udprim waffle filename << depth (zmax-zmin)+shift
+POINT C AT 4*dx_center+.5*dx_center 10*dy_center
+POINT D AT 5000+((le_y_wing[7]-10*dy_center)*tan(sweep_wing_deg)) 10*dy_center+9*dy_trap+(le_y_wing[7]-le_y_wing[3])
+LINE . C D myName=lineCD
+>>
+translate 0 0 -shift
+restore pressurized_fuselage
+subtract 
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+subtract
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+subtract
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+subtract
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+subtract
+scale structure_scale
+union
+restore aircraft
+scale structure_scale
+intersect
+
+select face
+      attribute capsGroup !$spar+(index4+1)
+      attribute capsMesh !$spar+(index4+1)
+      attribute compGroup $spar
+restore home_trap_struct
+union
+
+
+#Rear Main Spar
+udprim waffle filename << depth (zmax-zmin)+shift
+POINT C AT 8.25*dx_center 0
+POINT D AT 8.25*dx_center le_y_wing[3]
+LINE . C D myName=lineCD
+>>
+translate 0 0 -.7*shift
+scale structure_scale
+
+udprim waffle filename << depth (zmax-zmin)+shift
+POINT C AT 8.25*dx_center le_y_wing[3]
+POINT D AT 33920 10*dy_center+9*dy_trap+(le_y_wing[7]-le_y_wing[3])
+LINE . C D myName=lineCD
+>>
+translate 0 0 -shift
+restore pressurized_fuselage
+subtract 
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 y_tank1 z_tank1
+subtract
+RESTORE fueltank1
+TRANSLATE 1.2*x_tank1 -y_tank1 z_tank1 
+subtract
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 y_tank2  z_tank2 
+subtract
+RESTORE fueltank2
+TRANSLATE 1.05*x_tank2 -y_tank2 z_tank2
+subtract
+
+scale structure_scale
+union
+restore aircraft
+scale structure_scale
+intersect
+#union
+store rear_main_spar
+
+
+#Combine Structure with OML
+scale structure_scale
+restore oml
+scale structure_scale
+scale structure_scale
+union
+
+
+
+
+#-------------------------------------------------------------
+#This section is for TACS stuff
+#-------------------------------------------------------------
+select face
+   attribute colored $false
+
+set ribColor $green
+set OMLcolor $blue
+set sparColor $red
+udprim editAttr filename <<
+FACE HAS compGroup=OML
+SET _color=!OMLcolor
+SET colored=true
+FACE HAS compGroup=rib
+SET _color=!ribColor
+SET colored=true
+FACE HAS compGroup=spar
+SET _color=!sparColor
+SET colored=true
+FACE HAS capsGroup=rib1
+SET capsConstraint=wingRoot
+
+EDGE ADJ2FACE capsConstraint=wingRoot
+SET capsConstraint=wingRoot
+
+NODE ADJ2FACE capsConstraint=wingRoot
+SET capsConstraint=wingRoot
+>>
+select body
+   attribute capsAIM $egadsTessAIM;tacsAIM
+
+patend
+
+
+
+despmtr ff 40
+patbeg foo ifzero(cfdOn-1,1,0)
+   store ...
+   set df ff*2
+   box -ff -ff -ff df df df
+   select face
+    attribute capsGroup $Farfield
+    attribute capsMesh $Farfield
+    attribute capsMeshLength 3.0
+   translate 10 0 0
+   restore aircraft
+   scale structure_scale
+   scale structure_scale
+   select face
+        attribute capsGroup $wall
+        attribute capsMesh $wall
+        attribute capsMeshLength 0.1
+   subtract
+   select body
+        attribute capsAIM $egadsTessAIM;pointwiseAIM;fun3dAIM;tetgenAIM
+        attribute capsMeshLength 1.0
+patend
+
+END
+
+
+
+
+

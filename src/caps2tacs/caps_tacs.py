@@ -15,7 +15,7 @@ class CapsTacs:
     Module to handle caps and tacs interface problems
     """
     def __init__(self, name:str, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, 
-        compute_gradients:bool=True, write_solution:bool=True, view_plots:bool=False):
+        compute_gradients:bool=True, write_solution:bool=True, view_plots:bool=False, report_history:bool=False):
         """
         Module to handle caps and tacs interface problems
             tacs_aim : provide a fully setup tacs aim wrapper object
@@ -39,7 +39,8 @@ class CapsTacs:
         self._pytacs_function = pytacs_function
 
         # set the analysis directory of the pytacs function
-        self.pytacs_function.analysis_dir = self.tacs_aim.analysis_dir
+        if pytacs_function is not None:
+            self.pytacs_function.analysis_dir = self.tacs_aim.analysis_dir
 
         # boolean of whether not to use derivatives
         self._compute_gradients = compute_gradients
@@ -52,6 +53,7 @@ class CapsTacs:
 
         # boolean to view paraview group on destructor
         self._view_plots = view_plots
+        self._report_history = report_history
         self._function_history = {}
 
         # link the meshes
@@ -369,19 +371,22 @@ class CapsTacs:
         destructor for caps to tacs problem, tells how to view results after done
         """
 
-        self.print_function_history()
-        self.print_final_design()
+        if self._report_history:
+            self.print_function_history()
+            self.print_final_design()
+            
         print(f"\nYou've now finished your caps2tacs analysis/optimization")
-        print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
-        print(f"\tcd {self.tacs_aim.analysis_dir}")
-        print(f"\tparaview {self.pytacs_function.paraview_group_name}")
-        print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation on the animation batch")
-        print(f"\tu*iHat+v*jHat+w*kHat")
-        print(f"Once you save the deformation results or field output animations (have to save as group pngs) go to the following website to make a gif...")
-        print(f"\thttps://www.freeconvert.com/png-to-gif")
-        print(f"Then return to the orig directory with 'cd -'")
-
+        
         if self._view_plots:
+            print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
+            print(f"\tcd {self.tacs_aim.analysis_dir}")
+            print(f"\tparaview {self.pytacs_function.paraview_group_name}")
+            print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation on the animation batch")
+            print(f"\tu*iHat+v*jHat+w*kHat")
+            print(f"Once you save the deformation results or field output animations (have to save as group pngs) go to the following website to make a gif...")
+            print(f"\thttps://www.freeconvert.com/png-to-gif")
+            print(f"Then return to the orig directory with 'cd -'")
+
             self.view_paraview_group()
 
         

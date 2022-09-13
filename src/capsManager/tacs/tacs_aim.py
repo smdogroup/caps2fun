@@ -219,25 +219,6 @@ class TacsAim:
     @property
     def is_setup(self) -> bool:
         return self._setup 
-        
-    def set_constraint(self):
-        # constraint section
-        constraint = {"groupName" : "edge",
-                    "dofConstraint" : 123456}
-        
-        self._aim.input.Constraint = {"edgeConstraint": constraint}
-    
-    def set_load(self):
-        #loads section
-        pressload = 1.0e5
-        
-        # Set load
-        load = {"groupName" : "plate",
-                "loadType" : "Pressure",
-                "pressureForce" : pressload}
-        
-        # Set loads
-        self._aim.input.Load = {"appliedPressure": load }
 
     @property
     def aim(self):
