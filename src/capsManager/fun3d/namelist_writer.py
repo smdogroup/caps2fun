@@ -108,23 +108,25 @@ class Fun3dNamelistWriter:
         self.fun3d_nml["massoud_output"]["funtofem_include_skin_friction"] = False
 
         #volume output variables
-        self.fun3d_nml["volume_output_variables"] = f90nml.Namelist()
-        self.fun3d_nml["volume_output_variables"]["export_to"] = "vtk"
-        self.fun3d_nml["volume_output_variables"]["x"] = False
-        self.fun3d_nml["volume_output_variables"]["y"] = False
-        self.fun3d_nml["volume_output_variables"]["z"] = False
-        self.fun3d_nml["volume_output_variables"]["temperature"] = True
-        self.fun3d_nml["volume_output_variables"]["mach"] = True
-        self.fun3d_nml["volume_output_variables"]["p"] = True
+        if self.aim._write_vtk:
+            self.fun3d_nml["volume_output_variables"] = f90nml.Namelist()
+            self.fun3d_nml["volume_output_variables"]["export_to"] = "vtk"
+            self.fun3d_nml["volume_output_variables"]["x"] = False
+            self.fun3d_nml["volume_output_variables"]["y"] = False
+            self.fun3d_nml["volume_output_variables"]["z"] = False
+            self.fun3d_nml["volume_output_variables"]["temperature"] = True
+            self.fun3d_nml["volume_output_variables"]["mach"] = True
+            self.fun3d_nml["volume_output_variables"]["p"] = True
 
         #boundary output variables
-        self.fun3d_nml["boundary_output_variables"] = f90nml.Namelist()
-        #boundary list indexes probably auto set from fun3dAim
-        self.fun3d_nml["boundary_output_variables"]["number_of_boundaries"] = -1
-        self.fun3d_nml["boundary_output_variables"]["boundary_list"] = "1-2"
-        self.fun3d_nml["boundary_output_variables"]["temperature"] = True
-        self.fun3d_nml["boundary_output_variables"]["mach"] = True
-        self.fun3d_nml["boundary_output_variables"]["p"] = True
+        if self.aim._write_vtk:
+            self.fun3d_nml["boundary_output_variables"] = f90nml.Namelist()
+            #boundary list indexes probably auto set from fun3dAim
+            self.fun3d_nml["boundary_output_variables"]["number_of_boundaries"] = -1
+            self.fun3d_nml["boundary_output_variables"]["boundary_list"] = "1-2"
+            self.fun3d_nml["boundary_output_variables"]["temperature"] = True
+            self.fun3d_nml["boundary_output_variables"]["mach"] = True
+            self.fun3d_nml["boundary_output_variables"]["p"] = True
 
     def write(self):
         """

@@ -8,7 +8,13 @@ from capsManager.fun3d.flow_settings import FlowSettings, MotionSettings
 
 
 class Fun3dAim:
-    def __init__(self, caps_problem:pyCAPS.Problem, flow_settings:FlowSettings=None, motion_settings:MotionSettings=None, build_complex:bool=False):
+    def __init__(self, 
+    caps_problem:pyCAPS.Problem, 
+    flow_settings:FlowSettings=None, 
+    motion_settings:MotionSettings=None, 
+    build_complex:bool=False,
+    write_vtk:bool=False
+    ):
         self._aim = caps_problem.analysis.create(aim = "fun3dAIM",
                                     name = "fun3d")
         self._flow_settings = flow_settings
@@ -20,6 +26,8 @@ class Fun3dAim:
         #fun3d design sensitivities settings
         self.aim.input.Design_SensFile = True
         self.aim.input.Design_Sensitivity = True
+
+        self._write_vtk = write_vtk
 
     @property
     def is_setup(self) -> bool:

@@ -72,7 +72,7 @@ class PointwiseAim:
             self._wall_bc = {"bcType" : "inviscid"}
         else:
             self._wall_bc = {"bcType" : "viscous",
-                "boundaryLayerSpacing" : self._wall_spacing}
+                "boundaryLayerSpacing" : wall_spacing}
 
         self._is_setup = True
         self._built_mesh = False
@@ -108,8 +108,9 @@ class PointwiseAim:
             ran_pointwise = False
             raise AssertionError("Pointwise mesh generation failed to run...")
 
-        #run AIM postanalysis, files in self.aim.analysisDir
-        self.aim.postAnalysis() 
+        if ran_pointwise:
+            #run AIM postanalysis, files in self.aim.analysisDir
+            self.aim.postAnalysis() 
 
         self._built_mesh = ran_pointwise
 
