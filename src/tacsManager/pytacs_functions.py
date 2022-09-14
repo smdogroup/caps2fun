@@ -224,17 +224,17 @@ class MassStressTransient(PytacsFunction):
 
         # create a transient problem
         TP = self.fea_solver.createTransientProblem(self._name, tInit=self._t0, tFinal=self._tf, numSteps=self._num_steps)
+        timeSteps = TP.getTimeSteps()
 
         # get the subcase of the problem
         for subcase in self.fea_solver.bdfInfo.subcases.values():
-            subcase1 = subcase
+            if 'LOAD'in subcase:
+                loadsID = subcase['LOAD'][0]
 
-        loadsID = subcase1['Load'][0]
         # loop over each load
-        for itime in range(self._num_steps):
-            time = self._t0 + float(itime/(self._num_steps-1)) * self._tf
-            scale = self._amplitude(time)
-            TP.addLoadFromBDF(itime,loadsID,scale)
+        for itime, time in enumerate(timeSteps):
+            load_scale = self._amplitude(time)
+            TP.addLoadFromBDF(itime,loadsID,scale=load_scale)
 
         # Read in forces from BDF and create tacs struct problems
         TP.addFunction('mass', functions.StructuralMass)
