@@ -25,4 +25,4 @@ if $clean_files; then
 fi
 
 # Run funtofem analysis with MPI, three test cases below, no if block here to be more friendly
-mpiexec_mpt -n 192 python transient_stiff_panel.py
+mpiexec_mpt -n 192 python mpi_transient_stiff_panel.py

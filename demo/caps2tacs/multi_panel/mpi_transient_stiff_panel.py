@@ -42,7 +42,8 @@ pytacs_function = caps2tacs.MassStressTransient(comm=comm, t0=0.0, tf=10.0, num_
 # start a caps tacs main problem
 caps_tacs = caps2tacs.CapsTacs(name="transient_stiff_panel", comm=comm,
 tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function, 
-compute_gradients=False, view_plots=True)
+compute_gradients=False, view_plots=True
+)
 
 caps_tacs.analysis()
 

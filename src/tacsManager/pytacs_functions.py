@@ -141,8 +141,9 @@ class MassStress(PytacsFunction):
     Mass and stress Pytacs analysis function
         available function_names = [mass, ks_vmfailure]
     """
-    def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0, steady:bool=True):
+    def __init__(self, comm=None, safety_factor:float=1.5, ks_weight:float=1000.0, steady:bool=True):
         super(MassStress,self).__init__(name="mass_stress", transient=False)
+        self._comm = comm
         self._safety_factor = safety_factor
         self._ks_weight = ks_weight
         self._function_names = ['mass', 'ks_vmfailure']
@@ -159,7 +160,7 @@ class MassStress(PytacsFunction):
     def __call__(self, dat_file:str, write_solution:bool=False):
 
         #initialize pytacs with that data file
-        self.fea_solver = pyTACS(dat_file)
+        self.fea_solver = pyTACS(dat_file, self._comm)
             
         # Set up TACS Assembler
         self.fea_solver.initialize()

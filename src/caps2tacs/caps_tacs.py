@@ -23,16 +23,20 @@ class CapsTacs:
             pytacs_function : takes in dat_file and returns func, sens from TACS analysis
         """
 
-        # make sure the aim wrapper modules are setup properly before proceeding
-        assert(tacs_aim.is_setup)
-        assert(egads_aim.is_setup)
-
-        assert(isinstance(tacs_aim, TacsAim))
-        assert(isinstance(egads_aim, EgadsAim))
-        assert(isinstance(pytacs_function, PytacsFunction) or pytacs_function is None)
-
         self._name = name
         self._comm=comm
+
+        # make sure the aim wrapper modules are setup properly before proceeding
+        if self.root_proc:
+            assert(tacs_aim.is_setup)
+            assert(egads_aim.is_setup)
+
+            assert(isinstance(tacs_aim, TacsAim))
+            assert(isinstance(egads_aim, EgadsAim))
+
+        assert(isinstance(pytacs_function, PytacsFunction) or pytacs_function is None)
+
+        
 
         # get the aim wrappers and pytacs function wrapper
         self._tacs_aim = tacs_aim
