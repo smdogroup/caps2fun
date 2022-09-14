@@ -14,7 +14,7 @@ class CapsTacs:
     """
     Module to handle caps and tacs interface problems
     """
-    def __init__(self, name:str, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, 
+    def __init__(self, name:str, comm, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, 
         compute_gradients:bool=True, write_solution:bool=True, view_plots:bool=False, report_history:bool=False):
         """
         Module to handle caps and tacs interface problems
@@ -32,6 +32,7 @@ class CapsTacs:
         assert(isinstance(pytacs_function, PytacsFunction) or pytacs_function is None)
 
         self._name = name
+        self._comm=comm
 
         # get the aim wrappers and pytacs function wrapper
         self._tacs_aim = tacs_aim
@@ -40,7 +41,7 @@ class CapsTacs:
 
         # set the analysis directory of the pytacs function
         if pytacs_function is not None:
-            self.pytacs_function.analysis_dir = self.tacs_aim.analysis_dir
+            self.pytacs_function.analysis_dir = self.analysis_dir
 
         # boolean of whether not to use derivatives
         self._compute_gradients = compute_gradients
@@ -57,7 +58,25 @@ class CapsTacs:
         self._function_history = {}
 
         # link the meshes
-        self.tacs_aim.aim.input["Mesh"].link(self.egads_aim.aim.output["Surface_Mesh"])
+        if self.root_proc:
+            self.tacs_aim.aim.input["Mesh"].link(self.egads_aim.aim.output["Surface_Mesh"])
+
+    @property
+    def root_proc(self) -> bool:
+        return self._comm is None or self._comm.Get_rank() == 0
+
+    @property
+    def multi_proc(self) -> bool:
+        return self._comm is not None
+
+    @property
+    def analysis_dir(self) -> str:
+        the_dir = None
+        if self.root_proc:
+            the_dir = self.tacs_aim.analysis_dir
+        if self.multi_proc:
+            the_dir = self._comm.bcast(the_dir,root=0)
+        return the_dir
 
     def sort_names(self, name_output:bool=True):
         name_list = [dv.name for dv in self.tacs_aim.design_variables]
@@ -141,7 +160,10 @@ class CapsTacs:
         changed_design = False
         if design_dict is not None:
             #design_dict = self.design_variable_dictionary(design_variables)
-            changed_design = self.tacs_aim.update_design(design_dict)
+            if self.root_proc:
+                changed_design = self.tacs_aim.update_design(design_dict)
+            if self.multi_proc:
+                changed_design = self._comm.bcast(changed_design, root=0)
             if changed_design:
                 #self.tacs_aim._geometry.view()
                 self.analysis()
@@ -156,12 +178,13 @@ class CapsTacs:
     def analysis(self):
         assert(self.pytacs_function is not None)
 
-        if not self.tacs_aim.is_setup:
+        if not self.tacs_aim.is_setup and self.root_proc:
             # if the tacs aim has been reconfigured then you have to setup the aim again
             self.tacs_aim.setup_aim()
 
         # run the pre analysis to generate dat file
-        self.tacs_aim.pre_analysis()
+        if self.root_proc:
+            self.tacs_aim.pre_analysis()
 
         # run the pytacs function
         funcs, sens = self.pytacs_function(dat_file=self.tacs_aim.dat_file_path, write_solution=self._write_solution)
@@ -175,7 +198,8 @@ class CapsTacs:
             self.coordinate_mesh_sensitivity_product()
 
         # force you to setup the tacs aim again next time
-        self.tacs_aim._setup = False
+        if self.root_proc:
+            self.tacs_aim._setup = False
 
     def design_variable_dictionary(self, design_variables:List[float]=None) -> dict:
         if design_variables is None:
@@ -210,10 +234,13 @@ class CapsTacs:
         self.analysis_gatekeeper(design_dict)
         grad_dict = {}
         #grad_list = []
-        for dv_name in design_dict:
-            load_set_function_name = self.set_function_name(function_name)
-            grad_dict[dv_name] = self.tacs_aim.aim.dynout[load_set_function_name].deriv(dv_name)
-            #grad_list.append(grad_dict[dv_name])
+        if self.root_proc:
+            for dv_name in design_dict:
+                load_set_function_name = self.set_function_name(function_name)
+                grad_dict[dv_name] = self.tacs_aim.aim.dynout[load_set_function_name].deriv(dv_name)
+                #grad_list.append(grad_dict[dv_name])
+        if self.multi_proc:
+            grad_dict = self._comm.bcast(grad_dict,root=0)
         return grad_dict 
 
     def write_coordinates_test(self):
@@ -306,8 +333,9 @@ class CapsTacs:
         """
         write the tacsAim sensitivity file and run post analysis to multiply the 
         """
-        self.write_sensitivity_file()
-        self.tacs_aim.post_analysis()
+        if self.root_proc:
+            self.write_sensitivity_file()
+            self.tacs_aim.post_analysis()
 
     def view_paraview_group(self):
         os.system(f"paraview {self.tacs_aim.analysis_dir}/{self.pytacs_function.paraview_group_name}")
@@ -371,7 +399,7 @@ class CapsTacs:
         destructor for caps to tacs problem, tells how to view results after done
         """
 
-        if self._report_history:
+        if self._report_history and self.root_proc:
             self.print_function_history()
             self.print_final_design()
             
@@ -379,8 +407,9 @@ class CapsTacs:
         
         if self._view_plots:
             print(f"\tYou can find .vtk files for paraview in the following directory and use 'paraview' to open the batch of files")
-            print(f"\tcd {self.tacs_aim.analysis_dir}")
-            print(f"\tparaview {self.pytacs_function.paraview_group_name}")
+            if self.root_proc:
+                print(f"\tcd {self.tacs_aim.analysis_dir}")
+                print(f"\tparaview {self.pytacs_function.paraview_group_name}")
             print(f"Once inside paraview the following command uses the u,v,w displacement field to apply deformation on the animation batch")
             print(f"\tu*iHat+v*jHat+w*kHat")
             print(f"Once you save the deformation results or field output animations (have to save as group pngs) go to the following website to make a gif...")

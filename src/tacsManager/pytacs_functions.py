@@ -191,8 +191,9 @@ class MassStressTransient(PytacsFunction):
     Mass and stress Pytacs analysis function
         available function_names = [mass, ks_vmfailure]
     """
-    def __init__(self, safety_factor:float=1.5, ks_weight:float=1000.0, t0:float=0.0, tf:float=1.0, num_steps:int=100, amplitude=None):
+    def __init__(self, comm=None, safety_factor:float=1.5, ks_weight:float=1000.0, t0:float=0.0, tf:float=1.0, num_steps:int=100, amplitude=None):
         super(MassStressTransient,self).__init__(name="mass_stress", transient=True)
+        self._comm=comm
         self._safety_factor = safety_factor
         self._ks_weight = ks_weight
         self._t0 = t0
@@ -211,32 +212,42 @@ class MassStressTransient(PytacsFunction):
     def __call__(self, dat_file:str, write_solution:bool=False):
 
         #initialize pytacs with that data file
-        self.fea_solver = pyTACS(dat_file)
+        self.fea_solver = pyTACS(dat_file,self._comm)
             
         # Set up TACS Assembler
         self.fea_solver.initialize()
 
-        #read the bdf & dat file into pytacs FEAsolver
-        #SPs represents "StructuralProblems"
-        #SPs = self.fea_solver.createTACSProbsFromBDF()
+        # make sure cross-ref turned on
+        if self.fea_solver.bdfInfo.is_xrefed is False:
+            self.fea_solver.bdfInfo.cross_reference()
+            self.fea_solver.bdfInfo.is_xrefed = True
 
-        transientOptions = {'printlevel':1}
-        TPs = self.fea_solver.createBDFtransientProb(tInit=self._t0, tFinal=self._tf, numSteps=self._num_steps, options=transientOptions, amplitude=self._amplitude)
+        # create a transient problem
+        TP = self.fea_solver.createTransientProblem(self._name, tInit=self._t0, tFinal=self._tf, numSteps=self._num_steps)
+
+        # get the subcase of the problem
+        for subcase in self.fea_solver.bdfInfo.subcases.values():
+            subcase1 = subcase
+
+        loadsID = subcase1['Load'][0]
+        # loop over each load
+        for itime in range(self._num_steps):
+            time = self._t0 + float(itime/(self._num_steps-1)) * self._tf
+            scale = self._amplitude(time)
+            TP.addLoadFromBDF(itime,loadsID,scale)
 
         # Read in forces from BDF and create tacs struct problems
-        for caseID in TPs:
-            TPs[caseID].addFunction('mass', functions.StructuralMass)
-            TPs[caseID].addFunction('ks_vmfailure', functions.KSFailure, safetyFactor=1.5, ksWeight=1000.0)
+        TP.addFunction('mass', functions.StructuralMass)
+        TP.addFunction('ks_vmfailure', functions.KSFailure, safetyFactor=1.5, ksWeight=1000.0)
 
         func = {}; sens = {}
-        for caseID in TPs:
-            self._load_set = 0
-            TPs[caseID].solve()
-            TPs[caseID].evalFunctions(func,evalFuncs=self.function_names)
-            TPs[caseID].evalFunctionsSens(sens,evalFuncs=self.function_names)
-            self._nodes = TPs[caseID].getNodes()
-            if write_solution:
-                TPs[caseID].writeSolution(baseName=self.f5_base_filename, outputDir=self.analysis_dir)
-                self.f5_to_vtk()
+        self._load_set = 0
+        TP.solve()
+        TP.evalFunctions(func,evalFuncs=self.function_names)
+        TP.evalFunctionsSens(sens,evalFuncs=self.function_names)
+        self._nodes = TP.getNodes()
+        if write_solution:
+            TP.writeSolution(baseName=self.f5_base_filename, outputDir=self.analysis_dir)
+            self.f5_to_vtk()          
         
         return func, sens

@@ -1,4 +1,7 @@
 
+# only able to view structure here
+cfgpmtr view:structure 1
+cfgpmtr view:fluid 0
 cfgpmtr nplates 3
 
 despmtr   plateLength       0.5
