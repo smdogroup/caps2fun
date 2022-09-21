@@ -22,6 +22,7 @@ source $HOME/.profile
 if $clean_files; then
     rm -rf *.o*
     rm -rf output.txt
+    rm -rf **/Scratch/capsLock
 fi
 
 # Run funtofem analysis with MPI, three test cases below, no if block here to be more friendly

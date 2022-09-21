@@ -38,7 +38,8 @@ class Fun3dNamelistWriter:
             self.fun3d_nml["governing_equations"]["eqn_type"] = "compressible"
             self.fun3d_nml["governing_equations"]["viscous_terms"] = "laminar"
         elif (self.aim.flow_settings.flow_type == "turbulent"):
-            raise AssertionError("Turbulent not supported yet")
+            self.fun3d_nml["governing_equations"]["eqn_type"] = "compressible"
+            self.fun3d_nml["governing_equations"]["viscous_terms"] = "turbulent"
 
         #raw grid section
         self.fun3d_nml["raw_grid"] = f90nml.Namelist()
@@ -64,13 +65,11 @@ class Fun3dNamelistWriter:
 
         #nonlinear solver parameters section
         self.fun3d_nml["nonlinear_solver_parameters"] = f90nml.Namelist()
-        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_iteration"] = [1, 80]
-        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cfl"] = [2, 100]
-        if (self.aim.flow_settings.flow_type == "inviscid"):
-            self.fun3d_nml["nonlinear_solver_parameters"]["time_accuracy"] = "steady"
-            self.fun3d_nml["nonlinear_solver_parameters"]["time_step_nondim"] = 0.1
-            self.fun3d_nml["nonlinear_solver_parameters"]["subiterations"] = 0
-            self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cflturb"] = [50.0,50.0]
+        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_iteration(1:2)"] = self.aim.fluid_solver_settings.schedule_iteration
+        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cfl"] = self.aim.fluid_solver_settings.schedule_cfl
+        self.fun3d_nml["nonlinear_solver_parameters"]["time_accuracy"] = self.aim.fluid_solver_settings.time_accuracy
+        self.fun3d_nml["nonlinear_solver_parameters"]["subiterations"] = self.aim.fluid_solver_settings.sub_iterations
+        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cflturb"] = self.aim.fluid_solver_settings.schedule_cfl_turb
 
 
         #force moment integ properties section
@@ -92,16 +91,16 @@ class Fun3dNamelistWriter:
 
         #mesh elasticity flow_settings
         self.fun3d_nml["elasticity_gmres"] = f90nml.Namelist()
-        self.fun3d_nml["elasticity_gmres"]["algebraic_mesh_deform"] = False #default False
-        self.fun3d_nml["elasticity_gmres"]["nsearch"] = 200 #default 50
-        self.fun3d_nml["elasticity_gmres"]["tol"] = 1.e-14
-        self.fun3d_nml["elasticity_gmres"]["deformation_substeps"] = 1 #default 1, other value 5
-        self.fun3d_nml["elasticity_gmres"]["deform_from_initial_mesh"] = True #default true
-        self.fun3d_nml["elasticity_gmres"]["use_substeps_each_step"] = False #default False, need to turn to True if deformation_substeps used
-        self.fun3d_nml["elasticity_gmres"]["elasticity"] = 1 #default 1, option 2
-        self.fun3d_nml["elasticity_gmres"]["elasticity_exponent"] = 1.0 #default 1.0, change to 2.0 if needed
-        self.fun3d_nml["elasticity_gmres"]["nrestarts"] = 1
-        self.fun3d_nml["elasticity_gmres"]["poisson_ratio"] = 0.0 #default 0.0
+        self.fun3d_nml["elasticity_gmres"]["algebraic_mesh_deform"] = False 
+        self.fun3d_nml["elasticity_gmres"]["nsearch"] = self.aim.fluid_mesh_settings.num_search 
+        self.fun3d_nml["elasticity_gmres"]["tol"] = self.aim.fluid_mesh_settings.tolerance
+        self.fun3d_nml["elasticity_gmres"]["deformation_substeps"] = self.aim.fluid_mesh_settings.substeps 
+        self.fun3d_nml["elasticity_gmres"]["deform_from_initial_mesh"] = self.aim.fluid_mesh_settings.from_initial 
+        self.fun3d_nml["elasticity_gmres"]["use_substeps_each_step"] = self.aim.fluid_mesh_settings.use_substeps 
+        self.fun3d_nml["elasticity_gmres"]["elasticity"] = self.aim.fluid_mesh_settings.elasticity_const
+        self.fun3d_nml["elasticity_gmres"]["elasticity_exponent"] = self.aim.fluid_mesh_settings.elasticity_exponent
+        self.fun3d_nml["elasticity_gmres"]["nrestarts"] = self.aim.fluid_mesh_settings.num_restarts
+        self.fun3d_nml["elasticity_gmres"]["poisson_ratio"] = self.aim.fluid_mesh_settings.poisson_ratio
         
         #massoud output flow_settings
         self.fun3d_nml["massoud_output"] = f90nml.Namelist()
@@ -150,20 +149,18 @@ class MovingBodyInputWriter:
         return self._fun3d_aim
 
     def _set_namelist(self):
-        #moving body flow_settings for funtofem to fun3d
-        bndryArray = self.aim.motion_settings.boundary_indices
-        bndryArray = list(bndryArray)
 
-        #body definitions
+        #body definitions, currently only supports one body
+        body_ind = 1
+        boundary_ind = 1
         self._moving_body_input["body_definitions"] = f90nml.Namelist()
         self._moving_body_input["body_definitions"]["n_moving_bodies"] = self.aim.motion_settings.num_bodies
-        self._moving_body_input["body_definitions"]["body_name"] = [self.aim.motion_settings.body_name]
-        self._moving_body_input["body_definitions"]["parent_name"] = [""] # '' means motion relative to inertial ref frame
-        self._moving_body_input["body_definitions"]["n_defining_bndry"] = [self.aim.motion_settings.num_boundaries] #number of boundaries that define this body
-        self._moving_body_input["body_definitions"]["defining_bndry(1,1)"] = 2 #index 1: boundary number index 2: body number
-        self._moving_body_input["body_definitions"]["motion_driver"] = ["funtofem"] #tells fun3d to use motion inputs from python
-        self._moving_body_input["body_definitions"]["mesh_movement"] = [self.aim.motion_settings.motion_style] #can use 'rigid', 'deform', 'rigid+deform' with funtofem interface
-
+        self._moving_body_input["body_definitions"][f"body_name({body_ind})"] = self.aim.motion_settings.body_name
+        self._moving_body_input["body_definitions"][f"parent_name({body_ind})"] = "" 
+        self._moving_body_input["body_definitions"][f"n_defining_bndry({body_ind})"] = 1 
+        self._moving_body_input["body_definitions"][f"defining_bndry({boundary_ind},{body_ind})"] = self.aim.motion_settings.defining_boundary
+        self._moving_body_input["body_definitions"][f"motion_driver({body_ind})"] = "funtofem" 
+        self._moving_body_input["body_definitions"][f"mesh_movement({body_ind})"] = self.aim.motion_settings.motion_style 
         self._setup = True
 
     def write(self):
