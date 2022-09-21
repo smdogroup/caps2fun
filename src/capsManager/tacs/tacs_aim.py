@@ -125,7 +125,7 @@ class TacsAim:
         assert(isinstance(load, Load))
         self._loads.append(load)   
 
-    def setup_aim(self, large_format:bool=True, static:bool=True, auto_shape_variables:bool=True):
+    def setup_aim(self, large_format:bool=True, static:bool=True, auto_shape_variables:bool=False):
         
         # make sure there is at least one material, property, constraint, etc.
         assert(len(self._materials) > 0)

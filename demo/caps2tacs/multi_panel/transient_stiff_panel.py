@@ -29,10 +29,10 @@ tacs_aim.setup_aim()
 egads_aim.set_mesh()
 
 
-pytacs_function = caps2tacs.MassStressTransient(t0=0.0, tf=10.0, num_steps=100, amplitude=lambda t : np.sin(0.5*t))
+pytacs_function = caps2tacs.MassStressTransient(comm=None, t0=0.0, tf=10.0, num_steps=100, amplitude=lambda t : np.sin(0.5*t))
 
 # start a caps tacs main problem
-caps_tacs = caps2tacs.CapsTacs(name="transient_stiff_panel", 
+caps_tacs = caps2tacs.CapsTacs(name="transient_stiff_panel", comm=None,
 tacs_aim=tacs_aim, egads_aim=egads_aim, pytacs_function=pytacs_function, 
 compute_gradients=False, view_plots=True)
 

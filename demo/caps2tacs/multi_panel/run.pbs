@@ -1,0 +1,28 @@
+#!/bin/bash
+## Required PBS Directives --------------------------------------
+#PBS -A AFVAW39842SAM
+#PBS -N StiffPanel
+#PBS -q debug
+#PBS -l select=4:ncpus=48:mpiprocs=48
+#PBS -l walltime=1:00:00
+#PBS -j oe
+#
+## Optional Directives ------------------------------------
+#PBS -m be
+
+# boolean run settings, need run setup true if not run caps setup yet
+clean_files = true
+declare -i nprocs=192
+
+# open workdir, load shell stuff, clean files
+cd $PBS_O_WORKDIR
+source $HOME/.bashrc
+source $HOME/.profile
+
+if $clean_files; then
+    rm -rf *.o*
+    rm -rf output.txt
+fi
+
+# Run funtofem analysis with MPI, three test cases below, no if block here to be more friendly
+mpiexec_mpt -n 192 python mpi_transient_stiff_panel.py
