@@ -1,4 +1,5 @@
 
+__all__ = ["Fun3dNamelistWriter", "MovingBodyInputWriter"]
 
 from typing import TYPE_CHECKING, List
 import f90nml, os
@@ -65,11 +66,14 @@ class Fun3dNamelistWriter:
 
         #nonlinear solver parameters section
         self.fun3d_nml["nonlinear_solver_parameters"] = f90nml.Namelist()
-        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_iteration(1:2)"] = self.aim.fluid_solver_settings.schedule_iteration
-        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cfl"] = self.aim.fluid_solver_settings.schedule_cfl
+        self.fun3d_nml["nonlinear_solver_parameters"][f"schedule_iteration(1:{len(self.aim.fluid_solver_settings.schedule_iteration)})"] =\
+            self.aim.fluid_solver_settings.schedule_iteration
+        self.fun3d_nml["nonlinear_solver_parameters"][f"schedule_cfl(1:{len(self.aim.fluid_solver_settings.schedule_cfl)})"] =\
+            self.aim.fluid_solver_settings.schedule_cfl
         self.fun3d_nml["nonlinear_solver_parameters"]["time_accuracy"] = self.aim.fluid_solver_settings.time_accuracy
         self.fun3d_nml["nonlinear_solver_parameters"]["subiterations"] = self.aim.fluid_solver_settings.sub_iterations
-        self.fun3d_nml["nonlinear_solver_parameters"]["schedule_cflturb"] = self.aim.fluid_solver_settings.schedule_cfl_turb
+        self.fun3d_nml["nonlinear_solver_parameters"][f"schedule_cflturb(1:{len(self.aim.fluid_solver_settings.schedule_cfl_turb)})"] =\
+             self.aim.fluid_solver_settings.schedule_cfl_turb
 
 
         #force moment integ properties section

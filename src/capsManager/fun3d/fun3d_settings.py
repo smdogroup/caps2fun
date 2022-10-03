@@ -84,7 +84,7 @@ class FluidMeshSettings:
         substeps:int=1,
         from_initial:bool=True,
         use_substeps:bool=False,
-        elasticity_const:float=1.0,
+        elasticity_const:int=1,
         elasticity_exponent:float=1.0,
         num_restarts:int=1,
         poisson_ratio:float=0.0
@@ -94,7 +94,7 @@ class FluidMeshSettings:
         self.substeps = substeps
         self.from_initial = from_initial
         self.use_substeps = use_substeps
-        self.elasticity_const = elasticity_const
+        self.elasticity_const = int(elasticity_const)
         self.elasticity_exponent = elasticity_exponent
         self.num_restarts = num_restarts
         self.poisson_ratio = poisson_ratio
