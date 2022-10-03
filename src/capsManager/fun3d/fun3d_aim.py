@@ -21,8 +21,8 @@ class Fun3dAim:
                                     name = "fun3d")
         self._flow_settings = flow_settings
         self._motion_settings = motion_settings
-        self._fluid_mesh_settings = fluid_mesh_settings if fluid_mesh_settings is None else FluidMeshSettings()
-        self._fluid_solver_settings = fluid_solver_settings if fluid_solver_settings is None else FluidSolverSettings()
+        self._fluid_mesh_settings = fluid_mesh_settings if fluid_mesh_settings is not None else FluidMeshSettings()
+        self._fluid_solver_settings = fluid_solver_settings if fluid_solver_settings is not None else FluidSolverSettings()
         self._build_complex = build_complex
 
         # set to not overwrite fun3d nml analysis
