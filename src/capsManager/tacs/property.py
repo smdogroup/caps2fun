@@ -37,11 +37,13 @@ class ShellProperty(Property):
     self._aim.input.Property = {"plate": shell}
     """
     # TODO : add other available settings for shell properties -> mass, inertias, etc.
-    def __init__(self, caps_group:str, material:Material, membrane_thickness:float, bending_inertia:float=1.0, shear_membrane_ratio:float=5.0/6.0):
+    def __init__(self, caps_group:str, material:Material, membrane_thickness:float, bending_inertia:float=20.0, shear_membrane_ratio:float=5.0/6.0):
         super(ShellProperty,self).__init__(caps_group=caps_group, material=material, property_type="Shell")
         self._membrane_thickness = membrane_thickness
         self._bending_inertia = bending_inertia
         self._shear_membrane_ratio = shear_membrane_ratio
+
+        # bending inertia supposed to be 1.0 but boosted to 20.0 here
 
     @property
     def membrane_thickness(self) -> float:

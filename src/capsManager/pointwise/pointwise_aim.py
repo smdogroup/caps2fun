@@ -19,6 +19,7 @@ class PointwiseAim:
         self._built_mesh = False
 
         self._wall_bc = None
+        self._boundary_condition = None
 
     @property
     def is_setup(self) -> bool:
@@ -119,5 +120,12 @@ class PointwiseAim:
 
     @property
     def boundary_condition(self) -> dict:
-        return {"wall": self._wall_bc,
+        if self._boundary_condition is None:
+            return {"wall": self._wall_bc,
             "Farfield": {"bcType":"Farfield"}}
+        else:
+            return self._boundary_condition
+
+    @boundary_condition.setter
+    def boundary_condition(self, new_bc:dict):
+        self._boundary_condition = new_bc

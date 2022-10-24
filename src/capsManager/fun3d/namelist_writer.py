@@ -94,17 +94,19 @@ class Fun3dNamelistWriter:
         self.fun3d_nml["global"]["boundary_animation_freq"] = -1
 
         #mesh elasticity flow_settings
-        self.fun3d_nml["elasticity_gmres"] = f90nml.Namelist()
-        self.fun3d_nml["elasticity_gmres"]["algebraic_mesh_deform"] = False 
-        self.fun3d_nml["elasticity_gmres"]["nsearch"] = self.aim.fluid_mesh_settings.num_search 
-        self.fun3d_nml["elasticity_gmres"]["tol"] = self.aim.fluid_mesh_settings.tolerance
-        self.fun3d_nml["elasticity_gmres"]["deformation_substeps"] = self.aim.fluid_mesh_settings.substeps 
-        self.fun3d_nml["elasticity_gmres"]["deform_from_initial_mesh"] = self.aim.fluid_mesh_settings.from_initial 
-        self.fun3d_nml["elasticity_gmres"]["use_substeps_each_step"] = self.aim.fluid_mesh_settings.use_substeps 
-        self.fun3d_nml["elasticity_gmres"]["elasticity"] = self.aim.fluid_mesh_settings.elasticity_const
-        self.fun3d_nml["elasticity_gmres"]["elasticity_exponent"] = self.aim.fluid_mesh_settings.elasticity_exponent
-        self.fun3d_nml["elasticity_gmres"]["nrestarts"] = self.aim.fluid_mesh_settings.num_restarts
-        self.fun3d_nml["elasticity_gmres"]["poisson_ratio"] = self.aim.fluid_mesh_settings.poisson_ratio
+        if self.aim.fluid_mesh_settings is not None:
+            print(self.aim.fluid_mesh_settings)
+            self.fun3d_nml["elasticity_gmres"] = f90nml.Namelist()
+            self.fun3d_nml["elasticity_gmres"]["algebraic_mesh_deform"] = False 
+            self.fun3d_nml["elasticity_gmres"]["nsearch"] = self.aim.fluid_mesh_settings.num_search 
+            self.fun3d_nml["elasticity_gmres"]["tol"] = self.aim.fluid_mesh_settings.tolerance
+            self.fun3d_nml["elasticity_gmres"]["deformation_substeps"] = self.aim.fluid_mesh_settings.substeps 
+            self.fun3d_nml["elasticity_gmres"]["deform_from_initial_mesh"] = self.aim.fluid_mesh_settings.from_initial 
+            self.fun3d_nml["elasticity_gmres"]["use_substeps_each_step"] = self.aim.fluid_mesh_settings.use_substeps 
+            self.fun3d_nml["elasticity_gmres"]["elasticity"] = self.aim.fluid_mesh_settings.elasticity_const
+            self.fun3d_nml["elasticity_gmres"]["elasticity_exponent"] = self.aim.fluid_mesh_settings.elasticity_exponent
+            self.fun3d_nml["elasticity_gmres"]["nrestarts"] = self.aim.fluid_mesh_settings.num_restarts
+            self.fun3d_nml["elasticity_gmres"]["poisson_ratio"] = self.aim.fluid_mesh_settings.poisson_ratio
         
         #massoud output flow_settings
         self.fun3d_nml["massoud_output"] = f90nml.Namelist()

@@ -52,7 +52,7 @@ class TemperatureConstraint(Constraint):
     def __init__(self,
     name:str,
     caps_constraint:str,
-    temperature:float=300.0
+    temperature:float=0.0
     ):
         super(TemperatureConstraint,self).__init__(
             name=name,
