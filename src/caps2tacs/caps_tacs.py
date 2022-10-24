@@ -14,7 +14,7 @@ class CapsTacs:
     """
     Module to handle caps and tacs interface problems
     """
-    def __init__(self, name:str, comm, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, 
+    def __init__(self, name:str, tacs_aim : TacsAim, egads_aim : EgadsAim, pytacs_function:PytacsFunction, comm=None,
         compute_gradients:bool=True, write_solution:bool=True, view_plots:bool=False, report_history:bool=False):
         """
         Module to handle caps and tacs interface problems

@@ -13,7 +13,7 @@ class Constraint:
         #assert(constraint_type in ["Displacement", "ZeroDisplacement", "Temperature"])
         dof_str = str(dof_constraint)
         for char in dof_str:
-            assert(int(char) in range(1,5)) # means only allow dof 1,2,3,4
+            assert(int(char) in range(0,7)) # means only allow dof 0-6, see pyMeshLoader _isDOFinString for more info
         self._name = name
         self._caps_constraint = caps_constraint
         self._dof_constraint = dof_constraint
@@ -27,6 +27,7 @@ class Constraint:
     def dictionary(self) -> dict:
         return {
             "groupName" : self._caps_constraint,
+            "constraintType" : "Displacement",
             "dofConstraint" : self._dof_constraint,
             "gridDisplacement" : self._grid_displacement
         }
@@ -43,6 +44,7 @@ class ZeroConstraint(Constraint):
     def dictionary(self) -> dict:
         return {
             "groupName" : self._caps_constraint,
+            "constraintType" : "ZeroDisplacement",
             "dofConstraint" : self._dof_constraint
         }
 
@@ -50,13 +52,13 @@ class TemperatureConstraint(Constraint):
     def __init__(self,
     name:str,
     caps_constraint:str,
-    temperature:float=300.0
+    temperature:float=0.0
     ):
         super(TemperatureConstraint,self).__init__(
             name=name,
             caps_constraint=caps_constraint,
             constraint_type="Thermal",
-            dof_constraint=4,
+            dof_constraint=0,
             grid_displacement=temperature
         )
 

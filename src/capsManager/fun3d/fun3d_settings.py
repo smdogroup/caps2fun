@@ -1,6 +1,6 @@
 
 
-__all__ = ["FlowSettings", "MotionSettings"]
+__all__ = ["FlowSettings", "MotionSettings", "FluidMeshSettings", "FluidSolverSettings"]
 
 from typing import TYPE_CHECKING, List
 
@@ -63,37 +63,54 @@ class FlowSettings:
     def freeze_limiter_iteration(self) -> int:
         return self._freeze_limiter_iteration
 
+class FluidSolverSettings:
+    def __init__(self,
+        schedule_iteration:List[int]=[1,50],
+        schedule_cfl:List[float]=[200,200],
+        time_accuracy:str='steady',
+        sub_iterations:int=0,
+        schedule_cfl_turb:List[float] = [50.0,50.0]
+    ):
+        self.schedule_iteration = schedule_iteration
+        self.schedule_cfl = schedule_cfl
+        self.time_accuracy = time_accuracy
+        self.sub_iterations = sub_iterations
+        self.schedule_cfl_turb = schedule_cfl_turb
+
+class FluidMeshSettings:
+    def __init__(self,
+        num_search:int=200,
+        tolerance:float=1.e-14,
+        substeps:int=1,
+        from_initial:bool=True,
+        use_substeps:bool=False,
+        elasticity_const:int=1,
+        elasticity_exponent:float=1.0,
+        num_restarts:int=1,
+        poisson_ratio:float=0.0
+    ):
+        self.num_search = num_search
+        self.tolerance = tolerance
+        self.substeps = substeps
+        self.from_initial = from_initial
+        self.use_substeps = use_substeps
+        self.elasticity_const = int(elasticity_const)
+        self.elasticity_exponent = elasticity_exponent
+        self.num_restarts = num_restarts
+        self.poisson_ratio = poisson_ratio
+
 class MotionSettings:
     def __init__(self,
         body_name:str, 
         num_bodies:int=1,
-        num_boundaries:int=1,
-        boundary_indices:List[int]=[2],
-        motion_style:str="deform"
+        motion_style:str="deform",
+        defining_boundary:int=1
     ):
+        """
+        TODO : currently only supports one body, one boundary, update later
+        """
         assert(motion_style in ["deform", "rigid", "deform+rigid", "rigid+deform"])
-        self._body_name = body_name
-        self._num_bodies = num_bodies
-        self._num_boundaries = num_boundaries
-        self._boundary_indices = boundary_indices
-        self._motion_style = motion_style
-
-    @property
-    def body_name(self):
-        return self._body_name
-
-    @property
-    def num_bodies(self):
-        return self._num_bodies
-
-    @property
-    def num_boundaries(self):
-        return self._num_boundaries
-
-    @property
-    def boundary_indices(self):
-        return self._boundary_indices
-
-    @property
-    def motion_style(self):
-        return self._motion_style
+        self.body_name = body_name
+        self.num_bodies = num_bodies
+        self.defining_boundary = defining_boundary
+        self.motion_style = motion_style

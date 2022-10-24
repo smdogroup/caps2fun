@@ -11,6 +11,9 @@ tacs_aim.add_material(material=aluminum)
 constraint = caps2tacs.ZeroConstraint(name="fixRoot", caps_constraint="root")
 tacs_aim.add_constraint(constraint=constraint)
 
+Tconstraint = caps2tacs.TemperatureConstraint(name="tempRoot", caps_constraint="root", temperature=300)
+tacs_aim.add_constraint(constraint=Tconstraint)
+
 thick_DV = caps2tacs.ThicknessVariable(name="thick",caps_group="shell",value=0.2,material=aluminum)
 tacs_aim.add_variable(thick_DV)
 
